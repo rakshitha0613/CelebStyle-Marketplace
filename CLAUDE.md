@@ -57,30 +57,26 @@ The storefronts store is **lazily seeded** on first request (not at module load)
 
 All API responses follow `{ data: T }` envelope. Backend runs on port `4000`, CORS fully open.
 
-### Frontend — dual data layer
-The frontend has two data sources that must stay in sync:
+### Frontend — single data layer
+All pages fetch from the backend API via `apps/frontend/lib/api.ts`. This includes the home page (`app/page.tsx`), which calls `getCelebrities()` and `getOutfits()` at server render time.
 
-| File | Used by | How |
-|------|---------|-----|
-| `apps/frontend/lib/api.ts` | All dynamic pages (celebrities, outfits, orders, storefronts, admin) | `fetch()` calls to `http://localhost:4000` — controlled by `NEXT_PUBLIC_API_BASE_URL` env var |
-| `apps/frontend/lib/data.ts` | Home page (`app/page.tsx`) | Static export — imports `celebs-seed.json` directly from the backend source tree and re-declares a small subset of outfits inline |
+`lib/api.ts` uses `fetch()` with `cache: "no-store"` on all calls, pointing to `NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:4000`).
 
-`lib/data.ts` exists for SSR/static rendering of the home page without requiring the backend. The outfit IDs in `lib/data.ts` match IDs in `lib/api.ts` / `catalogue.ts` so links from the home page resolve correctly on the product page (which fetches from the API).
-
-Cart state is stored client-side only (no backend cart endpoint).
+Cart state is stored client-side only in `localStorage` under the key `"celebstyle-cart"`. No backend cart endpoint exists.
 
 ### Frontend pages (`apps/frontend/app/`)
 | Route | Notes |
 |-------|-------|
-| `/` | Static home — uses `lib/data.ts`, not the API |
-| `/celebrities` | Fetches from API; industry filter via query param |
-| `/celebrities/[id]` | Outfits grouped by occasion; links to storefronts |
-| `/search` | Loads full catalogue client-side; all filters applied in-browser |
-| `/outfits/[id]` | Product page — size selector, add-to-cart, manufacturer list |
+| `/` | Home — fetches celebrities and outfits from API at render time |
+| `/celebrities` | Fetches from API; industry filter rendered client-side |
+| `/celebrities/[id]` | Outfits split into film/character and event sections; links to storefronts |
+| `/search` | Loads full catalogue from API; all filters applied client-side |
+| `/outfits/[id]` | Product page — Myntra-style gallery, size selector, add-to-cart, manufacturer list |
 | `/cart` | Client-side cart; shipping: free ≥ ₹25,000, else ₹499 |
 | `/checkout` | POST to `/api/orders`, then POST to `/api/orders/:id/pay` (simulated Razorpay) |
 | `/orders` + `/orders/[id]` | Order detail with interactive status advancement via `PATCH /api/orders/:id/status` |
 | `/storefronts` + `/storefronts/[id]` | Celebrity brand pages + commission dashboard |
+| `/storefront` + `/storefront/[celebrityId]` | Redirect shims — both redirect to `/storefronts` counterparts |
 | `/admin` | Full CRUD for celebrities, outfits, manufacturers |
 
 ### Commission model
@@ -90,4 +86,11 @@ Cart state is stored client-side only (no backend cart endpoint).
 - Routing: first `manufacturerId` in an outfit's `manufacturerIds` array is assigned; others are ignored
 
 ### Image strategy
-Missing celebrity profile/banner images (those containing `No_image_available.svg`) are replaced with a `thum.io` Wikipedia screenshot at runtime in both `catalogue.ts` and `lib/data.ts`.
+Missing celebrity profile/banner images (those containing `No_image_available.svg`) are replaced with a `thum.io` Wikipedia screenshot at runtime in `catalogue.ts`.
+
+### Environment configuration
+Each workspace has its own `.env.example`:
+- `apps/backend/.env.example` — `DATABASE_URL`, `JWT_SECRET`, `PORT`
+- `apps/frontend/.env.example` — `NEXT_PUBLIC_API_BASE_URL` only
+
+The frontend reads only `NEXT_PUBLIC_API_BASE_URL` (set in `apps/frontend/.env.local`). Variables like `DATABASE_URL` and `JWT_SECRET` are backend-only and must not be placed in the frontend env.

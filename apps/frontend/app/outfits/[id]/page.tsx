@@ -1,7 +1,7 @@
 "use client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { useState, use } from "react";
+import { useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { getManufacturers, getOutfit } from "@/lib/api";
