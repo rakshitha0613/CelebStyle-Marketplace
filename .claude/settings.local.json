@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('C:/Users/Rakshitha/Downloads/CelebStyle-updated/Style/apps/backend/src/data/celebs-seed.json'\\)\\); print\\('Total records:', len\\(d['records']\\)\\); inds = {}; [inds.update\\({r['industry']: inds.get\\(r['industry'],0\\)+1}\\) for r in d['records']]; print\\('By industry:', inds\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('lockfile version:', d.get\\('lockfileVersion'\\)\\); print\\('node version:', d.get\\('packages',{}\\).get\\('',{}\\).get\\('engines',{}\\)\\)\")",
+      "Bash(node -e \"const d=require\\('./apps/backend/src/data/celebs-seed.json'\\); const inds={}; d.records.forEach\\(r=>inds[r.industry]=\\(inds[r.industry]||0\\)+1\\); console.log\\('Total:',d.records.length,'By industry:',JSON.stringify\\(inds\\)\\)\")",
+      "Bash(node --input-type=module)",
+      "Bash(grep -r \"from.*lib/data\\\\|from.*lib\\\\\\\\\\\\\\\\data\" --include=\"*.tsx\" --include=\"*.ts\" -l)",
+      "Bash(npm run *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git config *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
