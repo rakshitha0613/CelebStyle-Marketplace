@@ -11,17 +11,24 @@ npm install          # from repo root — installs both apps via workspaces
 
 ### Run (two terminals required)
 ```bash
-# Terminal 1
-cd apps/backend && npm run dev      # → http://localhost:4000 (tsx watch)
+# Terminal 1 — backend
+npm run dev:backend      # → http://localhost:4000 (tsx watch)
 
-# Terminal 2
-cd apps/frontend && npm run dev     # → http://localhost:3000 (Next.js)
+# Terminal 2 — frontend
+npm run dev:frontend     # → http://localhost:3000 (Next.js)
 ```
 
-Or from root:
+### Build for production
 ```bash
-npm run dev:backend
-npm run dev:frontend
+npm run build            # both workspaces
+npm run build:backend    # backend only (outputs to apps/backend/dist/)
+npm run build:frontend   # frontend only (outputs to apps/frontend/.next/)
+```
+
+### Start production build
+```bash
+npm run start:backend    # node dist/index.js
+npm run start:frontend   # next start
 ```
 
 ### Type-check
@@ -47,7 +54,7 @@ apps/
 ### Backend — in-memory store, no real database
 Each route file (`apps/backend/src/routes/*.ts`) owns its own in-memory array (`celebrityStore`, `outfitStore`, `manufacturerStore`, `orderStore`, `storefrontStore`). **All data is lost on server restart.**
 
-Prisma and `@prisma/client` are installed as dependencies but are not used anywhere in the running app — the schema is vestigial.
+Prisma and `@prisma/client` are installed as dependencies but are not used anywhere in the running app — reserved for the database migration sprint.
 
 Static seed data comes from two places:
 - `apps/backend/src/data/celebs-seed.json` — 68 celebrity records loaded at startup
@@ -56,6 +63,9 @@ Static seed data comes from two places:
 The storefronts store is **lazily seeded** on first request (not at module load) to avoid a timing issue where `outfitStore` would be empty during import.
 
 All API responses follow `{ data: T }` envelope. Backend runs on port `4000`, CORS fully open.
+
+### Backend startup
+`apps/backend/src/env.ts` centralizes environment variable reading and validates `PORT` at startup (throws if the value is not a valid port number). Future env vars (`JWT_SECRET`, `DATABASE_URL`) will be added and validated here as their sprints begin.
 
 ### Frontend — single data layer
 All pages fetch from the backend API via `apps/frontend/lib/api.ts`. This includes the home page (`app/page.tsx`), which calls `getCelebrities()` and `getOutfits()` at server render time.
@@ -90,7 +100,7 @@ Missing celebrity profile/banner images (those containing `No_image_available.sv
 
 ### Environment configuration
 Each workspace has its own `.env.example`:
-- `apps/backend/.env.example` — `DATABASE_URL`, `JWT_SECRET`, `PORT`
+- `apps/backend/.env.example` — `PORT` (validated at startup), `DATABASE_URL` (Sprint 2), `JWT_SECRET` (auth sprint)
 - `apps/frontend/.env.example` — `NEXT_PUBLIC_API_BASE_URL` only
 
 The frontend reads only `NEXT_PUBLIC_API_BASE_URL` (set in `apps/frontend/.env.local`). Variables like `DATABASE_URL` and `JWT_SECRET` are backend-only and must not be placed in the frontend env.

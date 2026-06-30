@@ -5,10 +5,13 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace apps/frontend",
     "dev:frontend": "npm run dev --workspace apps/frontend",
     "dev:backend": "npm run dev --workspace apps/backend",
     "build": "npm run build --workspace apps/frontend && npm run build --workspace apps/backend",
+    "build:frontend": "npm run build --workspace apps/frontend",
+    "build:backend": "npm run build --workspace apps/backend",
+    "start:frontend": "npm run start --workspace apps/frontend",
+    "start:backend": "npm run start --workspace apps/backend",
     "typecheck": "npm run typecheck --workspace apps/frontend && npm run typecheck --workspace apps/backend"
   },
   "engines": {
