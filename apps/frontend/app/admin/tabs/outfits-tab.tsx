@@ -60,7 +60,7 @@ export function OutfitsTab({ outfits, setOutfits, celebrities, manufacturers }: 
       price: String(o.price),
       imageUrl: o.imageUrl,
       description: o.description,
-      year: o.year || "",
+      year: o.year !== undefined ? String(o.year) : "",
       characterName: o.characterName || "",
       manufacturerIds: o.manufacturerIds || []
     });
@@ -91,7 +91,7 @@ export function OutfitsTab({ outfits, setOutfits, celebrities, manufacturers }: 
         price: Number(form.price) || 0,
         imageUrl: form.imageUrl.trim(),
         description: form.description.trim(),
-        year: form.year.trim(),
+        year: form.year.trim() ? Number(form.year.trim()) : undefined,
         characterName: form.characterName.trim(),
         manufacturerIds: form.manufacturerIds
       };
