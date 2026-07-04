@@ -102,7 +102,9 @@ returnsRouter.patch("/:id/complete", authenticate, authorize("ADMIN", "SUPER_ADM
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { refundAmount } = req.body as { refundAmount?: number };
-      if (!refundAmount) return res.status(400).json({ error: "refundAmount is required" });
+      if (refundAmount === undefined || refundAmount === null || typeof refundAmount !== "number") {
+        return res.status(400).json({ error: "refundAmount is required and must be a number" });
+      }
       const data = await returnService.complete(req.params.id as string, req.user!.id, refundAmount);
       return res.status(200).json({ data });
     } catch (err) { handleError(err, res, next); }
