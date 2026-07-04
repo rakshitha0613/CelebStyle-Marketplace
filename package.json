@@ -12,7 +12,8 @@
     "build:backend": "npm run build --workspace apps/backend",
     "start:frontend": "npm run start --workspace apps/frontend",
     "start:backend": "npm run start --workspace apps/backend",
-    "typecheck": "npm run typecheck --workspace apps/frontend && npm run typecheck --workspace apps/backend"
+    "typecheck": "npm run typecheck --workspace apps/frontend && npm run typecheck --workspace apps/backend",
+    "test": "npm run test --workspace apps/backend"
   },
   "engines": {
     "node": ">=20"

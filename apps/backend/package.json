@@ -48,7 +48,9 @@
     "test:devops": "tsx src/__tests__/devops.test.ts",
     "test:ops": "tsx --env-file=.env src/__tests__/ops.test.ts",
     "test:security": "tsx --env-file=.env src/__tests__/security.test.ts",
-    "test:release": "tsx --env-file=.env src/__tests__/release.test.ts"
+    "test:release": "tsx --env-file=.env src/__tests__/release.test.ts",
+    "test": "npm run test:devops && npm run test:ar-camera && npm run test:ar-segmentation && npm run test:ar-overlay && npm run test:ar-3d && npm run test:ar-fit && npm run test:ops && npm run test:security && npm run test:release",
+    "test:db": "npm run test:registration && npm run test:login && npm run test:email-verification && npm run test:password-reset && npm run test:me-rbac && npm run test:api-authorization && npm run test:cart && npm run test:address && npm run test:checkout && npm run test:payment && npm run test:inventory && npm run test:returns && npm run test:settlement && npm run test:ai-foundation && npm run test:feature-store && npm run test:collaborative && npm run test:ranking && npm run test:recommendation && npm run test:feedback && npm run test:mlops"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
