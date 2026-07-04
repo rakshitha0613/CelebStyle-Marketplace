@@ -13,9 +13,13 @@
     "start:frontend": "npm run start --workspace apps/frontend",
     "start:backend": "npm run start --workspace apps/backend",
     "typecheck": "npm run typecheck --workspace apps/frontend && npm run typecheck --workspace apps/backend",
-    "test": "npm run test --workspace apps/backend"
+    "test": "npm run test --workspace apps/backend",
+    "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\""
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
   }
 }
