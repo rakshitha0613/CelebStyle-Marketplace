@@ -57,7 +57,7 @@ Each route file (`apps/backend/src/routes/*.ts`) owns its own in-memory array (`
 Prisma and `@prisma/client` are installed as dependencies but are not used anywhere in the running app — reserved for the database migration sprint.
 
 Static seed data comes from two places:
-- `apps/backend/src/data/celebs-seed.json` — 68 celebrity records loaded at startup
+- `apps/backend/src/data/celebs-seed.json` — 101 celebrity records loaded at startup
 - `apps/backend/src/data/catalogue.ts` — outfit records hard-coded as TypeScript, exported as `outfitRecords`
 
 The storefronts store is **lazily seeded** on first request (not at module load) to avoid a timing issue where `outfitStore` would be empty during import.

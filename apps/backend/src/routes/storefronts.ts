@@ -1,63 +1,29 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { celebrityStore } from "./celebrities.js";
-import { orderStore } from "./orders.js";
-import { outfitStore } from "./outfits.js";
+import { storefrontRepository } from "../repositories/storefront.repository.js";
+import { authenticate } from "../auth/middleware/authenticate.js";
+import { authorize } from "../auth/middleware/authorize.js";
 
-export type StorefrontEntry = {
-  celebrityId: string;
-  displayName: string;
-  bannerImage: string;
-  featuredOutfitIds: string[];
-  message: string;
-  verified: boolean;
-};
+// ── Public type re-export ──────────────────────────────────────────────────────
+export type { StorefrontEntry } from "../repositories/storefront.repository.js";
 
-export const storefrontStore: StorefrontEntry[] = [];
-
-// Seed lazily on first request so outfitStore is populated
-function ensureSeeded() {
-  if (storefrontStore.length > 0) return;
-  const initial = celebrityStore.slice(0, 4).map((celebrity) => ({
-    celebrityId: celebrity.id,
-    displayName: celebrity.name,
-    bannerImage: celebrity.bannerImage,
-    featuredOutfitIds: outfitStore
-      .filter((outfit) => outfit.celebrityId === celebrity.id)
-      .slice(0, 3)
-      .map((outfit) => outfit.id),
-    message: `${celebrity.name} curated luxury replica looks for fans.`,
-    verified: true,
-  }));
-  storefrontStore.push(...initial);
-}
-
+// ── Router ─────────────────────────────────────────────────────────────────────
 export const storefrontsRouter = Router();
 
-storefrontsRouter.get("/", (_req: Request, res: Response) => {
-  ensureSeeded();
-  res.json({ data: storefrontStore });
+storefrontsRouter.get("/", async (_req: Request, res: Response) => {
+  const storefronts = await storefrontRepository.findAll();
+  res.json({ data: storefronts });
 });
 
-storefrontsRouter.get("/metrics/commission", (_req: Request, res: Response) => {
-  const summary = orderStore.reduce(
-    (acc, order) => {
-      acc.orders += 1;
-      acc.gross += order.subtotal;
-      acc.platformFee += order.commission.platformFee;
-      acc.celebrityCommission += order.commission.celebrityCommission;
-      acc.manufacturerShare += order.commission.manufacturerShare;
-      acc.paid += order.paymentStatus === "paid" ? order.total : 0;
-      return acc;
-    },
-    { orders: 0, gross: 0, platformFee: 0, celebrityCommission: 0, manufacturerShare: 0, paid: 0 }
-  );
+// Commission metrics — aggregated from all persisted orders in the database.
+// ADMIN / SUPER_ADMIN only — contains financial data.
+storefrontsRouter.get("/metrics/commission", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (_req: Request, res: Response) => {
+  const summary = await storefrontRepository.commission();
   res.json({ data: summary });
 });
 
-storefrontsRouter.get("/:celebrityId", (req: Request, res: Response) => {
-  ensureSeeded();
-  const item = storefrontStore.find((storefront) => storefront.celebrityId === req.params.celebrityId);
+storefrontsRouter.get("/:celebrityId", async (req: Request, res: Response) => {
+  const item = await storefrontRepository.findByCelebritySlug(req.params.celebrityId as string);
   if (!item) {
     res.status(404).json({ message: "Storefront not found" });
     return;
@@ -65,27 +31,30 @@ storefrontsRouter.get("/:celebrityId", (req: Request, res: Response) => {
   res.json({ data: item });
 });
 
-storefrontsRouter.post("/", (req: Request, res: Response) => {
-  ensureSeeded();
-  const { celebrityId, displayName, bannerImage, featuredOutfitIds, message, verified } = req.body;
+storefrontsRouter.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: Request, res: Response) => {
+  const { celebrityId, displayName, bannerImage, featuredOutfitIds, message, verified } =
+    req.body as Record<string, unknown>;
+
   if (!celebrityId || !displayName) {
     res.status(400).json({ message: "celebrityId and displayName are required" });
     return;
   }
-  const existing = storefrontStore.find((storefront) => storefront.celebrityId === celebrityId);
-  const next: StorefrontEntry = {
-    celebrityId,
-    displayName,
-    bannerImage: bannerImage || "",
-    featuredOutfitIds: Array.isArray(featuredOutfitIds) ? featuredOutfitIds : [],
-    message: message || "",
+
+  const result = await storefrontRepository.upsert({
+    celebrityId: celebrityId as string,
+    displayName: displayName as string,
+    bannerImage: (bannerImage as string) || "",
+    featuredOutfitIds: Array.isArray(featuredOutfitIds)
+      ? (featuredOutfitIds as string[])
+      : [],
+    message: (message as string) || "",
     verified: Boolean(verified),
-  };
-  if (existing) {
-    Object.assign(existing, next);
-    res.json({ data: existing });
+  });
+
+  if (!result) {
+    res.status(404).json({ message: "Celebrity not found" });
     return;
   }
-  storefrontStore.push(next);
-  res.status(201).json({ data: next });
+
+  res.status(result.created ? 201 : 200).json({ data: result.entry });
 });

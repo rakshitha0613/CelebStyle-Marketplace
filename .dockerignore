@@ -1,0 +1,13 @@
+**/.git
+**/.next
+**/node_modules
+**/dist
+**/*.log
+**/.env
+**/.env.local
+**/.env.development
+**/.env.staging
+**/.env.production
+**/coverage
+**/.DS_Store
+**/Thumbs.db

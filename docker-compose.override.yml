@@ -1,0 +1,32 @@
+# Development overrides — applied automatically when running `docker compose up`
+version: "3.9"
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"   # expose for local DB tools
+
+  redis:
+    ports:
+      - "6379:6379"   # expose for local Redis clients
+
+  backend:
+    env_file: .env.development
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./apps/backend/src:/app/src:ro   # hot-reload in dev
+    command: ["npx", "tsx", "watch", "src/index.ts"]
+
+  frontend:
+    environment:
+      NODE_ENV: development
+
+  prometheus:
+    ports:
+      - "9090:9090"   # expose Prometheus UI
+
+  grafana:
+    ports:
+      - "3001:3000"   # expose Grafana UI

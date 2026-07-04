@@ -755,6 +755,19 @@
       ]
     },
     {
+      "id": "dulquer-salmaan",
+      "name": "Dulquer Salmaan",
+      "industry": "Mollywood",
+      "bio": "Dulquer Salmaan style archive featuring curated replica looks from films, events, and public appearances.",
+      "profileImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Dulquer_Salmaan_at_Yatra_audio_launch.jpg/330px-Dulquer_Salmaan_at_Yatra_audio_launch.jpg",
+      "bannerImage": "https://upload.wikimedia.org/wikipedia/commons/5/54/Dulquer_Salmaan_at_Yatra_audio_launch.jpg",
+      "styleTags": [
+        "Classic",
+        "Ethnic",
+        "Minimal"
+      ]
+    },
+    {
       "id": "zendaya",
       "name": "Zendaya",
       "industry": "Hollywood",
@@ -1272,6 +1285,32 @@
         "Contemporary",
         "Youth",
         "Red Carpet"
+      ]
+    },
+    {
+      "id": "khesari-lal-yadav",
+      "name": "Khesari Lal Yadav",
+      "industry": "Bhojpuri",
+      "bio": "Khesari Lal Yadav style archive featuring curated replica looks from films, events, and public appearances.",
+      "profileImage": "",
+      "bannerImage": "",
+      "styleTags": [
+        "Traditional",
+        "Ethnic",
+        "Festive"
+      ]
+    },
+    {
+      "id": "anubhav-mohanty",
+      "name": "Anubhav Mohanty",
+      "industry": "Ollywood",
+      "bio": "Anubhav Mohanty style archive featuring curated replica looks from films, events, and public appearances.",
+      "profileImage": "",
+      "bannerImage": "",
+      "styleTags": [
+        "Traditional",
+        "Ethnic",
+        "Festive"
       ]
     }
   ],

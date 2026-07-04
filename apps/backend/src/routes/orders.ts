@@ -1,158 +1,146 @@
 import { Router } from "express";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { celebrityStore } from "./celebrities.js";
 import { outfitStore } from "./outfits.js";
-import { manufacturerStore } from "./manufacturers.js";
+import { orderRepository } from "../repositories/order.repository.js";
+import { authenticate } from "../auth/middleware/authenticate.js";
+import { authorize } from "../auth/middleware/authorize.js";
+import { refundService } from "../services/refund.service.js";
 
-export type OrderStatus = "placed" | "production started" | "shipped" | "delivered";
-export type PaymentStatus = "pending" | "paid";
+// ── Public type re-exports ─────────────────────────────────────────────────────
+export type {
+  OrderStatus,
+  PaymentStatus,
+  OrderItem,
+  OrderEntry,
+} from "../repositories/order.repository.js";
 
-export type OrderItem = {
-  outfitId: string;
-  outfitName: string;
-  celebrityId: string;
-  celebrityName: string;
-  category: string;
-  price: number;
-  size: string;
-  imageUrl: string;
-  manufacturerIds: string[];
-};
-
-export type OrderEntry = {
-  id: string;
-  customerName: string;
-  customerEmail: string;
-  address: string;
-  items: OrderItem[];
-  subtotal: number;
-  shipping: number;
-  total: number;
-  paymentStatus: PaymentStatus;
-  paymentMethod: string;
-  status: OrderStatus;
-  commission: {
-    platformFee: number;
-    celebrityCommission: number;
-    manufacturerShare: number;
-  };
-  routing: Array<{
-    outfitId: string;
-    manufacturerId: string | null;
-    manufacturerName: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export const orderStore: OrderEntry[] = [];
+// ── Router ─────────────────────────────────────────────────────────────────────
 export const ordersRouter = Router();
 
-function computeOrderTotals(items: OrderItem[]) {
-  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
-  const shipping = subtotal >= 25000 ? 0 : 499;
-  const total = subtotal + shipping;
-  const platformFee = Math.round(subtotal * 0.1);
-  const celebrityCommission = Math.round(subtotal * 0.05);
-  const manufacturerShare = subtotal - platformFee - celebrityCommission;
-  return { subtotal, shipping, total, commission: { platformFee, celebrityCommission, manufacturerShare } };
-}
-
-function routeManufacturers(items: OrderItem[]) {
-  return items.map((item) => {
-    const manufacturerId = item.manufacturerIds[0] || null;
-    const manufacturer = manufacturerId ? manufacturerStore.find((entry) => entry.id === manufacturerId) : null;
-    return {
-      outfitId: item.outfitId,
-      manufacturerId,
-      manufacturerName: manufacturer?.name || "Unassigned"
-    };
-  });
-}
-
-ordersRouter.get("/", (_req: Request, res: Response) => {
-  res.json({ data: orderStore });
+// GET all orders — ADMIN / SUPER_ADMIN only
+ordersRouter.get("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (_req: Request, res: Response) => {
+  const orders = await orderRepository.findAll();
+  res.json({ data: orders });
 });
 
-ordersRouter.get("/:id", (req: Request, res: Response) => {
-  const item = orderStore.find((order) => order.id === req.params.id);
-  if (!item) {
-    res.status(404).json({ message: "Order not found" });
-    return;
-  }
-  res.json({ data: item });
-});
-
-ordersRouter.post("/", (req: Request, res: Response) => {
-  const { customerName, customerEmail, address, items, paymentMethod = "Razorpay Demo" } = req.body;
-  if (!customerName || !customerEmail || !address || !Array.isArray(items) || items.length === 0) {
-    res.status(400).json({ message: "customerName, customerEmail, address, and items are required" });
-    return;
-  }
-
-  const normalizedItems: OrderItem[] = items.map((item: any) => {
-    const outfit = outfitStore.find((entry) => entry.id === item.outfitId);
-    const celebrity = celebrityStore.find((entry) => entry.id === (outfit?.celebrityId || item.celebrityId));
-    return {
-      outfitId: item.outfitId,
-      outfitName: item.outfitName || outfit?.movieName || "Unknown look",
-      celebrityId: outfit?.celebrityId || item.celebrityId,
-      celebrityName: celebrity?.name || item.celebrityName || "Unknown celebrity",
-      category: item.category || outfit?.category || "Look",
-      price: Number(item.price) || Number(outfit?.price) || 0,
-      size: item.size || "M",
-      imageUrl: item.imageUrl || outfit?.imageUrl || "",
-      manufacturerIds: Array.isArray(item.manufacturerIds) ? item.manufacturerIds : outfit?.manufacturerIds || []
-    };
-  });
-
-  const { subtotal, shipping, total, commission } = computeOrderTotals(normalizedItems);
-  const now = new Date().toISOString();
-  const order: OrderEntry = {
-    id: `ord-${Date.now()}`,
-    customerName,
-    customerEmail,
-    address,
-    items: normalizedItems,
-    subtotal,
-    shipping,
-    total,
-    paymentStatus: "pending",
-    paymentMethod,
-    status: "placed",
-    commission,
-    routing: routeManufacturers(normalizedItems),
-    createdAt: now,
-    updatedAt: now
-  };
-  orderStore.unshift(order);
-  res.status(201).json({ data: order });
-});
-
-ordersRouter.post("/:id/pay", (req: Request, res: Response) => {
-  const order = orderStore.find((entry) => entry.id === req.params.id);
+// GET single order — authenticated; owner or admin may view
+ordersRouter.get("/:id", authenticate, async (req: Request, res: Response) => {
+  const order = await orderRepository.findByOrderNumber(req.params.id as string);
   if (!order) {
     res.status(404).json({ message: "Order not found" });
     return;
   }
-  order.paymentStatus = "paid";
-  order.status = "production started";
-  order.updatedAt = new Date().toISOString();
+  const role = req.user!.role;
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  if (!isAdmin && order.customerEmail !== req.user!.email) {
+    res.status(403).json({ message: "Forbidden" });
+    return;
+  }
   res.json({ data: order });
 });
 
-ordersRouter.patch("/:id/status", (req: Request, res: Response) => {
-  const order = orderStore.find((entry) => entry.id === req.params.id);
+// POST create order — any authenticated user
+ordersRouter.post("/", authenticate, async (req: Request, res: Response) => {
+  const { customerName, customerEmail, address, items, paymentMethod = "Razorpay Demo" } =
+    req.body as Record<string, unknown>;
+
+  if (
+    !customerName ||
+    !customerEmail ||
+    !address ||
+    !Array.isArray(items) ||
+    items.length === 0
+  ) {
+    res
+      .status(400)
+      .json({ message: "customerName, customerEmail, address, and items are required" });
+    return;
+  }
+
+  // Enrich cart items with outfit/celebrity data from the compatibility stores
+  const normalizedItems = (items as any[]).map((item) => {
+    const outfit = outfitStore.find((entry) => entry.id === item.outfitId);
+    const celebrity = celebrityStore.find(
+      (entry) => entry.id === (outfit?.celebrityId || item.celebrityId)
+    );
+    return {
+      outfitId: (item.outfitId as string) ?? "",
+      outfitName: (item.outfitName as string) || outfit?.movieName || "Unknown look",
+      celebrityId: outfit?.celebrityId || (item.celebrityId as string) || "",
+      celebrityName:
+        celebrity?.name || (item.celebrityName as string) || "Unknown celebrity",
+      category: (item.category as string) || outfit?.category || "Look",
+      price: Number(item.price) || Number(outfit?.price) || 0,
+      size: (item.size as string) || "M",
+      imageUrl: (item.imageUrl as string) || outfit?.imageUrl || "",
+      manufacturerIds: Array.isArray(item.manufacturerIds)
+        ? (item.manufacturerIds as string[])
+        : outfit?.manufacturerIds || [],
+    };
+  });
+
+  const order = await orderRepository.create({
+    customerName: customerName as string,
+    customerEmail: customerEmail as string,
+    address: address as string,
+    paymentMethod: paymentMethod as string,
+    items: normalizedItems,
+  });
+
+  res.status(201).json({ data: order });
+});
+
+// POST pay — authenticated; owner or admin
+ordersRouter.post("/:id/pay", authenticate, async (req: Request, res: Response) => {
+  const existing = await orderRepository.findByOrderNumber(req.params.id as string);
+  if (!existing) {
+    res.status(404).json({ message: "Order not found" });
+    return;
+  }
+  const role = req.user!.role;
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  if (!isAdmin && existing.customerEmail !== req.user!.email) {
+    res.status(403).json({ message: "Forbidden" });
+    return;
+  }
+  const order = await orderRepository.pay(req.params.id as string);
   if (!order) {
     res.status(404).json({ message: "Order not found" });
     return;
   }
-  const status = req.body.status as OrderStatus | undefined;
+  res.json({ data: order });
+});
+
+// PATCH status — ADMIN / SUPER_ADMIN only
+ordersRouter.patch("/:id/status", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: Request, res: Response) => {
+  const status = (req.body as Record<string, unknown>).status as string | undefined;
   if (!status) {
     res.status(400).json({ message: "status is required" });
     return;
   }
-  order.status = status;
-  order.updatedAt = new Date().toISOString();
+  const order = await orderRepository.updateStatus(req.params.id as string, status);
+  if (!order) {
+    res.status(404).json({ message: "Order not found" });
+    return;
+  }
   res.json({ data: order });
+});
+
+// GET /api/orders/:orderId/refunds — auth (owner or admin)
+ordersRouter.get("/:orderId/refunds", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { prisma } = await import("../lib/prisma.js");
+    const order = await prisma.order.findUnique({
+      where:  { id: req.params.orderId as string },
+      select: { userId: true },
+    });
+    if (!order) { res.status(404).json({ error: "Order not found" }); return; }
+    const isAdmin = req.user!.role === "ADMIN" || req.user!.role === "SUPER_ADMIN";
+    if (!isAdmin && order.userId !== req.user!.id) {
+      res.status(403).json({ error: "Forbidden" }); return;
+    }
+    const data = await refundService.getForOrder(req.params.orderId as string);
+    res.status(200).json({ data });
+  } catch (err) { next(err); }
 });
