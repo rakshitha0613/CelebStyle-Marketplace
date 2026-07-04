@@ -14,13 +14,15 @@ export default async function StorefrontsPage() {
         <h1 className="mt-3 font-serif text-5xl text-primary">Celebrity brand spaces</h1>
         <p className="mt-4 text-text/70">Built-in storefront builder and commission tracking for Phase 2.</p>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-5">
-          <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Orders</p><p className="mt-2 font-serif text-4xl text-primary">{commission.orders}</p></div>
-          <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Gross</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.gross.toLocaleString("en-IN")}</p></div>
-          <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Platform Fee</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.platformFee.toLocaleString("en-IN")}</p></div>
-          <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Celebrity Commission</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.celebrityCommission.toLocaleString("en-IN")}</p></div>
-          <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Paid</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.paid.toLocaleString("en-IN")}</p></div>
-        </div>
+        {commission && (
+          <div className="mt-10 grid gap-4 md:grid-cols-5">
+            <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Orders</p><p className="mt-2 font-serif text-4xl text-primary">{commission.orders}</p></div>
+            <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Gross</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.gross.toLocaleString("en-IN")}</p></div>
+            <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Platform Fee</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.platformFee.toLocaleString("en-IN")}</p></div>
+            <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Celebrity Commission</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.celebrityCommission.toLocaleString("en-IN")}</p></div>
+            <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm"><p className="text-xs uppercase tracking-[0.24em] text-accent">Paid</p><p className="mt-2 font-serif text-4xl text-primary">₹{commission.paid.toLocaleString("en-IN")}</p></div>
+          </div>
+        )}
 
         <div className="mt-10">
           <StorefrontBuilder celebrities={celebrities} initialStorefronts={storefronts} />

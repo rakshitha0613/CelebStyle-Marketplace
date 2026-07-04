@@ -274,9 +274,14 @@ export async function saveStorefront(body: Storefront): Promise<Storefront> {
   return res.data;
 }
 
-export async function getCommissionSummary(): Promise<CommissionSummary> {
-  const res = await apiFetch<{ data: CommissionSummary }>("/api/storefronts/metrics/commission");
-  return res.data;
+export async function getCommissionSummary(): Promise<CommissionSummary | null> {
+  try {
+    const res = await apiFetch<{ data: CommissionSummary }>("/api/storefronts/metrics/commission");
+    return res.data;
+  } catch {
+    // 401/403 for unauthenticated visitors — financial data is admin-only
+    return null;
+  }
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
