@@ -213,9 +213,14 @@ export async function deleteManufacturer(id: string): Promise<void> {
 
 // ─── Orders ──────────────────────────────────────────────────────────────────
 
-export async function getOrders(): Promise<Order[]> {
-  const res = await apiFetch<{ data: Order[] }>("/api/orders");
-  return res.data;
+export async function getOrders(): Promise<Order[] | null> {
+  try {
+    const res = await apiFetch<{ data: Order[] }>("/api/orders");
+    return res.data;
+  } catch {
+    // 401/403 — endpoint is ADMIN/SUPER_ADMIN only; unauthenticated visitors get null
+    return null;
+  }
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
