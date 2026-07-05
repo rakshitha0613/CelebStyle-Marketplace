@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Celebrity, Outfit, Manufacturer } from "@/lib/api";
+import { adminLogin, adminLogout, getStoredToken } from "@/lib/api";
 import { CelebritiesTab } from "./tabs/celebrities-tab";
 import { OutfitsTab } from "./tabs/outfits-tab";
 import { ManufacturersTab } from "./tabs/manufacturers-tab";
@@ -20,6 +21,79 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
   const [outfits, setOutfits] = useState(initialOutfits);
   const [manufacturers, setManufacturers] = useState(initialManufacturers);
 
+  // ── Login gate ──────────────────────────────────────────────────────────────
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!getStoredToken());
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      await adminLogin(loginEmail, loginPassword);
+      setIsLoggedIn(true);
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    adminLogout();
+    setIsLoggedIn(false);
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mt-16 flex justify-center">
+        <div className="w-full max-w-sm rounded-[28px] border border-black/6 bg-white p-8 shadow-sm">
+          <h2 className="font-serif text-3xl text-primary">Admin Login</h2>
+          <p className="mt-2 text-sm text-text/70">Sign in with your administrator credentials to manage the catalogue.</p>
+          <form onSubmit={handleLogin} className="mt-6 space-y-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Email</label>
+              <input
+                type="email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                required
+                placeholder="admin@example.com"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-primary placeholder:text-text/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Password</label>
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-primary placeholder:text-text/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+              />
+            </div>
+            {loginError && <p className="text-sm text-red-600">{loginError}</p>}
+            <button
+              type="submit"
+              disabled={loginLoading}
+              className="w-full rounded-full bg-primary py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
+            >
+              {loginLoading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   const industryCounts = celebrities.reduce<Record<string, number>>((acc, c) => {
     acc[c.industry] = (acc[c.industry] || 0) + 1;
     return acc;
@@ -34,8 +108,18 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
 
   return (
     <>
+      {/* Logout bar */}
+      <div className="mt-6 flex justify-end">
+        <button
+          onClick={handleLogout}
+          className="rounded-full border border-black/10 px-4 py-2 text-xs font-medium text-text/60 transition hover:bg-secondary hover:text-primary"
+        >
+          Sign out
+        </button>
+      </div>
+
       {/* Stats */}
-      <div className="mt-8 grid gap-4 md:grid-cols-4">
+      <div className="mt-4 grid gap-4 md:grid-cols-4">
         {[
           { label: "Celebrities", value: celebrities.length },
           { label: "Outfits", value: outfits.length },

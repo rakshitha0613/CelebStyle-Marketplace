@@ -49,6 +49,7 @@ type CreateInput = {
   address: string;
   paymentMethod: string;
   items: OrderItem[];
+  userId?: string;
 };
 
 // ── Enum mappings ──────────────────────────────────────────────────────────────
@@ -156,6 +157,15 @@ export const orderRepository = {
     return rows.map(toApi);
   },
 
+  async findByCustomerEmail(email: string): Promise<OrderEntry[]> {
+    const rows = await prisma.order.findMany({
+      where: { customerEmail: email },
+      include: INCLUDE,
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toApi);
+  },
+
   async findByOrderNumber(orderNumber: string): Promise<OrderEntry | null> {
     const row = await prisma.order.findUnique({
       where: { orderNumber },
@@ -201,6 +211,7 @@ export const orderRepository = {
     const order = await prisma.order.create({
       data: {
         orderNumber,
+        userId: data.userId ?? null,
         shippingName: data.customerName,
         shippingPhone: "",
         shippingAddress: data.address,
@@ -296,8 +307,8 @@ export const orderRepository = {
       prisma.payment.create({
         data: {
           orderId: existing.id,
-          provider: "RAZORPAY",
-          method: "CARD",
+          provider: "SIMULATED",
+          method: "UPI",
           amount: existing.total,
           status: "CAPTURED",
           capturedAt: new Date(),

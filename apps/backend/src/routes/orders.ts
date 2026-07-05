@@ -18,9 +18,13 @@ export type {
 // ── Router ─────────────────────────────────────────────────────────────────────
 export const ordersRouter = Router();
 
-// GET all orders — ADMIN / SUPER_ADMIN only
-ordersRouter.get("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (_req: Request, res: Response) => {
-  const orders = await orderRepository.findAll();
+// GET orders — ADMIN/SUPER_ADMIN returns all; any authenticated user returns own orders
+ordersRouter.get("/", authenticate, async (req: Request, res: Response) => {
+  const role = req.user!.role;
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  const orders = isAdmin
+    ? await orderRepository.findAll()
+    : await orderRepository.findByCustomerEmail(req.user!.email);
   res.json({ data: orders });
 });
 
@@ -58,6 +62,16 @@ ordersRouter.post("/", authenticate, async (req: Request, res: Response) => {
     return;
   }
 
+  if (
+    typeof customerName === "string" && customerName.length > 200 ||
+    typeof customerEmail === "string" && customerEmail.length > 254 ||
+    typeof address === "string" && address.length > 1000 ||
+    items.length > 50
+  ) {
+    res.status(400).json({ message: "Request fields exceed maximum allowed length" });
+    return;
+  }
+
   // Enrich cart items with outfit/celebrity data from the compatibility stores
   const normalizedItems = (items as any[]).map((item) => {
     const outfit = outfitStore.find((entry) => entry.id === item.outfitId);
@@ -86,6 +100,7 @@ ordersRouter.post("/", authenticate, async (req: Request, res: Response) => {
     address: address as string,
     paymentMethod: paymentMethod as string,
     items: normalizedItems,
+    userId: req.user!.id,
   });
 
   res.status(201).json({ data: order });

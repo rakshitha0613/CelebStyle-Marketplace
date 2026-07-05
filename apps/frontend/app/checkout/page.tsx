@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
-import { createOrder, payOrder } from "@/lib/api";
+import { createOrder, simulatePayment, getStoredToken, getCurrentUser, getAddresses } from "@/lib/api";
 
 type CartItem = {
   outfitId: string;
@@ -40,8 +40,29 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!getStoredToken()) {
+      router.replace("/login?redirect=/checkout");
+      return;
+    }
     setItems(readCart());
-  }, []);
+    const user = getCurrentUser();
+    if (user?.email) setCustomerEmail(user.email);
+
+    // Pre-fill address from default shipping address
+    getAddresses().then((addresses) => {
+      const def = addresses.find((a) => a.isDefaultShipping);
+      if (def) {
+        const parts = [
+          `${def.fullName}, ${def.phone}`,
+          def.line1,
+          def.line2,
+          `${def.city}, ${def.state} ${def.pincode}`,
+          def.country,
+        ].filter(Boolean);
+        setAddress(parts.join("\n"));
+      }
+    });
+  }, [router]);
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price, 0), [items]);
   const shipping = subtotal >= 25000 ? 0 : 499;
@@ -59,10 +80,10 @@ export default function CheckoutPage() {
         paymentMethod,
         items
       });
-      const paid = await payOrder(order.id);
+      const paid = await simulatePayment(order.id);
       window.localStorage.removeItem(CART_KEY);
       window.dispatchEvent(new Event("storage"));
-      router.push(`/orders/${paid.id}`);
+      router.push(`/orders/${paid.id}?paid=1`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
     } finally {

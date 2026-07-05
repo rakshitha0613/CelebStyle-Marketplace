@@ -208,3 +208,54 @@ docker compose up -d --no-deps backend
 # 4. If DB migration needs rollback:
 npx prisma migrate resolve --rolled-back <migration-name>
 ```
+
+---
+
+## Cloud Deployment (Vercel + Railway/Render)
+
+An alternative to Docker for teams that prefer managed PaaS:
+
+### Frontend — Vercel
+
+1. Import the repo into Vercel and set **Root Directory** to `apps/frontend`.
+2. Vercel auto-detects Next.js. No `vercel.json` override needed for basic deploys.
+3. Set the following environment variable in the Vercel dashboard:
+
+   | Variable | Value |
+   |---|---|
+   | `NEXT_PUBLIC_API_BASE_URL` | `https://your-backend.railway.app` |
+
+4. Vercel handles SSL, CDN, and deployments on every push to `main`.
+
+### Backend — Railway
+
+1. Create a new Railway project and connect the GitHub repo.
+2. Set **Root Directory** to `apps/backend` and **Start Command** to `node dist/index.js`.
+3. Add the following environment variables in the Railway service settings:
+
+   | Variable | Required | Notes |
+   |---|---|---|
+   | `PORT` | Auto-set | Railway injects this |
+   | `DATABASE_URL` | Yes | Supabase pooled URL (port 6543) |
+   | `DIRECT_URL` | Yes | Supabase direct URL (port 5432) |
+   | `JWT_SECRET` | Yes | ≥48 char hex secret |
+   | `NODE_ENV` | Yes | `production` |
+   | `ALLOWED_ORIGINS` | Yes | Your Vercel frontend URL |
+   | `TRUST_PROXY` | Yes | `true` (Railway uses a proxy) |
+   | `PAYMENT_PROVIDER` | No | `simulated` (default) or `razorpay` |
+   | `RAZORPAY_KEY_ID` | Cond. | Required if `PAYMENT_PROVIDER=razorpay` |
+   | `RAZORPAY_KEY_SECRET` | Cond. | Required if `PAYMENT_PROVIDER=razorpay` |
+   | `RAZORPAY_WEBHOOK_SECRET` | Cond. | Required if `PAYMENT_PROVIDER=razorpay` |
+
+4. Run migrations before first start:
+   ```bash
+   railway run npx prisma migrate deploy
+   ```
+
+### Database — Supabase
+
+1. Create a project at supabase.com and note the pooled (port 6543) and direct (port 5432) URLs.
+2. Set `DATABASE_URL` (pooled + `?pgbouncer=true`) and `DIRECT_URL` (direct, no param) in your backend service.
+3. Enable connection pooling in the Supabase dashboard (transaction mode for PgBouncer).
+4. Run `npx prisma migrate deploy` once to create all 88 schema tables.
+5. Supabase handles automated backups on paid plans.

@@ -30,7 +30,9 @@ npm run dev:backend      # → http://localhost:4000
 npm run dev:frontend     # → http://localhost:3000
 ```
 
-No database setup required for development — the backend uses in-memory stores seeded from `apps/backend/src/data/celebs-seed.json`.
+The backend requires a PostgreSQL database. Copy `apps/backend/.env.example` to `apps/backend/.env` and fill in `DATABASE_URL`, `DIRECT_URL`, and `JWT_SECRET` before starting.
+
+For quick local testing without a database, the backend falls back gracefully to Prisma errors on DB routes (celebrities, outfits, and manufacturers served from in-memory seed are still available).
 
 ---
 
@@ -42,13 +44,22 @@ No database setup required for development — the backend uses in-memory stores
 | `/celebrities` | Browse 101 celebrities grouped by industry |
 | `/celebrities/[id]` | Celebrity profile — bio, style tags, outfit archive by occasion |
 | `/search` | Full-text + multi-filter search (occasion, category, celebrity, colour) |
-| `/outfits/[id]` | Product page — gallery, size selector, add to cart, manufacturers |
+| `/outfits/[id]` | Product page — gallery, size selector, add to cart, save to wishlist |
 | `/cart` | Cart with remove/clear, subtotal + shipping (free ≥ ₹25,000) |
-| `/checkout` | Order form with simulated Razorpay payment |
-| `/orders` | All orders list |
-| `/orders/[id]` | Order detail — status tracker, commission breakdown, manufacturer routing |
+| `/checkout` | Authenticated checkout with address pre-fill and payment simulation |
+| `/orders` | Order history (authenticated) |
+| `/orders/[id]` | Order detail — payment confirmation, status tracker, commission breakdown |
 | `/storefronts` | Celebrity brand pages with commission dashboard |
 | `/storefronts/[id]` | Individual storefront with outfit grid |
+| `/try-on` | AR virtual try-on powered by MediaPipe (camera stays on-device) |
+| `/register` | Customer registration |
+| `/login` | Customer login with redirect support |
+| `/verify-email` | Email verification (token from registration email) |
+| `/forgot-password` | Request a password reset link |
+| `/reset-password` | Set a new password via reset token |
+| `/profile` | View and edit name, phone, avatar (authenticated) |
+| `/addresses` | Address book — add, edit, delete, set default (authenticated) |
+| `/wishlist` | Saved outfits — move to cart or remove (authenticated) |
 | `/admin` | CMS — full CRUD for celebrities, outfits, and manufacturers |
 
 ---
@@ -59,14 +70,17 @@ Base URL: `http://localhost:4000`
 
 | Domain | Base path | Auth |
 |---|---|---|
-| Authentication | `/api/auth/*` | varies |
+| Authentication | `/api/auth/*` | varies (register/login public; me/logout JWT) |
+| Profile | `/api/profile` | JWT |
 | Celebrities | `/api/celebrities` | public (read), ADMIN (write) |
 | Outfits | `/api/outfits` | public (read), ADMIN (write) |
 | Manufacturers | `/api/manufacturers` | public (read), ADMIN (write) |
 | Cart | `/api/cart` | JWT |
 | Addresses | `/api/addresses` | JWT |
+| Wishlist | `/api/wishlist` | JWT |
 | Orders | `/api/orders` | JWT |
 | Checkout | `/api/checkout` | JWT |
+| Payments | `/api/payments` | JWT (webhook: signature-verified) |
 | Returns | `/api/returns` | JWT |
 | Inventory | `/api/inventory` | ADMIN |
 | Storefronts | `/api/storefronts` | public (read) |
@@ -138,7 +152,7 @@ See [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md) for the full architecture d
 - bcryptjs password hashing (cost 12)
 - 8-role RBAC system with `authenticate` + `authorize` middleware
 - Helmet security headers (CSP, HSTS, nosniff)
-- Rate limiting: global 300/15min, auth 20/15min, adaptive throttling
+- Rate limiting: global 300/15min, auth 20/15min, checkout/payment 30/15min
 - OWASP Top 10 audited via `SecurityAuditService`
 - AR: all camera processing local-only (Web Workers), no data transmitted
 
@@ -211,7 +225,7 @@ npm run test:release   # 82  assertions — release audit, checklist, launch ver
 | Route files | 25 |
 | Database models | 88 |
 | API endpoints | 120+ |
-| Frontend pages | 14 |
+| Frontend pages | 21 |
 | Docker services | 7 |
 | Test assertions | 550+ |
 | Lines of code | ~25,000 |

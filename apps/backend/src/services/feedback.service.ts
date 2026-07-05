@@ -21,7 +21,9 @@ const NEG_SIGNAL_TTL   = 7 * 24 * 60 * 60 * 1_000; // 7 days — user-level nega
 // ── Cache key helpers ─────────────────────────────────────────────────────────
 
 function dedupKey(userId: string | undefined, sessionId: string | undefined, productId: string, feedbackType: string): string {
-  return `feedback:dedup:${userId ?? sessionId ?? "anon"}:${productId}:${feedbackType}`;
+  const principal = userId ?? sessionId;
+  if (!principal) return ""; // truly anonymous (no session) — skip dedup, avoid key collision
+  return `feedback:dedup:${principal}:${productId}:${feedbackType}`;
 }
 
 export function negSignalKey(userId: string): string {
@@ -54,10 +56,12 @@ export async function recordFeedback(payload: FeedbackPayload): Promise<Feedback
   // Dedup check for idempotent negative events
   if (["DISMISS", "HIDE", "SKIP"].includes(payload.feedbackType)) {
     const key = dedupKey(payload.userId, payload.sessionId, payload.productId, payload.feedbackType);
-    if (cacheService.has(key)) {
-      return { id: "dedup", isDuplicate: true };
+    if (key) {
+      if (cacheService.has(key)) {
+        return { id: "dedup", isDuplicate: true };
+      }
+      cacheService.set(key, true, DEDUP_TTL_MS);
     }
-    cacheService.set(key, true, DEDUP_TTL_MS);
   }
 
   const record = await prisma.recommendationFeedback.create({

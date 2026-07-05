@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { getCelebrity, getOutfits, getManufacturers } from "@/lib/api";
 import Link from "next/link";
+import { FallbackImage } from "./fallback-image";
 
 type CelebrityDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -40,7 +41,6 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
             src={celebrity.bannerImage}
             alt={celebrity.name}
             className="h-full w-full object-cover opacity-60"
-            onError={() => {}}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
@@ -86,13 +86,10 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
                           {/* Primary image */}
                           {outfit.imageUrl && (
                             <div className="mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-primary relative">
-                              <img
+                              <FallbackImage
                                 src={outfit.imageUrl}
                                 alt={`${outfit.characterName || outfit.category} from ${outfit.movieName}`}
                                 className="h-full w-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                }}
                               />
                               {/* Film badge */}
                               <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
@@ -158,13 +155,10 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
                         <div className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                           {outfit.imageUrl && (
                             <div className="mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-primary relative">
-                              <img
+                              <FallbackImage
                                 src={outfit.imageUrl}
                                 alt={`${outfit.category} - ${outfit.occasion}`}
                                 className="h-full w-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                }}
                               />
                               <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
                                 <span className="text-white text-xs">✨ {outfit.occasion}</span>

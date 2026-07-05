@@ -208,7 +208,7 @@ export function OutfitsTab({ outfits, setOutfits, celebrities, manufacturers }: 
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Price (₹)</label>
-                  <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="e.g. 24999" className={cls} />
+                  <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="e.g. 24999" required min="1" className={cls} />
                 </div>
               </div>
 

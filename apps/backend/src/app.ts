@@ -27,6 +27,8 @@ import { mlRouter } from "./routes/ml.js";
 import { opsRouter } from "./routes/ops.js";
 import { securityRouter } from "./routes/security.js";
 import { releaseRouter } from "./routes/release.js";
+import { profileRouter } from "./routes/profile.js";
+import { wishlistRouter } from "./routes/wishlist.js";
 import { correlationIdMiddleware } from "./lib/correlation.js";
 import { logger } from "./lib/logger.js";
 import {
@@ -34,6 +36,7 @@ import {
   corsOriginValidator,
   globalRateLimit,
   authRateLimit,
+  checkoutRateLimit,
   compressionMiddleware,
   TRUST_PROXY,
 } from "./middleware/security.js";
@@ -83,10 +86,12 @@ export function createApp() {
   app.use("/api/manufacturers", manufacturersRouter);
   app.use("/api/orders", ordersRouter);
   app.use("/api/storefronts", storefrontsRouter);
+  app.use("/api/profile", profileRouter);
+  app.use("/api/wishlist", wishlistRouter);
   app.use("/api/cart", cartRouter);
   app.use("/api/addresses", addressesRouter);
-  app.use("/api/checkout", checkoutRouter);
-  app.use("/api/payments", paymentsRouter);
+  app.use("/api/checkout", checkoutRateLimit, checkoutRouter);
+  app.use("/api/payments", checkoutRateLimit, paymentsRouter);
   app.use("/api/warehouses", warehousesRouter);
   app.use("/api/inventory", inventoryRouter);
   app.use("/api/fulfillment", fulfillmentRouter);

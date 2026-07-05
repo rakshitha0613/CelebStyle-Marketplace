@@ -84,7 +84,8 @@ export function CelebritiesTab({ celebrities, setCelebrities }: Props) {
       setCelebrities(celebrities.filter((c) => c.id !== id));
       setDeleteConfirm(null);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to delete");
+      const msg = err instanceof Error ? err.message : "Failed to delete";
+      setError(msg.includes("403") ? "Deleting celebrities requires SUPER_ADMIN role." : msg);
     } finally {
       setLoading(false);
     }

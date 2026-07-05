@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 import { prisma } from "../lib/prisma.js";
 import { hashPassword, verifyPassword } from "./password.service.js";
 import { signAccessToken, generateRefreshToken, hashRefreshToken } from "./token.service.js";
@@ -9,6 +9,15 @@ import {
   AuthUnauthorizedError,
 } from "./auth.errors.js";
 import type { UserRole } from "./auth.types.js";
+
+// ─── Token hashing ────────────────────────────────────────────────────────────
+// Raw tokens (32 random bytes) are sent to the user via email/SMS — never stored.
+// The SHA-256 digest is stored in the DB and used for lookup.
+// A database breach cannot produce usable tokens; only the recipient can act on one.
+
+function hashToken(raw: string): string {
+  return createHash("sha256").update(raw).digest("hex");
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -77,6 +86,8 @@ function validateRegisterInput(body: unknown): {
   if (!password) throw new AuthValidationError("password is required");
   if (password.length < 8)
     throw new AuthValidationError("password must be at least 8 characters");
+  if (password.length > 128)
+    throw new AuthValidationError("password must be 128 characters or fewer");
 
   let phone: string | undefined;
   if (raw.phone !== undefined && raw.phone !== null && raw.phone !== "") {
@@ -131,7 +142,7 @@ export async function register(rawBody: unknown): Promise<RegisterResult> {
       phone: phone ?? null,
       role: "CUSTOMER",
       emailVerifications: {
-        create: { token: verificationToken, expiresAt },
+        create: { token: hashToken(verificationToken), expiresAt },
       },
     },
     select: {
@@ -344,7 +355,7 @@ export async function verifyEmail(rawBody: unknown): Promise<VerifyEmailResult> 
   const { token } = validateVerifyEmailInput(rawBody);
 
   const ev = await prisma.emailVerification.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
     select: { id: true, userId: true, expiresAt: true, usedAt: true, revokedAt: true },
   });
 
@@ -423,7 +434,7 @@ export async function resendVerification(rawBody: unknown): Promise<{ message: s
       data: { revokedAt: new Date() },
     }),
     prisma.emailVerification.create({
-      data: { userId: user.id, token: newToken, expiresAt },
+      data: { userId: user.id, token: hashToken(newToken), expiresAt },
     }),
   ]);
 
@@ -477,7 +488,7 @@ export async function forgotPassword(rawBody: unknown): Promise<{ message: strin
       data: { revokedAt: new Date() },
     }),
     prisma.passwordReset.create({
-      data: { userId: user.id, token: newToken, expiresAt },
+      data: { userId: user.id, token: hashToken(newToken), expiresAt },
     }),
   ]);
 
@@ -510,9 +521,11 @@ export async function resetPassword(rawBody: unknown): Promise<{ message: string
   if (!password) throw new AuthValidationError("password is required");
   if (password.length < 8)
     throw new AuthValidationError("password must be at least 8 characters");
+  if (password.length > 128)
+    throw new AuthValidationError("password must be 128 characters or fewer");
 
   const pr = await prisma.passwordReset.findUnique({
-    where: { token },
+    where: { token: hashToken(token) },
     select: { id: true, userId: true, expiresAt: true, usedAt: true, revokedAt: true },
   });
 

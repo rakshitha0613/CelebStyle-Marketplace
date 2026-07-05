@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CartBadge } from "@/components/cart-badge";
+import { NavAuth } from "@/components/nav-auth";
 
 export function Navbar() {
   return (
@@ -13,8 +14,7 @@ export function Navbar() {
           <Link href="/search">Search</Link>
           <Link href="/storefronts">Storefronts</Link>
           <Link href="/cart">Cart</Link>
-          <Link href="/orders">Orders</Link>
-          <Link href="/admin">Admin CMS</Link>
+          <NavAuth />
         </nav>
         <div className="flex items-center gap-3">
           <CartBadge />

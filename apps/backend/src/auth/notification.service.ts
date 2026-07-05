@@ -27,12 +27,12 @@ class DevelopmentNotificationProvider implements NotificationProvider {
     const baseUrl = process.env.APP_BASE_URL ?? "http://localhost:3000";
 
     if (payload.type === "EMAIL_VERIFICATION") {
-      const link = `${baseUrl}/auth/verify-email?token=${payload.token}`;
+      const link = `${baseUrl}/verify-email?token=${payload.token}`;
       console.log(
         `\n[DEV NOTIFICATION] Email verification for ${payload.to}\n  Link: ${link}\n`
       );
     } else if (payload.type === "PASSWORD_RESET") {
-      const link = `${baseUrl}/auth/reset-password?token=${payload.token}`;
+      const link = `${baseUrl}/reset-password?token=${payload.token}`;
       console.log(
         `\n[DEV NOTIFICATION] Password reset for ${payload.to}\n  Link: ${link}\n`
       );

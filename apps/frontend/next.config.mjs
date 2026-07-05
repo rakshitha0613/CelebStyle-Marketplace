@@ -13,6 +13,11 @@ const nextConfig = {
     // Allow WASM imports (required by @mediapipe/tasks-vision)
     config.resolve.fallback = { ...config.resolve.fallback, fs: false, path: false };
     config.module.rules.push({ test: /\.wasm$/, type: "asset/resource" });
+    // TypeScript ESM files use .js extensions in imports; remap to .ts/.tsx for webpack
+    config.resolve.extensionAlias = {
+      ".js": [".ts", ".tsx", ".js"],
+      ".jsx": [".tsx", ".jsx"],
+    };
     return config;
   },
 };

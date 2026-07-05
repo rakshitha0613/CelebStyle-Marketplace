@@ -75,6 +75,16 @@ export const apiRateLimit = rateLimit({
   message: { error: "API rate limit exceeded." },
 });
 
+// Tighter limit for checkout and payment routes (prevents order flooding and brute-forcing)
+export const checkoutRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      process.env.NODE_ENV === "production" ? 30 : 500,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { error: "Too many checkout attempts, please try again later." },
+  keyGenerator: (req: Request): string => req.ip ?? "unknown",
+});
+
 // ── Compression ────────────────────────────────────────────────────────────────
 
 export const compressionMiddleware: RequestHandler = compression({

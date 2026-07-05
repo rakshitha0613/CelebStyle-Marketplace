@@ -5,7 +5,7 @@
  */
 
 import { Router, type Request, type Response } from "express";
-import { requireAuth, optionalAuth } from "../auth/auth.middleware.js";
+import { requireAuth, optionalAuth, authorize } from "../auth/auth.middleware.js";
 import {
   recordFeedback,
   recordImpression,
@@ -69,6 +69,11 @@ feedbackRouter.post(
       return;
     }
 
+    if (body.position != null && (typeof body.position !== "number" || body.position < 0)) {
+      res.status(400).json({ error: "position must be a non-negative number" });
+      return;
+    }
+
     const result = await recordFeedback({
       userId,
       sessionId:    body.sessionId,
@@ -107,6 +112,11 @@ feedbackRouter.post(
       return;
     }
 
+    if (body.position != null && (typeof body.position !== "number" || body.position < 0)) {
+      res.status(400).json({ error: "position must be a non-negative number" });
+      return;
+    }
+
     const impressionId = await recordImpression({
       userId,
       sessionId:    body.sessionId,
@@ -130,6 +140,11 @@ feedbackRouter.patch(
     const id          = req.params["id"] as string;
     const { dwellTimeMs } = req.body as { dwellTimeMs?: number };
 
+    if (dwellTimeMs != null && (typeof dwellTimeMs !== "number" || dwellTimeMs < 0)) {
+      res.status(400).json({ error: "dwellTimeMs must be a non-negative number" });
+      return;
+    }
+
     const updated = await markImpressionClicked(
       id,
       typeof dwellTimeMs === "number" ? dwellTimeMs : undefined,
@@ -148,11 +163,11 @@ feedbackRouter.patch(
 
 export const analyticsRouter = Router();
 
-// GET /api/analytics/recommendations — full analytics dashboard
+// GET /api/analytics/recommendations — full analytics dashboard (ADMIN/SUPER_ADMIN only)
 
 analyticsRouter.get(
   "/recommendations",
-  requireAuth,
+  requireAuth, authorize("ADMIN", "SUPER_ADMIN"),
   async (req: Request, res: Response): Promise<void> => {
     const since = req.query["since"]
       ? new Date(req.query["since"] as string)
@@ -169,22 +184,22 @@ analyticsRouter.get(
   }
 );
 
-// GET /api/analytics/experiments — compare all experiments
+// GET /api/analytics/experiments — compare all experiments (ADMIN/SUPER_ADMIN only)
 
 analyticsRouter.get(
   "/experiments",
-  requireAuth,
+  requireAuth, authorize("ADMIN", "SUPER_ADMIN"),
   async (_req: Request, res: Response): Promise<void> => {
     const comparisons = await getExperimentComparisons();
     res.json({ data: { experiments: comparisons } });
   }
 );
 
-// GET /api/analytics/experiments/:id — compare one experiment by variant
+// GET /api/analytics/experiments/:id — compare one experiment by variant (ADMIN/SUPER_ADMIN only)
 
 analyticsRouter.get(
   "/experiments/:id",
-  requireAuth,
+  requireAuth, authorize("ADMIN", "SUPER_ADMIN"),
   async (req: Request, res: Response): Promise<void> => {
     const id         = req.params["id"] as string;
     const comparison = await getExperimentComparison(id);
@@ -202,11 +217,11 @@ analyticsRouter.get(
 
 export const experimentsRouter = Router();
 
-// GET /api/experiments — list all registered experiments
+// GET /api/experiments — list all registered experiments (authenticated users only)
 
 experimentsRouter.get(
   "/",
-  optionalAuth,
+  requireAuth,
   async (_req: Request, res: Response): Promise<void> => {
     res.json({ data: { experiments: getExperiments() } });
   }
