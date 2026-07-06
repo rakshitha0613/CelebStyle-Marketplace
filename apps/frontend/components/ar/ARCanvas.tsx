@@ -21,9 +21,13 @@ interface Props {
   lighting?: LightingPreset;
   environment?: EnvironmentPreset;
   className?: string;
+  /** Which camera to use — 'user' (selfie) or 'environment' (rear). Default 'user'. */
+  facingMode?: 'user' | 'environment';
+  /** Mirror the video horizontally — useful when facingMode is 'user'. Default false. */
+  mirrorMode?: boolean;
 }
 
-export function ARCanvas({ config, onMetrics, onMask, onVideoReady, sceneChildren, lighting, environment, className }: Props) {
+export function ARCanvas({ config, onMetrics, onMask, onVideoReady, sceneChildren, lighting, environment, className, facingMode = 'user', mirrorMode = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pipelineRef = useRef<RenderPipeline | null>(null);
@@ -59,7 +63,7 @@ export function ARCanvas({ config, onMetrics, onMask, onVideoReady, sceneChildre
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: buildVideoConstraints('user', 1280, 720),
+          video: buildVideoConstraints(facingMode, 1280, 720),
         });
         if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
         streamRef.current = stream;
@@ -143,10 +147,11 @@ export function ARCanvas({ config, onMetrics, onMask, onVideoReady, sceneChildre
         className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
       />
 
-      {/* 2D compositing canvas */}
+      {/* 2D compositing canvas — mirrored when using selfie camera */}
       <canvas
         ref={canvasRef}
         className="w-full h-full object-cover"
+        style={mirrorMode ? { transform: 'scaleX(-1)' } : undefined}
         aria-label="Camera preview with AR segmentation"
       />
 

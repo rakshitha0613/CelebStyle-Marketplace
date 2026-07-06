@@ -142,3 +142,132 @@ export const GARMENT_SCALE_MULTIPLIERS: Record<string, number> = {
   JACKET:  1.25,
   HOODIE:  1.20,
 };
+
+// ── Phase 3: enhanced fitting ─────────────────────────────────────────────────
+
+export interface BodyOrientation {
+  /** Shoulder line tilt (radians, positive = right shoulder lower) */
+  shoulderRotation: number;
+  /** Left-right lean of torso (same as shoulderRotation, semantic alias) */
+  torsoTilt: number;
+  /** Forward lean estimate from shoulder z-depth asymmetry (radians) */
+  forwardLean: number;
+  /** Hip line angle (radians) */
+  hipRotation: number;
+  /**
+   * Perspective correction factor (0.9–1.1).
+   * Slightly reduces garment scale when the subject is off-centre laterally,
+   * approximating camera foreshortening.
+   */
+  perspectiveFactor: number;
+}
+
+export interface EnhancedGarmentAlignment extends GarmentAlignment {
+  /** Perspective-adjusted scale factor applied on top of shoulder-width scale */
+  perspectiveScale: number;
+  /** Vertical nudge (px) from hip tracking, pulling bottom of garment toward hips */
+  hipVerticalOffset: number;
+  /** Estimated waist anchor (canvas px) for belt/bottom alignment */
+  waistCenter: { x: number; y: number };
+  /** Body orientation snapshot at time of alignment */
+  orientation: BodyOrientation;
+}
+
+/**
+ * Estimate body orientation from raw landmarks and canvas dimensions.
+ * Pure math — no browser APIs.
+ */
+export function computeBodyOrientation(
+  landmarks: PoseLandmark[],
+  canvasWidth: number,
+  canvasHeight: number,
+): BodyOrientation {
+  const ls = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
+  const rs = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
+  const lh = landmarks[POSE_LANDMARKS.LEFT_HIP];
+  const rh = landmarks[POSE_LANDMARKS.RIGHT_HIP];
+
+  const lsX = ls ? ls.x * canvasWidth  : canvasWidth  * 0.35;
+  const lsY = ls ? ls.y * canvasHeight : canvasHeight * 0.35;
+  const rsX = rs ? rs.x * canvasWidth  : canvasWidth  * 0.65;
+  const rsY = rs ? rs.y * canvasHeight : canvasHeight * 0.35;
+
+  const hasShoulders = !!(ls && rs && ls.visibility > 0.4 && rs.visibility > 0.4);
+  const hasHips      = !!(lh && rh && lh.visibility > 0.3 && rh.visibility > 0.3);
+
+  const shoulderRotation = hasShoulders
+    ? Math.atan2(rsY - lsY, rsX - lsX)
+    : 0;
+
+  const forwardLean = hasShoulders
+    ? Math.atan2((rs!.z - ls!.z), Math.abs(rsX - lsX) / canvasWidth + 1e-6)
+    : 0;
+
+  const hipRotation = hasHips
+    ? Math.atan2(
+        (rh!.y - lh!.y) * canvasHeight,
+        (rh!.x - lh!.x) * canvasWidth,
+      )
+    : shoulderRotation;
+
+  // Lateral position correction: subject at edge of frame → slight scale reduction
+  const midX = (lsX + rsX) / (2 * canvasWidth); // 0–1
+  const offCentre = Math.abs(midX - 0.5) * 2;   // 0–1
+  const perspectiveFactor = 1 - offCentre * 0.04; // ±4 % max correction
+
+  return {
+    shoulderRotation,
+    torsoTilt:         shoulderRotation,
+    forwardLean,
+    hipRotation,
+    perspectiveFactor: Math.max(0.9, Math.min(1.1, perspectiveFactor)),
+  };
+}
+
+/**
+ * Drop-in replacement for computeGarmentAlignment with depth correction,
+ * perspective foreshortening, and hip-tracking vertical offset.
+ *
+ * Returns an EnhancedGarmentAlignment (superset of GarmentAlignment).
+ */
+export function computeEnhancedGarmentAlignment(
+  measurements:  BodyMeasurements,
+  garment:       GarmentAsset,
+  landmarks:     PoseLandmark[],
+  canvasWidth:   number,
+  canvasHeight:  number,
+  opacity:       number,
+  mirrored:      boolean,
+  visibilityThreshold = 0.5,
+): EnhancedGarmentAlignment {
+  const orientation   = computeBodyOrientation(landmarks, canvasWidth, canvasHeight);
+  const targetWidth   = measurements.shoulderWidth * garment.scaleMultiplier * orientation.perspectiveFactor;
+  const targetHeight  = targetWidth * (garment.naturalHeight / garment.naturalWidth);
+
+  // Waist: halfway between chest centre and hip centre
+  const waistCenter = {
+    x: (measurements.chestCenter.x + measurements.hipCenter.x) * 0.5,
+    y: (measurements.chestCenter.y + measurements.hipCenter.y) * 0.5,
+  };
+
+  // Hip vertical offset: subtle pull-down when hips are tracked and garment is long
+  const idealBottom  = measurements.chestCenter.y + targetHeight * 0.85;
+  const hipVerticalOffset = measurements.hipCenter.y > 0
+    ? Math.max(0, measurements.hipCenter.y - idealBottom) * 0.15
+    : 0;
+
+  return {
+    x:               measurements.chestCenter.x,
+    y:               measurements.chestCenter.y + hipVerticalOffset,
+    width:           targetWidth,
+    height:          targetHeight,
+    rotation:        measurements.shoulderAngle,
+    opacity:         Math.max(0, Math.min(1, opacity)),
+    visible:         measurements.minVisibility >= visibilityThreshold,
+    mirrored,
+    perspectiveScale: orientation.perspectiveFactor,
+    hipVerticalOffset,
+    waistCenter,
+    orientation,
+  };
+}

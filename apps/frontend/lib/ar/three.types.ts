@@ -115,6 +115,51 @@ export const DEFAULT_SCENE_CONFIG: Scene3DConfig = {
   reducedMotion: false,
 };
 
+// ── Phase 5: enhanced lighting ────────────────────────────────────────────────
+
+export interface FillLightConfig {
+  position:  [number, number, number];
+  intensity: number;
+  color:     string;
+}
+
+export interface CameraExposureConfig {
+  /** Tone-mapping exposure multiplier (0.5 – 2.0). Default 1.0 */
+  exposure:   number;
+  /** Contrast multiplier applied to garment materials (0.8 – 1.4). Default 1.0 */
+  contrast:   number;
+  /** Additive brightness offset (−0.2 – +0.2). Default 0.0 */
+  brightness: number;
+}
+
+export interface EnhancedLightingPresetConfig extends LightingPresetConfig {
+  fillLight: FillLightConfig;
+  exposure:  CameraExposureConfig;
+}
+
+export const ENHANCED_LIGHTING_PRESETS: Record<LightingPreset, EnhancedLightingPresetConfig> = {
+  soft: {
+    ambientIntensity: 0.8, directionalIntensity: 0.5, directionalPosition: [5, 10, 5],
+    fillLight: { position: [-3, 5, 3],  intensity: 0.30, color: '#ffffff' },
+    exposure:  { exposure: 1.00, contrast: 1.00, brightness:  0.00 },
+  },
+  dramatic: {
+    ambientIntensity: 0.3, directionalIntensity: 1.5, directionalPosition: [2, 8, 2],
+    fillLight: { position: [-4, 2, 4],  intensity: 0.20, color: '#c0d4ff' },
+    exposure:  { exposure: 1.10, contrast: 1.20, brightness: -0.05 },
+  },
+  neutral: {
+    ambientIntensity: 0.6, directionalIntensity: 0.8, directionalPosition: [5, 10, 5],
+    fillLight: { position: [-3, 6, 3],  intensity: 0.35, color: '#fff4e0' },
+    exposure:  { exposure: 1.00, contrast: 1.00, brightness:  0.00 },
+  },
+  natural: {
+    ambientIntensity: 0.9, directionalIntensity: 0.6, directionalPosition: [-5, 10, 3],
+    fillLight: { position: [ 4, 4, 4],  intensity: 0.25, color: '#ffe8d0' },
+    exposure:  { exposure: 0.95, contrast: 0.95, brightness:  0.05 },
+  },
+};
+
 // ── Physics worker message contracts ──────────────────────────────────────────
 
 export type PhysicsWorkerInboundMessage =

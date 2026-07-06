@@ -95,6 +95,14 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
   const [composerCollapsed, setComposerCollapsed] = useState(false);
   const [wishlistCollapsed, setWishlistCollapsed] = useState(true);
 
+  // ── Phase 6: UX enhancements ───────────────────────────────────────────────
+  const [countdown, setCountdown]       = useState<number | null>(null);
+  const [mirrorMode, setMirrorMode]     = useState(false);
+  const [facingMode, setFacingMode]     = useState<'user' | 'environment'>('user');
+  const [cameraKey, setCameraKey]       = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
   // ── Service singletons ─────────────────────────────────────────────────────
   const bodyMeasSvc = useRef(new BodyMeasurementService());
   const sizeRecSvc  = useRef(new SizeRecommendationService());
@@ -264,6 +272,77 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
 
   const is3D = sceneConfig.renderMode === '3D';
 
+  // ── Phase 6: screenshot ────────────────────────────────────────────────────
+  const handleScreenshot = useCallback(() => {
+    if (!viewportRef.current) return;
+    const canvases = viewportRef.current.querySelectorAll('canvas');
+    if (canvases.length === 0) return;
+
+    const first = canvases[0] as HTMLCanvasElement;
+    const comp  = document.createElement('canvas');
+    comp.width  = first.width  || 1280;
+    comp.height = first.height || 720;
+    const ctx   = comp.getContext('2d');
+    if (!ctx) return;
+
+    canvases.forEach((c) => {
+      try { ctx.drawImage(c as HTMLCanvasElement, 0, 0, comp.width, comp.height); } catch { /* tainted canvas */ }
+    });
+
+    const a  = document.createElement('a');
+    a.href   = comp.toDataURL('image/png');
+    a.download = `celebstyle-tryon-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }, []);
+
+  // ── Phase 6: countdown capture ─────────────────────────────────────────────
+  const startCountdown = useCallback(() => {
+    if (countdown !== null) return; // already running
+    setCountdown(3);
+    let remaining = 3;
+    const interval = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setCountdown(null);
+        handleScreenshot();
+      } else {
+        setCountdown(remaining);
+      }
+    }, 1000);
+  }, [countdown, handleScreenshot]);
+
+  // ── Phase 6: camera switch ─────────────────────────────────────────────────
+  const switchCamera = useCallback(() => {
+    setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
+    setCameraKey((k) => k + 1); // remount ARCanvas with new facing mode
+  }, []);
+
+  // ── Phase 6: fullscreen ────────────────────────────────────────────────────
+  const toggleFullscreen = useCallback(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }, []);
+
+  // Sync fullscreen state with browser API (handles Esc key exit)
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  // Mirror mode → keep overlayConfig.mirrored in sync
+  useEffect(() => {
+    updateOverlay({ mirrored: mirrorMode });
+  }, [mirrorMode, updateOverlay]);
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -277,13 +356,16 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* AR viewport + garment overlay */}
           <div className="lg:col-span-2">
-            <div className="relative">
+            <div ref={viewportRef} className="relative">
               <ARCanvas
+                key={cameraKey}
                 config={arConfig}
                 onMetrics={setMetrics}
                 onVideoReady={setVideo}
                 lighting={sceneConfig.lighting}
                 environment={sceneConfig.environment}
+                facingMode={facingMode}
+                mirrorMode={mirrorMode}
                 sceneChildren={
                   is3D ? (
                     <ThreeGarmentOverlay
@@ -320,6 +402,69 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
                   />
                 </div>
               )}
+
+              {/* Countdown overlay */}
+              {countdown !== null && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-live="assertive">
+                  <span className="text-9xl font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)] select-none">
+                    {countdown}
+                  </span>
+                </div>
+              )}
+
+              {/* Camera control bar */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1.5">
+                {/* Mirror toggle */}
+                <button
+                  onClick={() => setMirrorMode((v) => !v)}
+                  title="Mirror"
+                  aria-label={mirrorMode ? 'Disable mirror' : 'Enable mirror'}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${mirrorMode ? 'bg-white text-black' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                >
+                  ⇆
+                </button>
+
+                {/* Countdown capture */}
+                <button
+                  onClick={startCountdown}
+                  disabled={countdown !== null}
+                  title="Capture with countdown"
+                  aria-label="Take photo with 3-second countdown"
+                  className="w-12 h-12 rounded-full bg-white/90 hover:bg-white text-black flex items-center justify-center font-bold text-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                >
+                  {countdown !== null ? countdown : '◎'}
+                </button>
+
+                {/* Quick screenshot */}
+                <button
+                  onClick={handleScreenshot}
+                  title="Screenshot"
+                  aria-label="Download screenshot"
+                  className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                >
+                  ↓
+                </button>
+
+                {/* Camera switch */}
+                <button
+                  onClick={switchCamera}
+                  title="Switch camera"
+                  aria-label="Switch between front and rear camera"
+                  className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                >
+                  ⟳
+                </button>
+
+                {/* Fullscreen */}
+                <button
+                  onClick={toggleFullscreen}
+                  title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                >
+                  {isFullscreen ? '⊡' : '⊞'}
+                </button>
+              </div>
             </div>
           </div>
 
