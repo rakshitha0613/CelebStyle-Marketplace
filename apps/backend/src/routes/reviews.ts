@@ -1,51 +1,70 @@
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
-import { randomUUID } from "crypto";
+import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
+import { prisma } from "../lib/prisma.js";
 
 export const reviewsRouter = Router();
 
-// ── In-memory store ──────────────────────────────────────────────────────────
+const REVIEW_INCLUDE = {
+  user: { select: { name: true as const, profile: { select: { avatarUrl: true as const } } } },
+  images: { orderBy: { sortOrder: "asc" as const } },
+};
 
-interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  outfitId: string;
-  orderId: string | null;
-  rating: number;
-  title: string;
-  body: string;
-  verified: boolean;
-  images: string[];
-  helpfulVotes: string[];
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  createdAt: string;
-  updatedAt: string;
-}
+type ReviewWithRelations = Prisma.ReviewGetPayload<{
+  include: {
+    user: { select: { name: true; profile: { select: { avatarUrl: true } } } };
+    images: { orderBy: { sortOrder: "asc" } };
+  };
+}>;
 
-const reviews: Review[] = [];
-
-function toPublic(r: Review, requestingUserId?: string) {
+function toPublic(r: ReviewWithRelations, helpful = false) {
   return {
     id: r.id,
     userId: r.userId,
-    userName: r.userName,
-    outfitId: r.outfitId,
+    userName: r.user.name,
+    userAvatar: r.user.profile?.avatarUrl ?? null,
+    productId: r.productId,
     orderId: r.orderId,
     rating: r.rating,
     title: r.title,
     body: r.body,
-    verified: r.verified,
+    verified: r.isVerifiedPurchase,
     images: r.images,
-    helpfulCount: r.helpfulVotes.length,
-    helpful: requestingUserId ? r.helpfulVotes.includes(requestingUserId) : false,
-    status: r.status,
+    helpfulCount: r.helpfulCount,
+    helpful,
+    status: r.isApproved ? "APPROVED" : "PENDING",
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
   };
 }
+
+async function optionalUserId(req: Request): Promise<string | undefined> {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return undefined;
+  try {
+    const { verifyAccessToken } = await import("../auth/token.service.js");
+    const p = verifyAccessToken(auth.slice(7));
+    return (p as { sub?: string }).sub;
+  } catch {
+    return undefined;
+  }
+}
+
+// GET /api/reviews/pending — must come before /:id
+reviewsRouter.get("/pending", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const reviews = await prisma.review.findMany({
+        where: { isApproved: false, deletedAt: null },
+        include: REVIEW_INCLUDE,
+        orderBy: { createdAt: "desc" },
+      });
+      return res.status(200).json({ data: reviews.map((r) => toPublic(r as ReviewWithRelations)) });
+    } catch (err) { next(err); }
+  }
+);
 
 // GET /api/reviews/outfit/:outfitId
 reviewsRouter.get("/outfit/:outfitId",
@@ -53,28 +72,47 @@ reviewsRouter.get("/outfit/:outfitId",
     try {
       const limit  = Math.min(Number(req.query.limit) || 20, 100);
       const offset = Number(req.query.offset) || 0;
+      const requestingUserId = await optionalUserId(req);
+      const productId = req.params.outfitId as string;
 
-      let requestingUserId: string | undefined;
-      const auth = req.headers.authorization;
-      if (auth?.startsWith("Bearer ")) {
-        try {
-          const { verifyAccessToken } = await import("../auth/token.service.js");
-          const p = verifyAccessToken(auth.slice(7));
-          requestingUserId = (p as { sub?: string }).sub;
-        } catch { /* ok */ }
+      const where: Prisma.ReviewWhereInput = { productId, isApproved: true, deletedAt: null };
+
+      const [reviews, total, aggregate] = await Promise.all([
+        prisma.review.findMany({
+          where,
+          include: REVIEW_INCLUDE,
+          orderBy: { createdAt: "desc" },
+          skip: offset,
+          take: limit,
+        }),
+        prisma.review.count({ where }),
+        prisma.review.aggregate({ where, _avg: { rating: true } }),
+      ]);
+
+      let helpfulSet = new Set<string>();
+      if (requestingUserId && reviews.length > 0) {
+        const ids = reviews.map((r) => r.id);
+        const votes = await prisma.reviewHelpful.findMany({
+          where: { userId: requestingUserId, reviewId: { in: ids } },
+          select: { reviewId: true },
+        });
+        helpfulSet = new Set(votes.map((v) => v.reviewId));
       }
 
-      const list = reviews
-        .filter((r) => r.outfitId === req.params.outfitId && r.status === "APPROVED");
-      const total  = list.length;
-      const avg    = total ? list.reduce((s, r) => s + r.rating, 0) / total : null;
-      const page   = list.slice(offset, offset + limit).map((r) => toPublic(r, requestingUserId));
-      return res.status(200).json({ data: { reviews: page, total, average: avg, offset, limit } });
+      return res.status(200).json({
+        data: {
+          reviews: reviews.map((r) => toPublic(r as ReviewWithRelations, helpfulSet.has(r.id))),
+          total,
+          average: aggregate._avg?.rating ?? null,
+          offset,
+          limit,
+        },
+      });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/reviews — submit review (auth)
+// POST /api/reviews
 reviewsRouter.post("/", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -90,76 +128,73 @@ reviewsRouter.post("/", authenticate,
       if (!rating || rating < 1 || rating > 5) return res.status(400).json({ error: "rating must be 1–5" });
       if (!body?.trim()) return res.status(400).json({ error: "body is required" });
 
-      // One review per user per outfit
-      const existing = reviews.find((r) => r.outfitId === outfitId && r.userId === req.user!.id);
+      const existing = await prisma.review.findUnique({
+        where: { userId_productId: { userId: req.user!.id, productId: outfitId.trim() } },
+      });
       if (existing) return res.status(409).json({ error: "You have already reviewed this product" });
 
-      const now = new Date().toISOString();
-      const review: Review = {
-        id: randomUUID(),
-        userId: req.user!.id,
-        userName: req.user!.email.split("@")[0],
-        outfitId: outfitId.trim(),
-        orderId: orderId ?? null,
-        rating: Math.round(rating),
-        title: title?.trim() ?? "",
-        body: body.trim(),
-        verified: !!orderId,
-        images: Array.isArray(images) ? images.slice(0, 5) : [],
-        helpfulVotes: [],
-        status: "APPROVED",
-        createdAt: now,
-        updatedAt: now,
-      };
-      reviews.push(review);
-      return res.status(201).json({ data: toPublic(review, req.user!.id) });
+      const imageList = Array.isArray(images) ? images.slice(0, 5) : [];
+      const review = await prisma.review.create({
+        data: {
+          userId: req.user!.id,
+          productId: outfitId.trim(),
+          orderId: orderId ?? null,
+          rating: Math.round(rating),
+          title: title?.trim() ?? null,
+          body: body.trim(),
+          isVerifiedPurchase: !!orderId,
+          isApproved: true,
+          images: imageList.length > 0
+            ? { create: imageList.map((url, i) => ({ url, sortOrder: i })) }
+            : undefined,
+        },
+        include: REVIEW_INCLUDE,
+      });
+      return res.status(201).json({ data: toPublic(review as ReviewWithRelations, false) });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/reviews/:id/helpful — toggle helpful vote
+// POST /api/reviews/:id/helpful — toggle
 reviewsRouter.post("/:id/helpful", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const review = reviews.find((r) => r.id === req.params.id);
-      if (!review || review.status !== "APPROVED") {
-        return res.status(404).json({ error: "Review not found" });
+      const review = await prisma.review.findFirst({
+        where: { id: req.params.id as string, isApproved: true, deletedAt: null },
+      });
+      if (!review) return res.status(404).json({ error: "Review not found" });
+
+      const existing = await prisma.reviewHelpful.findUnique({
+        where: { reviewId_userId: { reviewId: review.id, userId: req.user!.id } },
+      });
+      if (existing) {
+        await prisma.$transaction([
+          prisma.reviewHelpful.delete({ where: { reviewId_userId: { reviewId: review.id, userId: req.user!.id } } }),
+          prisma.review.update({ where: { id: review.id }, data: { helpfulCount: { decrement: 1 } } }),
+        ]);
+        return res.status(200).json({ data: { helpful: false, helpfulCount: Math.max(0, review.helpfulCount - 1) } });
       }
-      const uid = req.user!.id;
-      const idx = review.helpfulVotes.indexOf(uid);
-      if (idx >= 0) {
-        review.helpfulVotes.splice(idx, 1);
-        return res.status(200).json({ data: { helpful: false, helpfulCount: review.helpfulVotes.length } });
-      }
-      review.helpfulVotes.push(uid);
-      return res.status(200).json({ data: { helpful: true, helpfulCount: review.helpfulVotes.length } });
+      await prisma.$transaction([
+        prisma.reviewHelpful.create({ data: { reviewId: review.id, userId: req.user!.id } }),
+        prisma.review.update({ where: { id: review.id }, data: { helpfulCount: { increment: 1 } } }),
+      ]);
+      return res.status(200).json({ data: { helpful: true, helpfulCount: review.helpfulCount + 1 } });
     } catch (err) { next(err); }
   }
 );
 
-// DELETE /api/reviews/:id — owner or ADMIN
+// DELETE /api/reviews/:id
 reviewsRouter.delete("/:id", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const idx = reviews.findIndex((r) => r.id === req.params.id);
-      if (idx < 0) return res.status(404).json({ error: "Review not found" });
-      const review = reviews[idx]!;
-      const isAdmin = ["ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"].includes(req.user!.role);
-      if (review.userId !== req.user!.id && !isAdmin) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
-      reviews.splice(idx, 1);
-      return res.status(200).json({ data: { message: "Review deleted" } });
-    } catch (err) { next(err); }
-  }
-);
+      const review = await prisma.review.findFirst({ where: { id: req.params.id as string, deletedAt: null } });
+      if (!review) return res.status(404).json({ error: "Review not found" });
 
-// GET /api/reviews/pending — ADMIN: moderation queue
-reviewsRouter.get("/pending", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const pending = reviews.filter((r) => r.status === "PENDING").map((r) => toPublic(r));
-      return res.status(200).json({ data: pending });
+      const isAdmin = ["ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"].includes(req.user!.role);
+      if (review.userId !== req.user!.id && !isAdmin) return res.status(403).json({ error: "Forbidden" });
+
+      await prisma.review.update({ where: { id: review.id }, data: { deletedAt: new Date() } });
+      return res.status(200).json({ data: { message: "Review deleted" } });
     } catch (err) { next(err); }
   }
 );
@@ -168,15 +203,19 @@ reviewsRouter.get("/pending", authenticate, authorize("ADMIN", "SUPER_ADMIN", "C
 reviewsRouter.patch("/:id/status", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const review = reviews.find((r) => r.id === req.params.id);
-      if (!review) return res.status(404).json({ error: "Review not found" });
       const { status } = req.body as { status?: string };
       if (!["APPROVED", "REJECTED"].includes(status ?? "")) {
         return res.status(400).json({ error: "status must be APPROVED or REJECTED" });
       }
-      review.status = status as "APPROVED" | "REJECTED";
-      review.updatedAt = new Date().toISOString();
-      return res.status(200).json({ data: toPublic(review) });
+      const review = await prisma.review.update({
+        where: { id: req.params.id as string },
+        data: {
+          isApproved: status === "APPROVED",
+          ...(status === "APPROVED" ? { approvedAt: new Date(), approvedById: req.user!.id } : {}),
+        },
+        include: REVIEW_INCLUDE,
+      });
+      return res.status(200).json({ data: toPublic(review as ReviewWithRelations) });
     } catch (err) { next(err); }
   }
 );

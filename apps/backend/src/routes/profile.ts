@@ -1,45 +1,11 @@
 import { Router } from "express";
-import { randomUUID } from "crypto";
+import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { profileService } from "../services/profile.service.js";
 import { CommerceValidationError } from "../lib/commerce.errors.js";
+import { prisma } from "../lib/prisma.js";
 
 export const profileRouter = Router();
-
-// ── In-memory size profiles & saved looks ────────────────────────────────────
-
-interface SizeProfile {
-  id: string;
-  userId: string;
-  height: number | null;
-  weight: number | null;
-  chest: number | null;
-  waist: number | null;
-  hips: number | null;
-  inseam: number | null;
-  shoulder: number | null;
-  topSize: string | null;
-  bottomSize: string | null;
-  dressSize: string | null;
-  shoeSize: string | null;
-  fitPreference: "SLIM" | "REGULAR" | "RELAXED" | null;
-  notes: string | null;
-  updatedAt: string;
-}
-
-interface SavedLook {
-  id: string;
-  userId: string;
-  outfitId: string;
-  outfitName: string;
-  imageUrl: string | null;
-  screenshotUrl: string | null;
-  notes: string | null;
-  savedAt: string;
-}
-
-const sizeProfiles: SizeProfile[] = [];
-const savedLooks: SavedLook[] = [];
 
 profileRouter.use(authenticate);
 
@@ -76,64 +42,78 @@ profileRouter.put("/", async (req, res) => {
 
 // ── Size Profile ──────────────────────────────────────────────────────────────
 
-// GET /api/profile/size
 profileRouter.get("/size", async (req, res) => {
   try {
-    const sp = sizeProfiles.find((p) => p.userId === req.user!.id);
+    const sp = await prisma.sizeProfile.findUnique({ where: { userId: req.user!.id } });
     res.json({ data: sp ?? null });
   } catch (err) {
+    console.error("[Profile] GET /size", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// PUT /api/profile/size — upsert
 profileRouter.put("/size", async (req, res) => {
   try {
-    const body = req.body as Partial<Omit<SizeProfile, "id" | "userId" | "updatedAt">>;
-    const existing = sizeProfiles.find((p) => p.userId === req.user!.id);
-    if (existing) {
-      Object.assign(existing, body, { updatedAt: new Date().toISOString() });
-      return res.json({ data: existing });
-    }
-    const sp: SizeProfile = {
-      id: randomUUID(),
-      userId: req.user!.id,
-      height: body.height ?? null,
-      weight: body.weight ?? null,
-      chest: body.chest ?? null,
-      waist: body.waist ?? null,
-      hips: body.hips ?? null,
-      inseam: body.inseam ?? null,
-      shoulder: body.shoulder ?? null,
-      topSize: body.topSize ?? null,
-      bottomSize: body.bottomSize ?? null,
-      dressSize: body.dressSize ?? null,
-      shoeSize: body.shoeSize ?? null,
-      fitPreference: body.fitPreference ?? null,
-      notes: body.notes ?? null,
-      updatedAt: new Date().toISOString(),
+    const body = req.body as {
+      height?: number | null;
+      weight?: number | null;
+      chest?: number | null;
+      waist?: number | null;
+      hips?: number | null;
+      shoulderWidth?: number | null;
+      inseam?: number | null;
+      bodyType?: string | null;
+      sizeChart?: Prisma.InputJsonValue | null;
+      notes?: string | null;
     };
-    sizeProfiles.push(sp);
+
+    const data = {
+      height:        body.height        ?? null,
+      weight:        body.weight        ?? null,
+      chest:         body.chest         ?? null,
+      waist:         body.waist         ?? null,
+      hips:          body.hips          ?? null,
+      shoulderWidth: body.shoulderWidth ?? null,
+      inseam:        body.inseam        ?? null,
+      bodyType:      body.bodyType      ?? null,
+      sizeChart:     body.sizeChart     ?? undefined,
+      lastMeasuredAt: new Date(),
+    };
+
+    const sp = await prisma.sizeProfile.upsert({
+      where: { userId: req.user!.id },
+      update: data,
+      create: { userId: req.user!.id, ...data },
+    });
     return res.json({ data: sp });
   } catch (err) {
+    console.error("[Profile] PUT /size", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
 // ── Saved Looks ───────────────────────────────────────────────────────────────
 
-// GET /api/profile/saved-looks
 profileRouter.get("/saved-looks", async (req, res) => {
   try {
-    const list = savedLooks.filter((l) => l.userId === req.user!.id);
-    list.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
-    res.json({ data: list });
+    const limit  = Math.min(Number(req.query.limit) || 20, 100);
+    const offset = Number(req.query.offset) || 0;
+    const [list, total] = await Promise.all([
+      prisma.savedLook.findMany({
+        where: { userId: req.user!.id },
+        orderBy: { savedAt: "desc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.savedLook.count({ where: { userId: req.user!.id } }),
+    ]);
+    res.json({ data: { looks: list, total, offset, limit } });
   } catch (err) {
+    console.error("[Profile] GET /saved-looks", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// POST /api/profile/saved-looks
 profileRouter.post("/saved-looks", async (req, res) => {
   try {
     const { outfitId, outfitName, imageUrl, screenshotUrl, notes } = req.body as {
@@ -143,32 +123,32 @@ profileRouter.post("/saved-looks", async (req, res) => {
       screenshotUrl?: string;
       notes?: string;
     };
-    if (!outfitId?.trim()) return res.status(400).json({ error: "outfitId is required" });
-    const look: SavedLook = {
-      id: randomUUID(),
-      userId: req.user!.id,
-      outfitId: outfitId.trim(),
-      outfitName: outfitName ?? outfitId,
-      imageUrl: imageUrl ?? null,
-      screenshotUrl: screenshotUrl ?? null,
-      notes: notes ?? null,
-      savedAt: new Date().toISOString(),
-    };
-    savedLooks.unshift(look);
+    if (!outfitName?.trim()) return res.status(400).json({ error: "outfitName is required" });
+    const look = await prisma.savedLook.create({
+      data: {
+        userId:        req.user!.id,
+        productId:     outfitId?.trim() ?? null,
+        outfitName:    outfitName.trim(),
+        imageUrl:      imageUrl      ?? null,
+        screenshotUrl: screenshotUrl ?? null,
+        notes:         notes         ?? null,
+      },
+    });
     return res.status(201).json({ data: look });
   } catch (err) {
+    console.error("[Profile] POST /saved-looks", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// DELETE /api/profile/saved-looks/:id
 profileRouter.delete("/saved-looks/:id", async (req, res) => {
   try {
-    const idx = savedLooks.findIndex((l) => l.id === req.params.id && l.userId === req.user!.id);
-    if (idx < 0) return res.status(404).json({ error: "Not found" });
-    savedLooks.splice(idx, 1);
+    const look = await prisma.savedLook.findFirst({ where: { id: req.params.id, userId: req.user!.id } });
+    if (!look) return res.status(404).json({ error: "Not found" });
+    await prisma.savedLook.delete({ where: { id: req.params.id } });
     return res.json({ data: { message: "Deleted" } });
   } catch (err) {
+    console.error("[Profile] DELETE /saved-looks/:id", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });

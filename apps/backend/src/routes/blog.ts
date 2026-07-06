@@ -1,78 +1,48 @@
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
-import { randomUUID } from "crypto";
+import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
+import { prisma } from "../lib/prisma.js";
 
 export const blogRouter = Router();
 
-// ── In-memory store ──────────────────────────────────────────────────────────
-
-interface BlogPost {
-  id: string;
-  slug: string;
-  authorId: string;
-  authorName: string;
-  celebrityId: string | null;
-  title: string;
-  summary: string;
-  body: string;
-  coverImage: string | null;
-  tags: string[];
-  outfitIds: string[];
-  published: boolean;
-  views: number;
-  createdAt: string;
-  updatedAt: string;
+function toSlug(title: string, suffix: string): string {
+  return `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${suffix}`;
 }
 
-const blogPosts: BlogPost[] = [];
+const BLOG_INCLUDE = {
+  author: { select: { name: true as const, profile: { select: { avatarUrl: true as const } } } },
+};
 
-function toSlug(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
-
-function toPublic(post: BlogPost) {
-  return {
-    id: post.id,
-    slug: post.slug,
-    authorId: post.authorId,
-    authorName: post.authorName,
-    celebrityId: post.celebrityId,
-    title: post.title,
-    summary: post.summary,
-    body: post.body,
-    coverImage: post.coverImage,
-    tags: post.tags,
-    outfitIds: post.outfitIds,
-    published: post.published,
-    views: post.views,
-    createdAt: post.createdAt,
-    updatedAt: post.updatedAt,
-  };
-}
-
-// GET /api/blog — list published posts
+// GET /api/blog
 blogRouter.get("/",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const limit       = Math.min(Number(req.query.limit) || 10, 50);
       const offset      = Number(req.query.offset) || 0;
-      const tag         = req.query.tag as string | undefined;
-      const celebrityId = req.query.celebrityId as string | undefined;
-      const search      = (req.query.search as string | undefined)?.toLowerCase();
+      const tag         = typeof req.query.tag         === "string" ? req.query.tag         : undefined;
+      const celebrityId = typeof req.query.celebrityId === "string" ? req.query.celebrityId : undefined;
+      const search      = typeof req.query.search      === "string" ? req.query.search      : undefined;
 
-      let list = blogPosts.filter((p) => p.published);
-      if (tag) list = list.filter((p) => p.tags.includes(tag));
-      if (celebrityId) list = list.filter((p) => p.celebrityId === celebrityId);
-      if (search) list = list.filter((p) =>
-        p.title.toLowerCase().includes(search) || p.summary.toLowerCase().includes(search)
-      );
+      const where: Prisma.BlogPostWhereInput = {
+        isPublished: true,
+        ...(tag         ? { tags: { has: tag } }             : {}),
+        ...(celebrityId ? { celebrityId }                    : {}),
+        ...(search      ? {
+          OR: [
+            { title:   { contains: search, mode: "insensitive" } },
+            { summary: { contains: search, mode: "insensitive" } },
+          ],
+        } : {}),
+      };
 
-      list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-      const total = list.length;
-      const page  = list.slice(offset, offset + limit).map(toPublic);
-      return res.status(200).json({ data: { posts: page, total, offset, limit } });
+      const [posts, total] = await Promise.all([
+        prisma.blogPost.findMany({ where, include: BLOG_INCLUDE, orderBy: { publishedAt: "desc" }, skip: offset, take: limit }),
+        prisma.blogPost.count({ where }),
+      ]);
+
+      return res.status(200).json({ data: { posts, total, offset, limit } });
     } catch (err) { next(err); }
   }
 );
@@ -81,102 +51,113 @@ blogRouter.get("/",
 blogRouter.get("/:slug",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = blogPosts.find(
-        (p) => (p.slug === req.params.slug || p.id === req.params.slug) && p.published
-      );
+      const slug = req.params.slug as string;
+      const post = await prisma.blogPost.findFirst({
+        where: { OR: [{ slug }, { id: slug }], isPublished: true },
+        include: BLOG_INCLUDE,
+      });
       if (!post) return res.status(404).json({ error: "Post not found" });
-      post.views++;
-      return res.status(200).json({ data: toPublic(post) });
+
+      await prisma.blogPost.update({ where: { id: post.id }, data: { viewCount: { increment: 1 } } });
+      return res.status(200).json({ data: { ...post, viewCount: post.viewCount + 1 } });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/blog — create (ADMIN or CELEBRITY)
+// POST /api/blog
 blogRouter.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CELEBRITY", "CELEBRITY_MANAGER"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { title, summary, body, coverImage, tags, outfitIds, celebrityId, published } = req.body as {
+      const { title, summary, body, coverImage, tags, productIds, celebrityId, isPublished } = req.body as {
         title?: string;
         summary?: string;
         body?: string;
         coverImage?: string;
         tags?: string[];
-        outfitIds?: string[];
+        productIds?: string[];
         celebrityId?: string;
-        published?: boolean;
+        isPublished?: boolean;
       };
       if (!title?.trim() || !body?.trim()) {
         return res.status(400).json({ error: "title and body are required" });
       }
-      const now  = new Date().toISOString();
-      const slug = `${toSlug(title)}-${randomUUID().slice(0, 6)}`;
-      const post: BlogPost = {
-        id: randomUUID(),
-        slug,
-        authorId: req.user!.id,
-        authorName: req.user!.email.split("@")[0],
-        celebrityId: celebrityId ?? null,
-        title: title.trim(),
-        summary: summary?.trim() ?? title.trim(),
-        body: body.trim(),
-        coverImage: coverImage ?? null,
-        tags: Array.isArray(tags) ? tags.slice(0, 10) : [],
-        outfitIds: Array.isArray(outfitIds) ? outfitIds : [],
-        published: published === true,
-        views: 0,
-        createdAt: now,
-        updatedAt: now,
-      };
-      blogPosts.unshift(post);
-      return res.status(201).json({ data: toPublic(post) });
+
+      const slug = toSlug(title.trim(), req.user!.id.slice(-6));
+      const post = await prisma.blogPost.create({
+        data: {
+          slug,
+          authorId:    req.user!.id,
+          celebrityId: celebrityId ?? null,
+          title:       title.trim(),
+          summary:     summary?.trim() ?? title.trim(),
+          body:        body.trim(),
+          coverImage:  coverImage ?? null,
+          tags:        Array.isArray(tags)       ? tags.slice(0, 10) : [],
+          productIds:  Array.isArray(productIds) ? productIds        : [],
+          isPublished: isPublished === true,
+          publishedAt: isPublished === true ? new Date() : null,
+        },
+        include: BLOG_INCLUDE,
+      });
+      return res.status(201).json({ data: post });
     } catch (err) { next(err); }
   }
 );
 
-// PATCH /api/blog/:id — update
+// PATCH /api/blog/:id
 blogRouter.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CELEBRITY", "CELEBRITY_MANAGER"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = blogPosts.find((p) => p.id === req.params.id);
-      if (!post) return res.status(404).json({ error: "Post not found" });
+      const id = req.params.id as string;
+      const existing = await prisma.blogPost.findUnique({ where: { id } });
+      if (!existing) return res.status(404).json({ error: "Post not found" });
+
       const isAdmin = ["ADMIN", "SUPER_ADMIN"].includes(req.user!.role);
-      if (post.authorId !== req.user!.id && !isAdmin) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
-      const { title, summary, body, coverImage, tags, outfitIds, published } = req.body as {
+      if (existing.authorId !== req.user!.id && !isAdmin) return res.status(403).json({ error: "Forbidden" });
+
+      const { title, summary, body, coverImage, tags, productIds, isPublished } = req.body as {
         title?: string;
         summary?: string;
         body?: string;
         coverImage?: string;
         tags?: string[];
-        outfitIds?: string[];
-        published?: boolean;
+        productIds?: string[];
+        isPublished?: boolean;
       };
-      if (title?.trim()) { post.title = title.trim(); post.slug = `${toSlug(title)}-${post.id.slice(0, 6)}`; }
-      if (summary?.trim()) post.summary = summary.trim();
-      if (body?.trim()) post.body = body.trim();
-      if (coverImage !== undefined) post.coverImage = coverImage;
-      if (Array.isArray(tags)) post.tags = tags.slice(0, 10);
-      if (Array.isArray(outfitIds)) post.outfitIds = outfitIds;
-      if (published !== undefined) post.published = published;
-      post.updatedAt = new Date().toISOString();
-      return res.status(200).json({ data: toPublic(post) });
+
+      const nowPublishing = isPublished === true && !existing.isPublished;
+
+      const post = await prisma.blogPost.update({
+        where: { id },
+        data: {
+          ...(title?.trim()   ? { title: title.trim(), slug: toSlug(title.trim(), existing.id.slice(-6)) } : {}),
+          ...(summary?.trim() ? { summary: summary.trim() } : {}),
+          ...(body?.trim()    ? { body: body.trim() }       : {}),
+          ...(coverImage !== undefined            ? { coverImage }                   : {}),
+          ...(Array.isArray(tags)                 ? { tags: tags.slice(0, 10) }     : {}),
+          ...(Array.isArray(productIds)           ? { productIds }                  : {}),
+          ...(isPublished !== undefined           ? { isPublished }                 : {}),
+          ...(nowPublishing                       ? { publishedAt: new Date() }     : {}),
+        },
+        include: BLOG_INCLUDE,
+      });
+      return res.status(200).json({ data: post });
     } catch (err) { next(err); }
   }
 );
 
-// DELETE /api/blog/:id — ADMIN or author
+// DELETE /api/blog/:id
 blogRouter.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CELEBRITY", "CELEBRITY_MANAGER"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const idx = blogPosts.findIndex((p) => p.id === req.params.id);
-      if (idx < 0) return res.status(404).json({ error: "Post not found" });
-      const post = blogPosts[idx]!;
+      const id = req.params.id as string;
+      const existing = await prisma.blogPost.findUnique({ where: { id } });
+      if (!existing) return res.status(404).json({ error: "Post not found" });
+
       const isAdmin = ["ADMIN", "SUPER_ADMIN"].includes(req.user!.role);
-      if (post.authorId !== req.user!.id && !isAdmin) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
-      blogPosts.splice(idx, 1);
+      if (existing.authorId !== req.user!.id && !isAdmin) return res.status(403).json({ error: "Forbidden" });
+
+      await prisma.blogPost.delete({ where: { id } });
       return res.status(200).json({ data: { message: "Post deleted" } });
     } catch (err) { next(err); }
   }

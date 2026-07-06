@@ -1,420 +1,399 @@
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
-import { randomUUID } from "crypto";
+import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
+import { prisma } from "../lib/prisma.js";
 
 export const communityRouter = Router();
 
-// ── In-memory store ─────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-interface CommunityComment {
-  id: string;
-  postId: string;
-  userId: string;
-  userName: string;
-  body: string;
-  likes: string[];
-  createdAt: string;
-}
+const POST_INCLUDE = {
+  user: { select: { name: true as const, profile: { select: { avatarUrl: true as const } } } },
+  images: { orderBy: { sortOrder: "asc" as const } },
+};
 
-interface CommunityReport {
-  id: string;
-  userId: string;
-  reason: string;
-  createdAt: string;
-}
+type PostWithRelations = Prisma.CommunityPostGetPayload<{
+  include: {
+    user: { select: { name: true; profile: { select: { avatarUrl: true } } } };
+    images: { orderBy: { sortOrder: "asc" } };
+  };
+}>;
 
-interface CommunityPost {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar: string | null;
-  caption: string;
-  imageUrl: string | null;
-  outfitId: string | null;
-  outfitName: string | null;
-  tags: string[];
-  likes: string[];
-  comments: CommunityComment[];
-  shares: number;
-  reports: CommunityReport[];
-  status: "ACTIVE" | "HIDDEN" | "DELETED";
-  contestEntry: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-interface FanRating {
-  id: string;
-  userId: string;
-  userName: string;
-  celebrityId: string;
-  rating: number;
-  review: string | null;
-  createdAt: string;
-}
-
-const posts: CommunityPost[] = [];
-const fanRatings: FanRating[] = [];
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function toPublicPost(post: CommunityPost, requestingUserId?: string) {
+function toPublicPost(
+  post: PostWithRelations,
+  requestingUserId?: string,
+  liked?: boolean,
+  bookmarked?: boolean
+) {
   return {
     id: post.id,
     userId: post.userId,
-    userName: post.userName,
-    userAvatar: post.userAvatar,
+    userName: post.user.name,
+    userAvatar: post.user.profile?.avatarUrl ?? null,
     caption: post.caption,
-    imageUrl: post.imageUrl,
-    outfitId: post.outfitId,
-    outfitName: post.outfitName,
+    imageUrl: post.images[0]?.url ?? null,
+    images: post.images,
+    productId: post.productId,
     tags: post.tags,
-    likeCount: post.likes.length,
-    liked: requestingUserId ? post.likes.includes(requestingUserId) : false,
-    commentCount: post.comments.length,
-    shares: post.shares,
-    reportCount: post.reports.length,
-    status: post.status,
-    contestEntry: post.contestEntry,
+    likeCount: post.likeCount,
+    commentCount: post.commentCount,
+    liked: liked ?? false,
+    bookmarked: bookmarked ?? false,
+    status: post.isApproved ? "ACTIVE" : "PENDING",
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
   };
 }
 
-function trendingScore(post: CommunityPost): number {
-  const ageHours = (Date.now() - new Date(post.createdAt).getTime()) / 3_600_000;
-  const decay = Math.max(0.1, 1 - ageHours / (7 * 24));
-  return (post.likes.length * 2 + post.comments.length + post.shares) * decay;
+async function enrichWithInteractions(
+  posts: PostWithRelations[],
+  requestingUserId?: string
+) {
+  if (!requestingUserId || posts.length === 0) {
+    return posts.map((p) => toPublicPost(p, requestingUserId, false, false));
+  }
+  const ids = posts.map((p) => p.id);
+  const [likes, bookmarks] = await Promise.all([
+    prisma.like.findMany({ where: { userId: requestingUserId, postId: { in: ids } }, select: { postId: true } }),
+    prisma.bookmark.findMany({ where: { userId: requestingUserId, postId: { in: ids } }, select: { postId: true } }),
+  ]);
+  const likedSet = new Set(likes.map((l) => l.postId));
+  const bookmarkedSet = new Set(bookmarks.map((b) => b.postId));
+  return posts.map((p) =>
+    toPublicPost(p, requestingUserId, likedSet.has(p.id), bookmarkedSet.has(p.id))
+  );
 }
 
-// ── POST CRUD ────────────────────────────────────────────────────────────────
+async function optionalUserId(req: Request): Promise<string | undefined> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return undefined;
+  try {
+    const { verifyAccessToken } = await import("../auth/token.service.js");
+    const payload = verifyAccessToken(authHeader.slice(7));
+    return (payload as { sub?: string }).sub;
+  } catch {
+    return undefined;
+  }
+}
 
-// POST /api/community/posts — create
+// ── POST CRUD ─────────────────────────────────────────────────────────────────
+
 communityRouter.post("/posts", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { caption, imageUrl, outfitId, outfitName, tags, contestEntry } = req.body as {
+      const { caption, imageUrl, productId, tags } = req.body as {
         caption?: string;
         imageUrl?: string;
-        outfitId?: string;
-        outfitName?: string;
+        productId?: string;
         tags?: string[];
-        contestEntry?: boolean;
       };
-      if (!caption?.trim()) {
-        return res.status(400).json({ error: "caption is required" });
-      }
-      const now = new Date().toISOString();
-      const post: CommunityPost = {
-        id: randomUUID(),
-        userId: req.user!.id,
-        userName: req.user!.email.split("@")[0],
-        userAvatar: null,
-        caption: caption.trim(),
-        imageUrl: imageUrl ?? null,
-        outfitId: outfitId ?? null,
-        outfitName: outfitName ?? null,
-        tags: Array.isArray(tags) ? tags.slice(0, 10) : [],
-        likes: [],
-        comments: [],
-        shares: 0,
-        reports: [],
-        status: "ACTIVE",
-        contestEntry: contestEntry === true,
-        createdAt: now,
-        updatedAt: now,
-      };
-      posts.unshift(post);
-      return res.status(201).json({ data: toPublicPost(post, req.user!.id) });
+      if (!caption?.trim()) return res.status(400).json({ error: "caption is required" });
+
+      const post = await prisma.communityPost.create({
+        data: {
+          userId: req.user!.id,
+          caption: caption.trim(),
+          productId: productId ?? null,
+          tags: Array.isArray(tags) ? tags.slice(0, 10) : [],
+          isApproved: true,
+          images: imageUrl ? { create: [{ url: imageUrl, sortOrder: 0 }] } : undefined,
+        },
+        include: POST_INCLUDE,
+      });
+      return res.status(201).json({ data: toPublicPost(post, req.user!.id, false, false) });
     } catch (err) { next(err); }
   }
 );
 
-// GET /api/community/posts — feed (paginated)
 communityRouter.get("/posts",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const limit  = Math.min(Number(req.query.limit)  || 20, 100);
       const offset = Number(req.query.offset) || 0;
-      const tag    = req.query.tag as string | undefined;
-      const userId = req.query.userId as string | undefined;
+      const tag    = typeof req.query.tag    === "string" ? req.query.tag    : undefined;
+      const userId = typeof req.query.userId === "string" ? req.query.userId : undefined;
+      const requestingUserId = await optionalUserId(req);
 
-      // Try to extract requesting user from Authorization header (optional)
-      let requestingUserId: string | undefined;
-      const authHeader = req.headers.authorization;
-      if (authHeader?.startsWith("Bearer ")) {
-        try {
-          const { verifyAccessToken } = await import("../auth/token.service.js");
-          const payload = verifyAccessToken(authHeader.slice(7));
-          requestingUserId = (payload as { sub?: string }).sub;
-        } catch { /* not authenticated — ok */ }
-      }
+      const where: Prisma.CommunityPostWhereInput = {
+        isApproved: true,
+        deletedAt: null,
+        ...(tag    ? { tags: { has: tag } } : {}),
+        ...(userId ? { userId }             : {}),
+      };
 
-      let feed = posts.filter((p) => p.status === "ACTIVE");
-      if (tag) feed = feed.filter((p) => p.tags.includes(tag));
-      if (userId) feed = feed.filter((p) => p.userId === userId);
-
-      const total = feed.length;
-      const page  = feed.slice(offset, offset + limit).map((p) => toPublicPost(p, requestingUserId));
-      return res.status(200).json({ data: { posts: page, total, offset, limit } });
+      const [posts, total] = await Promise.all([
+        prisma.communityPost.findMany({ where, include: POST_INCLUDE, orderBy: { createdAt: "desc" }, skip: offset, take: limit }),
+        prisma.communityPost.count({ where }),
+      ]);
+      const enriched = await enrichWithInteractions(posts as PostWithRelations[], requestingUserId);
+      return res.status(200).json({ data: { posts: enriched, total, offset, limit } });
     } catch (err) { next(err); }
   }
 );
 
-// GET /api/community/posts/trending
 communityRouter.get("/posts/trending",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const limit = Math.min(Number(req.query.limit) || 10, 50);
-      const ranked = posts
-        .filter((p) => p.status === "ACTIVE")
-        .map((p) => ({ post: p, score: trendingScore(p) }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, limit)
-        .map((r) => toPublicPost(r.post));
-      return res.status(200).json({ data: ranked });
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const posts = await prisma.communityPost.findMany({
+        where: { isApproved: true, deletedAt: null, createdAt: { gte: since } },
+        include: POST_INCLUDE,
+        orderBy: [{ likeCount: "desc" }, { commentCount: "desc" }],
+        take: limit,
+      });
+      const enriched = await enrichWithInteractions(posts as PostWithRelations[]);
+      return res.status(200).json({ data: enriched });
     } catch (err) { next(err); }
   }
 );
 
-// GET /api/community/posts/contest
-communityRouter.get("/posts/contest",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const limit = Math.min(Number(req.query.limit) || 20, 100);
-      const entries = posts
-        .filter((p) => p.status === "ACTIVE" && p.contestEntry)
-        .sort((a, b) => b.likes.length - a.likes.length)
-        .slice(0, limit)
-        .map((p) => toPublicPost(p));
-      return res.status(200).json({ data: entries });
-    } catch (err) { next(err); }
-  }
-);
-
-// GET /api/community/posts/:id
 communityRouter.get("/posts/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.id);
-      if (!post || post.status === "DELETED") {
-        return res.status(404).json({ error: "Post not found" });
-      }
-      return res.status(200).json({ data: toPublicPost(post) });
+      const post = await prisma.communityPost.findFirst({
+        where: { id: req.params.id as string, deletedAt: null },
+        include: POST_INCLUDE,
+      });
+      if (!post) return res.status(404).json({ error: "Post not found" });
+      const requestingUserId = await optionalUserId(req);
+      const [enriched] = await enrichWithInteractions([post as PostWithRelations], requestingUserId);
+      return res.status(200).json({ data: enriched });
     } catch (err) { next(err); }
   }
 );
 
-// PATCH /api/community/posts/:id — update caption/tags (owner or mod)
 communityRouter.patch("/posts/:id", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.id);
-      if (!post || post.status === "DELETED") {
-        return res.status(404).json({ error: "Post not found" });
-      }
+      const existing = await prisma.communityPost.findFirst({ where: { id: req.params.id as string, deletedAt: null } });
+      if (!existing) return res.status(404).json({ error: "Post not found" });
+
       const isMod = ["ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"].includes(req.user!.role);
-      if (post.userId !== req.user!.id && !isMod) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
-      const { caption, tags, status } = req.body as { caption?: string; tags?: string[]; status?: string };
-      if (caption?.trim()) post.caption = caption.trim();
-      if (Array.isArray(tags)) post.tags = tags.slice(0, 10);
-      if (isMod && status && ["ACTIVE", "HIDDEN"].includes(status)) {
-        post.status = status as "ACTIVE" | "HIDDEN";
-      }
-      post.updatedAt = new Date().toISOString();
-      return res.status(200).json({ data: toPublicPost(post, req.user!.id) });
+      if (existing.userId !== req.user!.id && !isMod) return res.status(403).json({ error: "Forbidden" });
+
+      const { caption, tags, isApproved } = req.body as { caption?: string; tags?: string[]; isApproved?: boolean };
+      const post = await prisma.communityPost.update({
+        where: { id: req.params.id as string },
+        data: {
+          ...(caption?.trim() ? { caption: caption.trim() } : {}),
+          ...(Array.isArray(tags) ? { tags: tags.slice(0, 10) } : {}),
+          ...(isMod && typeof isApproved === "boolean" ? { isApproved } : {}),
+        },
+        include: POST_INCLUDE,
+      });
+      return res.status(200).json({ data: toPublicPost(post as PostWithRelations, req.user!.id) });
     } catch (err) { next(err); }
   }
 );
 
-// DELETE /api/community/posts/:id — owner or mod
 communityRouter.delete("/posts/:id", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.id);
-      if (!post) return res.status(404).json({ error: "Post not found" });
+      const existing = await prisma.communityPost.findFirst({ where: { id: req.params.id as string, deletedAt: null } });
+      if (!existing) return res.status(404).json({ error: "Post not found" });
+
       const isMod = ["ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"].includes(req.user!.role);
-      if (post.userId !== req.user!.id && !isMod) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
-      post.status = "DELETED";
-      post.updatedAt = new Date().toISOString();
+      if (existing.userId !== req.user!.id && !isMod) return res.status(403).json({ error: "Forbidden" });
+
+      await prisma.communityPost.update({ where: { id: req.params.id as string }, data: { deletedAt: new Date() } });
       return res.status(200).json({ data: { message: "Post deleted" } });
     } catch (err) { next(err); }
   }
 );
 
-// ── LIKES ────────────────────────────────────────────────────────────────────
+// ── LIKES ─────────────────────────────────────────────────────────────────────
 
-// POST /api/community/posts/:id/like — toggle
 communityRouter.post("/posts/:id/like", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.id && p.status === "ACTIVE");
+      const post = await prisma.communityPost.findFirst({ where: { id: req.params.id as string, deletedAt: null, isApproved: true } });
       if (!post) return res.status(404).json({ error: "Post not found" });
-      const uid = req.user!.id;
-      const idx = post.likes.indexOf(uid);
-      if (idx >= 0) {
-        post.likes.splice(idx, 1);
-        return res.status(200).json({ data: { liked: false, likeCount: post.likes.length } });
+
+      const existing = await prisma.like.findUnique({ where: { userId_postId: { userId: req.user!.id, postId: post.id } } });
+      if (existing) {
+        await prisma.$transaction([
+          prisma.like.delete({ where: { userId_postId: { userId: req.user!.id, postId: post.id } } }),
+          prisma.communityPost.update({ where: { id: post.id }, data: { likeCount: { decrement: 1 } } }),
+        ]);
+        return res.status(200).json({ data: { liked: false, likeCount: Math.max(0, post.likeCount - 1) } });
       }
-      post.likes.push(uid);
-      return res.status(200).json({ data: { liked: true, likeCount: post.likes.length } });
+      await prisma.$transaction([
+        prisma.like.create({ data: { userId: req.user!.id, postId: post.id } }),
+        prisma.communityPost.update({ where: { id: post.id }, data: { likeCount: { increment: 1 } } }),
+      ]);
+      return res.status(200).json({ data: { liked: true, likeCount: post.likeCount + 1 } });
     } catch (err) { next(err); }
   }
 );
 
-// ── COMMENTS ─────────────────────────────────────────────────────────────────
+// ── BOOKMARKS ─────────────────────────────────────────────────────────────────
 
-// GET /api/community/posts/:id/comments
+communityRouter.post("/posts/:id/bookmark", authenticate,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const post = await prisma.communityPost.findFirst({ where: { id: req.params.id as string, deletedAt: null } });
+      if (!post) return res.status(404).json({ error: "Post not found" });
+
+      const existing = await prisma.bookmark.findUnique({ where: { userId_postId: { userId: req.user!.id, postId: post.id } } });
+      if (existing) {
+        await prisma.$transaction([
+          prisma.bookmark.delete({ where: { userId_postId: { userId: req.user!.id, postId: post.id } } }),
+          prisma.communityPost.update({ where: { id: post.id }, data: { bookmarkCount: { decrement: 1 } } }),
+        ]);
+        return res.status(200).json({ data: { bookmarked: false } });
+      }
+      await prisma.$transaction([
+        prisma.bookmark.create({ data: { userId: req.user!.id, postId: post.id } }),
+        prisma.communityPost.update({ where: { id: post.id }, data: { bookmarkCount: { increment: 1 } } }),
+      ]);
+      return res.status(200).json({ data: { bookmarked: true } });
+    } catch (err) { next(err); }
+  }
+);
+
+// ── COMMENTS ──────────────────────────────────────────────────────────────────
+
 communityRouter.get("/posts/:id/comments",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.id && p.status !== "DELETED");
+      const post = await prisma.communityPost.findFirst({ where: { id: req.params.id as string, deletedAt: null } });
       if (!post) return res.status(404).json({ error: "Post not found" });
+
       const limit  = Math.min(Number(req.query.limit) || 20, 100);
       const offset = Number(req.query.offset) || 0;
-      const page   = post.comments.slice(offset, offset + limit);
-      return res.status(200).json({ data: { comments: page, total: post.comments.length } });
+      const [comments, total] = await Promise.all([
+        prisma.comment.findMany({
+          where: { postId: post.id, deletedAt: null, parentId: null },
+          include: {
+            user: { select: { name: true, profile: { select: { avatarUrl: true } } } },
+            replies: {
+              where: { deletedAt: null },
+              include: { user: { select: { name: true, profile: { select: { avatarUrl: true } } } } },
+              orderBy: { createdAt: "asc" },
+            },
+          },
+          orderBy: { createdAt: "asc" },
+          skip: offset,
+          take: limit,
+        }),
+        prisma.comment.count({ where: { postId: post.id, deletedAt: null, parentId: null } }),
+      ]);
+      return res.status(200).json({ data: { comments, total } });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/community/posts/:id/comments
 communityRouter.post("/posts/:id/comments", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.id && p.status === "ACTIVE");
+      const post = await prisma.communityPost.findFirst({ where: { id: req.params.id as string, deletedAt: null, isApproved: true } });
       if (!post) return res.status(404).json({ error: "Post not found" });
-      const { body } = req.body as { body?: string };
+
+      const { body, parentId } = req.body as { body?: string; parentId?: string };
       if (!body?.trim()) return res.status(400).json({ error: "body is required" });
-      const comment: CommunityComment = {
-        id: randomUUID(),
-        postId: post.id,
-        userId: req.user!.id,
-        userName: req.user!.email.split("@")[0],
-        body: body.trim(),
-        likes: [],
-        createdAt: new Date().toISOString(),
-      };
-      post.comments.push(comment);
-      post.updatedAt = new Date().toISOString();
+
+      const comment = await prisma.$transaction(async (tx) => {
+        const c = await tx.comment.create({
+          data: { postId: post.id, userId: req.user!.id, body: body.trim(), parentId: parentId ?? null },
+          include: { user: { select: { name: true, profile: { select: { avatarUrl: true } } } } },
+        });
+        await tx.communityPost.update({ where: { id: post.id }, data: { commentCount: { increment: 1 } } });
+        return c;
+      });
       return res.status(201).json({ data: comment });
     } catch (err) { next(err); }
   }
 );
 
-// DELETE /api/community/posts/:postId/comments/:commentId — owner or mod
 communityRouter.delete("/posts/:postId/comments/:commentId", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.postId);
-      if (!post) return res.status(404).json({ error: "Post not found" });
-      const idx = post.comments.findIndex((c) => c.id === req.params.commentId);
-      if (idx < 0) return res.status(404).json({ error: "Comment not found" });
-      const comment = post.comments[idx]!;
+      const comment = await prisma.comment.findFirst({
+        where: { id: req.params.commentId as string, postId: req.params.postId as string, deletedAt: null },
+      });
+      if (!comment) return res.status(404).json({ error: "Comment not found" });
+
       const isMod = ["ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"].includes(req.user!.role);
-      if (comment.userId !== req.user!.id && post.userId !== req.user!.id && !isMod) {
+      const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId as string } });
+      if (comment.userId !== req.user!.id && post?.userId !== req.user!.id && !isMod) {
         return res.status(403).json({ error: "Forbidden" });
       }
-      post.comments.splice(idx, 1);
+      await prisma.$transaction([
+        prisma.comment.update({ where: { id: comment.id }, data: { deletedAt: new Date() } }),
+        prisma.communityPost.update({ where: { id: req.params.postId as string }, data: { commentCount: { decrement: 1 } } }),
+      ]);
       return res.status(200).json({ data: { message: "Comment deleted" } });
-    } catch (err) { next(err); }
-  }
-);
-
-// ── SHARES ────────────────────────────────────────────────────────────────────
-
-// POST /api/community/posts/:id/share
-communityRouter.post("/posts/:id/share", authenticate,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const post = posts.find((p) => p.id === req.params.id && p.status === "ACTIVE");
-      if (!post) return res.status(404).json({ error: "Post not found" });
-      post.shares++;
-      return res.status(200).json({ data: { shares: post.shares } });
-    } catch (err) { next(err); }
-  }
-);
-
-// ── REPORTS ───────────────────────────────────────────────────────────────────
-
-// POST /api/community/posts/:id/report
-communityRouter.post("/posts/:id/report", authenticate,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const post = posts.find((p) => p.id === req.params.id && p.status === "ACTIVE");
-      if (!post) return res.status(404).json({ error: "Post not found" });
-      const { reason } = req.body as { reason?: string };
-      if (!reason?.trim()) return res.status(400).json({ error: "reason is required" });
-      const alreadyReported = post.reports.some((r) => r.userId === req.user!.id);
-      if (alreadyReported) return res.status(409).json({ error: "Already reported" });
-      post.reports.push({ id: randomUUID(), userId: req.user!.id, reason: reason.trim(), createdAt: new Date().toISOString() });
-      // Auto-hide if 5+ unique reports
-      if (post.reports.length >= 5) post.status = "HIDDEN";
-      return res.status(200).json({ data: { message: "Report submitted" } });
     } catch (err) { next(err); }
   }
 );
 
 // ── MODERATION ────────────────────────────────────────────────────────────────
 
-// GET /api/community/moderation — ADMIN/MOD: list reported/hidden posts
 communityRouter.get("/moderation", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const flagged = posts
-        .filter((p) => p.status === "HIDDEN" || p.reports.length > 0)
-        .map((p) => ({
-          ...toPublicPost(p),
-          reports: p.reports,
-        }));
-      return res.status(200).json({ data: flagged });
+      const posts = await prisma.communityPost.findMany({
+        where: { isApproved: false, deletedAt: null },
+        include: POST_INCLUDE,
+        orderBy: { createdAt: "desc" },
+      });
+      return res.status(200).json({ data: posts.map((p) => toPublicPost(p as PostWithRelations)) });
     } catch (err) { next(err); }
   }
 );
 
-// PATCH /api/community/moderation/:id — approve (un-hide) or remove
 communityRouter.patch("/moderation/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN", "CONTENT_MODERATOR"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const post = posts.find((p) => p.id === req.params.id);
-      if (!post) return res.status(404).json({ error: "Post not found" });
       const { action } = req.body as { action?: "approve" | "remove" };
-      if (action === "approve") {
-        post.status = "ACTIVE";
-        post.reports = [];
-      } else if (action === "remove") {
-        post.status = "DELETED";
-      } else {
+      if (action !== "approve" && action !== "remove") {
         return res.status(400).json({ error: "action must be 'approve' or 'remove'" });
       }
-      post.updatedAt = new Date().toISOString();
-      return res.status(200).json({ data: { message: `Post ${action}d`, post: toPublicPost(post) } });
+      if (action === "remove") {
+        await prisma.communityPost.update({ where: { id: req.params.id as string }, data: { deletedAt: new Date() } });
+        return res.status(200).json({ data: { message: "Post removed" } });
+      }
+      const post = await prisma.communityPost.update({
+        where: { id: req.params.id as string },
+        data: { isApproved: true, approvedAt: new Date(), approvedById: req.user!.id },
+        include: POST_INCLUDE,
+      });
+      return res.status(200).json({ data: { message: "Post approved", post: toPublicPost(post as PostWithRelations) } });
     } catch (err) { next(err); }
   }
 );
 
 // ── FAN RATINGS ───────────────────────────────────────────────────────────────
 
-// GET /api/community/fan-ratings/:celebrityId
 communityRouter.get("/fan-ratings/:celebrityId",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const ratings = fanRatings.filter((r) => r.celebrityId === req.params.celebrityId);
-      const avg = ratings.length
-        ? ratings.reduce((s, r) => s + r.rating, 0) / ratings.length
-        : null;
-      return res.status(200).json({ data: { ratings, average: avg, count: ratings.length } });
+      const limit  = Math.min(Number(req.query.limit) || 20, 100);
+      const offset = Number(req.query.offset) || 0;
+      const [ratings, total] = await Promise.all([
+        prisma.celebrityRating.findMany({
+          where: { celebrityId: req.params.celebrityId as string },
+          include: { user: { select: { name: true, profile: { select: { avatarUrl: true } } } } },
+          orderBy: { createdAt: "desc" },
+          skip: offset,
+          take: limit,
+        }),
+        prisma.celebrityRating.count({ where: { celebrityId: req.params.celebrityId as string } }),
+      ]);
+      const aggregate = await prisma.celebrityRating.aggregate({
+        where: { celebrityId: req.params.celebrityId as string },
+        _avg: { rating: true },
+      });
+      return res.status(200).json({ data: { ratings, average: aggregate._avg.rating, count: total, offset, limit } });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/community/fan-ratings/:celebrityId — upsert rating
 communityRouter.post("/fan-ratings/:celebrityId", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -422,25 +401,18 @@ communityRouter.post("/fan-ratings/:celebrityId", authenticate,
       if (rating === undefined || rating < 1 || rating > 5) {
         return res.status(400).json({ error: "rating must be between 1 and 5" });
       }
-      const existing = fanRatings.find(
-        (r) => r.celebrityId === req.params.celebrityId && r.userId === req.user!.id
-      );
-      if (existing) {
-        existing.rating = Math.round(rating);
-        existing.review = review?.trim() ?? existing.review;
-        return res.status(200).json({ data: existing });
-      }
-      const entry: FanRating = {
-        id: randomUUID(),
-        userId: req.user!.id,
-        userName: req.user!.email.split("@")[0],
-        celebrityId: req.params.celebrityId as string,
-        rating: Math.round(rating),
-        review: review?.trim() ?? null,
-        createdAt: new Date().toISOString(),
-      };
-      fanRatings.push(entry);
-      return res.status(201).json({ data: entry });
+      const entry = await prisma.celebrityRating.upsert({
+        where: { userId_celebrityId: { userId: req.user!.id, celebrityId: req.params.celebrityId as string } },
+        update: { rating: Math.round(rating), review: review?.trim() ?? null },
+        create: {
+          userId: req.user!.id,
+          celebrityId: req.params.celebrityId as string,
+          rating: Math.round(rating),
+          review: review?.trim() ?? null,
+        },
+        include: { user: { select: { name: true } } },
+      });
+      return res.status(200).json({ data: entry });
     } catch (err) { next(err); }
   }
 );

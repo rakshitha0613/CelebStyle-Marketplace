@@ -346,9 +346,17 @@ model User {
   tryOnHistory       AITryOnHistory[]
   arSessions         ARSession[]
   returns            Return[]
-  couponUsages       CouponUsage[]
-  analyticsEvents    AnalyticsEvent[]
-  settlements        Settlement[]     @relation("SettlementSettledBy")
+  couponUsages           CouponUsage[]
+  analyticsEvents        AnalyticsEvent[]
+  settlements            Settlement[]          @relation("SettlementSettledBy")
+  blogPosts              BlogPost[]
+  savedLooks             SavedLook[]
+  priceAlerts            PriceAlert[]
+  celebrityFollowAlerts  CelebrityFollowAlert[]
+  bulkOrders             BulkOrder[]
+  weddingOrders          WeddingOrder[]
+  customizationRequests  CustomizationRequest[]
+  celebrityRatings       CelebrityRating[]
 }
 
 model UserProfile {
@@ -467,6 +475,7 @@ model Celebrity {
   products    Product[]
   storefront  Storefront?
   followers   CelebrityFollower[]
+  ratings     CelebrityRating[]
   mediaAssets MediaAsset[]
 }
 
@@ -501,6 +510,21 @@ model CelebrityFollower {
   followedAt  DateTime  @default(now())
 
   @@unique([userId, celebrityId])
+}
+
+model CelebrityRating {
+  id          String    @id @default(cuid())
+  userId      String
+  celebrityId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celebrity   Celebrity @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  rating      Int
+  review      String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, celebrityId])
+  @@index([celebrityId])
 }
 
 // ─── GROUP C: PRODUCTS ────────────────────────────────────────────────────────
@@ -1194,6 +1218,15 @@ model ReviewImage {
   createdAt DateTime @default(now())
 }
 
+model ReviewHelpful {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId])
+}
+
 model Follower {
   id          String   @id @default(cuid())
   followerId  String
@@ -1822,4 +1855,172 @@ model ProductFeatureStore {
   freshnessScore  Float    @default(0)
   computedAt      DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ── Sprint 9 additions ────────────────────────────────────────────────────────
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  celebrityId String?
+  title       String
+  summary     String    @db.Text
+  body        String    @db.Text
+  coverImage  String?
+  tags        String[]
+  productIds  String[]
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  viewCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isPublished, createdAt(sort: Desc)])
+}
+
+model SavedLook {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId     String?
+  outfitName    String
+  imageUrl      String?
+  screenshotUrl String?
+  notes         String?
+  savedAt       DateTime @default(now())
+
+  @@index([userId, savedAt(sort: Desc)])
+}
+
+model PriceAlert {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId   String
+  outfitName  String
+  targetPrice Decimal  @db.Decimal(12, 2)
+  isActive    Boolean  @default(true)
+  triggeredAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId, isActive])
+}
+
+model CelebrityFollowAlert {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  celebrityId String
+  celebrityName String
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, celebrityId])
+  @@index([userId, isActive])
+}
+
+model StorefrontPageView {
+  id          String   @id @default(cuid())
+  celebrityId String
+  visitorId   String
+  productId   String?
+  converted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([celebrityId, createdAt])
+}
+
+model BulkOrder {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String          @default("")
+  contactName     String          @default("")
+  contactEmail    String
+  contactPhone    String          @default("")
+  deliveryAddress String          @db.Text
+  totalUnits      Int
+  subtotal        Decimal         @db.Decimal(12, 2)
+  discountRate    Decimal         @db.Decimal(5, 4)
+  discountedTotal Decimal         @db.Decimal(12, 2)
+  notes           String?         @db.Text
+  status          String          @default("PENDING")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  items           BulkOrderItem[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model BulkOrderItem {
+  id           String    @id @default(cuid())
+  bulkOrderId  String
+  bulkOrder    BulkOrder @relation(fields: [bulkOrderId], references: [id], onDelete: Cascade)
+  productId    String
+  outfitName   String
+  quantity     Int
+  size         String
+  pricePerUnit Decimal   @db.Decimal(10, 2)
+}
+
+model WeddingOrder {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brideName       String             @default("")
+  groomName       String             @default("")
+  weddingDate     DateTime
+  venue           String             @default("")
+  contactEmail    String
+  contactPhone    String             @default("")
+  deliveryAddress String             @db.Text
+  subtotal        Decimal            @db.Decimal(12, 2)
+  rushFee         Decimal            @default(0) @db.Decimal(12, 2)
+  total           Decimal            @db.Decimal(12, 2)
+  stylistNote     String?            @db.Text
+  status          String             @default("PENDING")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  items           WeddingOrderItem[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model WeddingOrderItem {
+  id             String       @id @default(cuid())
+  weddingOrderId String
+  weddingOrder   WeddingOrder @relation(fields: [weddingOrderId], references: [id], onDelete: Cascade)
+  productId      String
+  outfitName     String
+  quantity       Int
+  size           String
+  customFabric   String?
+  customColour   String?
+  customNotes    String?      @db.Text
+  pricePerUnit   Decimal      @db.Decimal(10, 2)
+}
+
+model CustomizationRequest {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId       String
+  outfitName      String
+  customFabric    String?
+  customColour    String?
+  embroidery      Boolean  @default(false)
+  embroideryText  String?
+  measurements    Json     @default("{}")
+  additionalNotes String?  @db.Text
+  estimatedPrice  Decimal  @default(0) @db.Decimal(10, 2)
+  status          String   @default("PENDING")
+  quoteAmount     Decimal? @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
 }

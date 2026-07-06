@@ -1,203 +1,153 @@
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
-import { randomUUID } from "crypto";
 import { authenticate } from "../auth/middleware/authenticate.js";
+import { prisma } from "../lib/prisma.js";
+import type { NotificationType } from "@prisma/client";
 
 export const notificationsRouter = Router();
 
-// ── In-memory store ──────────────────────────────────────────────────────────
-
-type NotificationType =
-  | "ORDER_STATUS"
-  | "PRICE_DROP"
-  | "BACK_IN_STOCK"
-  | "NEW_COLLECTION"
-  | "COMMUNITY_LIKE"
-  | "COMMUNITY_COMMENT"
-  | "CELEBRITY_NEW_OUTFIT"
-  | "REVIEW_APPROVED"
-  | "RETURN_UPDATE"
-  | "REFUND_UPDATE"
-  | "SYSTEM";
-
-interface Notification {
-  id: string;
-  userId: string;
-  type: NotificationType;
-  title: string;
-  body: string;
-  actionUrl: string | null;
-  read: boolean;
-  createdAt: string;
-}
-
-interface PriceAlert {
-  id: string;
-  userId: string;
-  outfitId: string;
-  outfitName: string;
-  targetPrice: number;
-  currentPrice: number;
-  active: boolean;
-  createdAt: string;
-}
-
-interface CelebrityAlert {
-  id: string;
-  userId: string;
-  celebrityId: string;
-  celebrityName: string;
-  active: boolean;
-  createdAt: string;
-}
-
-const notifications: Notification[] = [];
-const priceAlerts: PriceAlert[] = [];
-const celebrityAlerts: CelebrityAlert[] = [];
-
 // ── Notifications ─────────────────────────────────────────────────────────────
 
-// GET /api/notifications — auth user's notifications
 notificationsRouter.get("/", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const limit   = Math.min(Number(req.query.limit) || 20, 100);
-      const offset  = Number(req.query.offset) || 0;
-      const unread  = req.query.unread === "true";
+      const limit  = Math.min(Number(req.query.limit) || 20, 100);
+      const offset = Number(req.query.offset) || 0;
+      const unread = req.query.unread === "true";
 
-      let list = notifications.filter((n) => n.userId === req.user!.id);
-      if (unread) list = list.filter((n) => !n.read);
-      list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-
-      const total     = list.length;
-      const unreadCount = notifications.filter((n) => n.userId === req.user!.id && !n.read).length;
-      const page      = list.slice(offset, offset + limit);
-      return res.status(200).json({ data: { notifications: page, total, unreadCount, offset, limit } });
+      const where = { userId: req.user!.id, ...(unread ? { isRead: false } : {}) };
+      const [list, total, unreadCount] = await Promise.all([
+        prisma.notification.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          skip: offset,
+          take: limit,
+        }),
+        prisma.notification.count({ where }),
+        prisma.notification.count({ where: { userId: req.user!.id, isRead: false } }),
+      ]);
+      return res.status(200).json({ data: { notifications: list, total, unreadCount, offset, limit } });
     } catch (err) { next(err); }
   }
 );
 
-// PATCH /api/notifications/:id/read — mark one as read
 notificationsRouter.patch("/:id/read", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const notif = notifications.find((n) => n.id === req.params.id && n.userId === req.user!.id);
-      if (!notif) return res.status(404).json({ error: "Notification not found" });
-      notif.read = true;
+      const existing = await prisma.notification.findFirst({
+        where: { id: req.params.id as string, userId: req.user!.id },
+      });
+      if (!existing) return res.status(404).json({ error: "Notification not found" });
+      const notif = await prisma.notification.update({
+        where: { id: req.params.id as string },
+        data: { isRead: true, readAt: new Date() },
+      });
       return res.status(200).json({ data: notif });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/notifications/read-all — mark all as read
 notificationsRouter.post("/read-all", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      let count = 0;
-      for (const n of notifications) {
-        if (n.userId === req.user!.id && !n.read) {
-          n.read = true;
-          count++;
-        }
-      }
-      return res.status(200).json({ data: { marked: count } });
+      const result = await prisma.notification.updateMany({
+        where: { userId: req.user!.id, isRead: false },
+        data: { isRead: true, readAt: new Date() },
+      });
+      return res.status(200).json({ data: { marked: result.count } });
     } catch (err) { next(err); }
   }
 );
 
-// DELETE /api/notifications/:id
 notificationsRouter.delete("/:id", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const idx = notifications.findIndex((n) => n.id === req.params.id && n.userId === req.user!.id);
-      if (idx < 0) return res.status(404).json({ error: "Notification not found" });
-      notifications.splice(idx, 1);
+      const existing = await prisma.notification.findFirst({
+        where: { id: req.params.id as string, userId: req.user!.id },
+      });
+      if (!existing) return res.status(404).json({ error: "Notification not found" });
+      await prisma.notification.delete({ where: { id: req.params.id as string } });
       return res.status(200).json({ data: { message: "Deleted" } });
     } catch (err) { next(err); }
   }
 );
 
-// ── Internal helper — used by other routes to create notifications ────────────
+// ── Internal helper ───────────────────────────────────────────────────────────
 
-export function createNotification(
+export async function createNotification(
   userId: string,
   type: NotificationType,
   title: string,
   body: string,
   actionUrl?: string,
-): void {
-  notifications.unshift({
-    id: randomUUID(),
-    userId,
-    type,
-    title,
-    body,
-    actionUrl: actionUrl ?? null,
-    read: false,
-    createdAt: new Date().toISOString(),
+): Promise<void> {
+  await prisma.notification.create({
+    data: { userId, type, title, body, actionUrl: actionUrl ?? null },
   });
-  // Keep at most 200 notifications per user
-  const userNotifs = notifications.filter((n) => n.userId === userId);
-  if (userNotifs.length > 200) {
-    const oldest = userNotifs[userNotifs.length - 1]!;
-    const idx = notifications.findIndex((n) => n.id === oldest.id);
-    if (idx >= 0) notifications.splice(idx, 1);
+  // Trim old notifications beyond 200 per user
+  const oldest = await prisma.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    skip: 200,
+    take: 1,
+    select: { createdAt: true },
+  });
+  if (oldest.length > 0) {
+    await prisma.notification.deleteMany({
+      where: { userId, createdAt: { lte: oldest[0]!.createdAt } },
+    });
   }
 }
 
 // ── Price Alerts ──────────────────────────────────────────────────────────────
 
-// GET /api/notifications/price-alerts
 notificationsRouter.get("/price-alerts", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const list = priceAlerts.filter((a) => a.userId === req.user!.id && a.active);
+      const list = await prisma.priceAlert.findMany({
+        where: { userId: req.user!.id, isActive: true },
+        orderBy: { createdAt: "desc" },
+      });
       return res.status(200).json({ data: list });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/notifications/price-alerts
 notificationsRouter.post("/price-alerts", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { outfitId, outfitName, targetPrice, currentPrice } = req.body as {
+      const { outfitId, outfitName, targetPrice } = req.body as {
         outfitId?: string;
         outfitName?: string;
         targetPrice?: number;
-        currentPrice?: number;
       };
-      if (!outfitId?.trim() || !targetPrice || !currentPrice) {
-        return res.status(400).json({ error: "outfitId, targetPrice, and currentPrice are required" });
+      if (!outfitId?.trim() || targetPrice === undefined) {
+        return res.status(400).json({ error: "outfitId and targetPrice are required" });
       }
-      const existing = priceAlerts.find((a) => a.outfitId === outfitId && a.userId === req.user!.id && a.active);
-      if (existing) {
-        existing.targetPrice = targetPrice;
-        return res.status(200).json({ data: existing });
-      }
-      const alert: PriceAlert = {
-        id: randomUUID(),
-        userId: req.user!.id,
-        outfitId: outfitId.trim(),
-        outfitName: outfitName ?? outfitId,
-        targetPrice,
-        currentPrice,
-        active: true,
-        createdAt: new Date().toISOString(),
-      };
-      priceAlerts.push(alert);
-      return res.status(201).json({ data: alert });
+      const alert = await prisma.priceAlert.upsert({
+        where: { userId_productId: { userId: req.user!.id, productId: outfitId.trim() } },
+        update: { targetPrice, isActive: true, triggeredAt: null },
+        create: {
+          userId: req.user!.id,
+          productId: outfitId.trim(),
+          outfitName: outfitName ?? outfitId,
+          targetPrice,
+          isActive: true,
+        },
+      });
+      return res.status(200).json({ data: alert });
     } catch (err) { next(err); }
   }
 );
 
-// DELETE /api/notifications/price-alerts/:id
 notificationsRouter.delete("/price-alerts/:id", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const alert = priceAlerts.find((a) => a.id === req.params.id && a.userId === req.user!.id);
+      const alert = await prisma.priceAlert.findFirst({
+        where: { id: req.params.id as string, userId: req.user!.id },
+      });
       if (!alert) return res.status(404).json({ error: "Alert not found" });
-      alert.active = false;
+      await prisma.priceAlert.update({ where: { id: req.params.id as string }, data: { isActive: false } });
       return res.status(200).json({ data: { message: "Alert removed" } });
     } catch (err) { next(err); }
   }
@@ -205,47 +155,46 @@ notificationsRouter.delete("/price-alerts/:id", authenticate,
 
 // ── Celebrity Follow Alerts ───────────────────────────────────────────────────
 
-// GET /api/notifications/celebrity-alerts
 notificationsRouter.get("/celebrity-alerts", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const list = celebrityAlerts.filter((a) => a.userId === req.user!.id && a.active);
+      const list = await prisma.celebrityFollowAlert.findMany({
+        where: { userId: req.user!.id, isActive: true },
+        orderBy: { createdAt: "desc" },
+      });
       return res.status(200).json({ data: list });
     } catch (err) { next(err); }
   }
 );
 
-// POST /api/notifications/celebrity-alerts
 notificationsRouter.post("/celebrity-alerts", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { celebrityId, celebrityName } = req.body as { celebrityId?: string; celebrityName?: string };
       if (!celebrityId?.trim()) return res.status(400).json({ error: "celebrityId is required" });
-      const existing = celebrityAlerts.find(
-        (a) => a.celebrityId === celebrityId && a.userId === req.user!.id && a.active
-      );
-      if (existing) return res.status(409).json({ error: "Already following this celebrity" });
-      const alert: CelebrityAlert = {
-        id: randomUUID(),
-        userId: req.user!.id,
-        celebrityId: celebrityId.trim(),
-        celebrityName: celebrityName ?? celebrityId,
-        active: true,
-        createdAt: new Date().toISOString(),
-      };
-      celebrityAlerts.push(alert);
-      return res.status(201).json({ data: alert });
+      const alert = await prisma.celebrityFollowAlert.upsert({
+        where: { userId_celebrityId: { userId: req.user!.id, celebrityId: celebrityId.trim() } },
+        update: { isActive: true },
+        create: {
+          userId: req.user!.id,
+          celebrityId: celebrityId.trim(),
+          celebrityName: celebrityName ?? celebrityId.trim(),
+          isActive: true,
+        },
+      });
+      return res.status(200).json({ data: alert });
     } catch (err) { next(err); }
   }
 );
 
-// DELETE /api/notifications/celebrity-alerts/:id
 notificationsRouter.delete("/celebrity-alerts/:id", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const alert = celebrityAlerts.find((a) => a.id === req.params.id && a.userId === req.user!.id);
+      const alert = await prisma.celebrityFollowAlert.findFirst({
+        where: { id: req.params.id as string, userId: req.user!.id },
+      });
       if (!alert) return res.status(404).json({ error: "Alert not found" });
-      alert.active = false;
+      await prisma.celebrityFollowAlert.update({ where: { id: req.params.id as string }, data: { isActive: false } });
       return res.status(200).json({ data: { message: "Alert removed" } });
     } catch (err) { next(err); }
   }

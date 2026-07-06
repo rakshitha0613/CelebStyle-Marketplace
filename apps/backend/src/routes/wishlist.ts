@@ -7,11 +7,9 @@ import {
   CommerceForbiddenError,
 } from "../lib/commerce.errors.js";
 import { invalidateUserRecommendationsCache } from "../services/recommendation.service.js";
+import { prisma } from "../lib/prisma.js";
 
 export const wishlistRouter = Router();
-
-// ── In-memory wishlist privacy settings ──────────────────────────────────────
-const wishlistPrivacy: Record<string, boolean> = {}; // userId → isPublic
 
 wishlistRouter.use(authenticate);
 
@@ -79,8 +77,12 @@ wishlistRouter.delete("/:id", async (req, res) => {
 
 // GET /api/wishlist/privacy — get current privacy setting
 wishlistRouter.get("/privacy", async (req, res) => {
-  const isPublic = wishlistPrivacy[req.user!.id] ?? false;
-  res.json({ data: { isPublic } });
+  try {
+    const wishlist = await prisma.wishlist.findFirst({ where: { userId: req.user!.id, isDefault: true } });
+    res.json({ data: { isPublic: wishlist?.isPublic ?? false } });
+  } catch (err) {
+    handleError(err, res);
+  }
 });
 
 // PATCH /api/wishlist/privacy — toggle public/private
@@ -90,18 +92,24 @@ wishlistRouter.patch("/privacy", async (req, res) => {
     res.status(400).json({ error: "isPublic must be a boolean" });
     return;
   }
-  wishlistPrivacy[req.user!.id] = isPublic;
-  res.json({ data: { isPublic } });
+  try {
+    await prisma.wishlist.updateMany({ where: { userId: req.user!.id, isDefault: true }, data: { isPublic } });
+    res.json({ data: { isPublic } });
+  } catch (err) {
+    handleError(err, res);
+  }
 });
 
 // GET /api/wishlist/public/:userId — view another user's public wishlist (unauthenticated)
 wishlistRouter.get("/public/:userId", async (req, res) => {
-  const isPublic = wishlistPrivacy[req.params.userId as string] ?? false;
-  if (!isPublic) {
-    res.status(403).json({ error: "This wishlist is private" });
-    return;
-  }
   try {
+    const wishlist = await prisma.wishlist.findFirst({
+      where: { userId: req.params.userId as string, isDefault: true },
+    });
+    if (!wishlist?.isPublic) {
+      res.status(403).json({ error: "This wishlist is private" });
+      return;
+    }
     const items = await wishlistService.getItems(req.params.userId as string);
     res.json({ data: items });
   } catch (err) {
