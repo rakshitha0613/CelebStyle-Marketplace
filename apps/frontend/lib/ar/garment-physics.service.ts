@@ -1,5 +1,6 @@
 import type { ConstraintData, PhysicsConfig } from './three.types.js';
 import { DEFAULT_PHYSICS_CONFIG } from './three.types.js';
+import { buildGarmentMesh, FABRIC_PHYSICS, type ClothGarmentType, type ClothAnchorIndices } from './garment-mesh.factory.js';
 
 export class GarmentPhysicsService {
   private vertexCount   = 0;
@@ -17,8 +18,11 @@ export class GarmentPhysicsService {
   private prevBodyCenter    = { x: 0, y: 0, z: 0 };
   private bodyCenterInitialized = false;
 
+  private _anchors: ClothAnchorIndices | null = null;
+
   get isInitialized(): boolean { return this._initialized; }
   get vertCount(): number       { return this.vertexCount; }
+  get anchors(): ClothAnchorIndices | null { return this._anchors; }
 
   /**
    * Set up the simulation with `vertexCount` particles.
@@ -38,6 +42,46 @@ export class GarmentPhysicsService {
     this.wind         = { x: 0, y: 0, z: 0 };
     this.windStrength = 0;
     this._initialized = true;
+  }
+
+  /**
+   * Build a proper cloth mesh for the given garment type, scale it to world
+   * dimensions, and initialize the physics simulation automatically.
+   *
+   * @param type         Garment type — selects topology and fabric constants.
+   * @param shoulderWidth World-space distance between left/right shoulder landmarks.
+   * @param cx           World-space x of shoulder midpoint (default 0).
+   * @param cy           World-space y of shoulder midpoint (default 0).
+   * @returns            Anchor indices for use in per-frame landmark binding.
+   */
+  initializeGarment(
+    type: ClothGarmentType,
+    shoulderWidth: number,
+    cx = 0,
+    cy = 0,
+  ): ClothAnchorIndices {
+    const mesh = buildGarmentMesh(type);
+
+    // Scale canonical unit mesh to world dimensions and offset to body centre
+    const scaled = new Float32Array(mesh.positions.length);
+    for (let i = 0; i < mesh.vertexCount; i++) {
+      scaled[i * 3]     = mesh.positions[i * 3]     * shoulderWidth + cx;
+      scaled[i * 3 + 1] = mesh.positions[i * 3 + 1] * shoulderWidth + cy;
+      scaled[i * 3 + 2] = 0;
+    }
+
+    // Scale constraint rest lengths to match
+    const scaledCons = mesh.constraints.map((c) => ({
+      ...c,
+      restLength: c.restLength * shoulderWidth,
+    }));
+
+    this.initialize(mesh.vertexCount, scaled, scaledCons);
+
+    for (const idx of mesh.pinnedIndices) this.pinVertex(idx);
+
+    this._anchors = mesh.anchors;
+    return mesh.anchors;
   }
 
   pinVertex(index: number): void {
@@ -101,7 +145,7 @@ export class GarmentPhysicsService {
       this.positions[j + 2] += vz + windZ * dt2;
     }
 
-    // ── Spring constraint projection ────────────────────────────────────────
+    // ── Spring constraint projection with stretch limit ─────────────────────
     const invIter = 1 / config.iterations;
     for (let iter = 0; iter < config.iterations; iter++) {
       for (const c of this.constraints) {
@@ -114,8 +158,14 @@ export class GarmentPhysicsService {
         const dist = Math.hypot(dx, dy, dz);
         if (dist < 1e-9) continue;
 
+        const stretch = dist / c.restLength;
+        // Stiffen constraint when fabric is over-stretched (> 25%)
+        const effectiveStiffness = stretch > 1.25
+          ? Math.min(1.0, c.stiffness * (stretch - 0.25))
+          : c.stiffness;
+
         const error      = (dist - c.restLength) / dist;
-        const correction = error * 0.5 * c.stiffness * invIter;
+        const correction = error * 0.5 * effectiveStiffness * invIter;
 
         if (!this.pinned[c.indexA]) {
           this.positions[ia]     += dx * correction;
@@ -165,6 +215,7 @@ export class GarmentPhysicsService {
     this.pinned               = new Uint8Array(0);
     this.constraints          = [];
     this._initialized         = false;
+    this._anchors             = null;
     this.windPhase            = 0;
     this.bodyVelocity         = { x: 0, y: 0, z: 0 };
     this.prevBodyCenter       = { x: 0, y: 0, z: 0 };
@@ -260,7 +311,7 @@ export class GarmentPhysicsService {
       this.positions[j + 2] += vz + (windZ + inertiaZ) * dt2;
     }
 
-    // Spring constraint projection (identical to step())
+    // Spring constraint projection with stretch limit (same as step())
     const invIter = 1 / config.iterations;
     for (let iter = 0; iter < config.iterations; iter++) {
       for (const c of this.constraints) {
@@ -273,8 +324,13 @@ export class GarmentPhysicsService {
         const dist = Math.hypot(dx, dy, dz);
         if (dist < 1e-9) continue;
 
+        const stretch = dist / c.restLength;
+        const effectiveStiffness = stretch > 1.25
+          ? Math.min(1.0, c.stiffness * (stretch - 0.25))
+          : c.stiffness;
+
         const error      = (dist - c.restLength) / dist;
-        const correction = error * 0.5 * c.stiffness * invIter;
+        const correction = error * 0.5 * effectiveStiffness * invIter;
 
         if (!this.pinned[c.indexA]) {
           this.positions[ia]     += dx * correction;
@@ -288,5 +344,13 @@ export class GarmentPhysicsService {
         }
       }
     }
+  }
+
+  /**
+   * Returns fabric-tuned physics constants (gravity, damping, iterations)
+   * for a given garment type. Convenience wrapper around FABRIC_PHYSICS.
+   */
+  static getFabricConfig(type: ClothGarmentType): { gravity: number; damping: number; iterations: number } {
+    return FABRIC_PHYSICS[type];
   }
 }

@@ -19,6 +19,7 @@ function categoryToGarmentType(category: string): GarmentType {
   if (c.includes('jacket') || c.includes('blazer') || c.includes('coat') || c.includes('suit') || c.includes('sherwani') || c.includes('sherwaani')) return 'JACKET';
   if (c.includes('hoodie') || c.includes('sweatshirt')) return 'HOODIE';
   if (c.includes('t-shirt') || c.includes('tshirt') || c === 't shirt') return 'T_SHIRT';
+  if (c.includes('dress') || c.includes('gown') || c.includes('lehenga') || c.includes('saree')) return 'DRESS';
   return 'SHIRT';
 }
 

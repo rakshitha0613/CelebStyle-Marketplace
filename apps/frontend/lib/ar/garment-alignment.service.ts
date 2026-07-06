@@ -141,6 +141,7 @@ export const GARMENT_SCALE_MULTIPLIERS: Record<string, number> = {
   SHIRT:   1.18,
   JACKET:  1.25,
   HOODIE:  1.20,
+  DRESS:   1.22,
 };
 
 // ── Phase 3: enhanced fitting ─────────────────────────────────────────────────

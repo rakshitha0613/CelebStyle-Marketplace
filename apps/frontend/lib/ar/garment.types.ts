@@ -1,4 +1,4 @@
-export type GarmentType = 'T_SHIRT' | 'SHIRT' | 'JACKET' | 'HOODIE';
+export type GarmentType = 'T_SHIRT' | 'SHIRT' | 'JACKET' | 'HOODIE' | 'DRESS';
 
 export type InitStatus = 'UNINITIALIZED' | 'INITIALIZING' | 'READY' | 'ERROR';
 
