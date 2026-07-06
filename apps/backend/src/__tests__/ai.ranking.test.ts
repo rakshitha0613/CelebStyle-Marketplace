@@ -163,6 +163,7 @@ function zeroBreakdown(): ScoreBreakdown {
     cfScore: 0, embeddingSim: 0, trendingScore: 0, popularityScore: 0,
     freshnessScore: 0, wishlistAffinity: 0, cartAffinity: 0, purchaseAffinity: 0,
     celebrityAffinity: 0, brandAffinity: 0, categoryAffinity: 0, priceAffinity: 0,
+    colorSim: 0, occasionSim: 0,
     businessBoost: 0, diversityPenalty: 0,
   };
 }

@@ -46,6 +46,8 @@ export interface RankingWeights {
   brand:      number;
   category:   number;
   price:      number;
+  color:      number;  // Jaccard(colorPalette, user.colorPreference) — Sprint 8.4
+  occasion:   number;  // normAffinity(occasionPreference, product.occasion) — Sprint 8.4
 }
 
 export interface ScoreBreakdown {
@@ -61,6 +63,8 @@ export interface ScoreBreakdown {
   brandAffinity:     number;
   categoryAffinity:  number;
   priceAffinity:     number;
+  colorSim:          number;  // Sprint 8.4
+  occasionSim:       number;  // Sprint 8.4
   businessBoost:     number;
   diversityPenalty:  number;
 }
@@ -82,18 +86,20 @@ export interface RankingOptions {
 // ── Default weights (sum = 1.0) ───────────────────────────────────────────────
 
 export const DEFAULT_RANKING_WEIGHTS: RankingWeights = {
-  cf:         0.30,
-  embedding:  0.15,
+  cf:         0.27,   // -0.03 to fund color + occasion
+  embedding:  0.13,   // -0.02
   trending:   0.10,
   popularity: 0.08,
-  freshness:  0.05,
-  wishlist:   0.08,
+  freshness:  0.04,   // -0.01
+  wishlist:   0.07,   // -0.01
   cart:       0.07,
   purchase:   0.05,
   celebrity:  0.05,
   brand:      0.04,
   category:   0.02,
   price:      0.01,
+  color:      0.04,   // Sprint 8.4 — NEW
+  occasion:   0.03,   // Sprint 8.4 — NEW
 };
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
@@ -105,8 +111,25 @@ const TTL_RANKING  = 10 * 60_000; // 10 min
 
 function normAffinity(map: Record<string, number> | undefined | null, key: string): number {
   if (!map) return 0;
-  const max = Math.max(...Object.values(map), 1e-9);
+  const values = Object.values(map);
+  if (values.length === 0) return 0;
+  const max = Math.max(...values, 1e-9);
   return (map[key] ?? 0) / max;
+}
+
+// Color similarity helpers (Sprint 8.4)
+function parseColorTokens(palette: string): Set<string> {
+  return new Set(
+    palette.toLowerCase().split(/[,\s/]+/).map((c) => c.trim()).filter((c) => c.length >= 2)
+  );
+}
+
+function jaccardSets(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 || b.size === 0) return 0;
+  let inter = 0;
+  for (const item of a) if (b.has(item)) inter++;
+  const union = a.size + b.size - inter;
+  return union === 0 ? 0 : inter / union;
 }
 
 function computeConfidence(breakdown: Omit<ScoreBreakdown, "businessBoost" | "diversityPenalty">): number {
@@ -123,6 +146,8 @@ function computeConfidence(breakdown: Omit<ScoreBreakdown, "businessBoost" | "di
     breakdown.brandAffinity,
     breakdown.categoryAffinity,
     breakdown.priceAffinity,
+    breakdown.colorSim,    // Sprint 8.4
+    breakdown.occasionSim, // Sprint 8.4
   ];
   const nonZero = signals.filter((v) => v > 1e-9).length;
   return parseFloat((nonZero / signals.length).toFixed(4));
@@ -180,13 +205,15 @@ export async function rankForUser(
     prisma.product.findMany({
       where:  { id: { in: candidateIds } },
       select: {
-        id:          true,
-        category:    true,
-        basePrice:   true,
-        brandId:     true,
-        celebrityId: true,
-        isPublished: true,
-        deletedAt:   true,
+        id:           true,
+        category:     true,
+        basePrice:    true,
+        brandId:      true,
+        celebrityId:  true,
+        colorPalette: true,
+        occasion:     true,
+        isPublished:  true,
+        deletedAt:    true,
       },
     }),
     prisma.productFeatureStore.findMany({
@@ -234,6 +261,16 @@ export async function rankForUser(
           .map(([k]) => k)
       : []
   );
+
+  // Sprint 8.4: user's top-8 color preference tokens for Jaccard comparison
+  const userColorTokens = userFeatures
+    ? new Set<string>(
+        Object.entries(userFeatures.colorPreference)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 8)
+          .flatMap(([k]) => [...parseColorTokens(k)])
+      )
+    : new Set<string>();
 
   // ── Step 4: Score each candidate ─────────────────────────────────────────
 
@@ -299,6 +336,16 @@ export async function rankForUser(
       return Math.max(0, 1 - Math.abs(product.basePrice - avg) / Math.max(product.basePrice, avg, 1));
     })();
 
+    // Sprint 8.4: Color similarity (Jaccard between product colors and user's preferred colors)
+    const colorSim = (() => {
+      if (userColorTokens.size === 0) return 0;
+      const productTokens = parseColorTokens(product.colorPalette ?? "");
+      return jaccardSets(productTokens, userColorTokens);
+    })();
+
+    // Sprint 8.4: Occasion preference match
+    const occasionSim = normAffinity(userFeatures?.occasionPreference, product.occasion as string);
+
     // Business rules
     const biz = applyBusinessRules(
       {
@@ -319,7 +366,7 @@ export async function rankForUser(
 
     if (biz.appliedRules.includes("BLOCKED_PRODUCT")) continue;
 
-    // Raw weighted score
+    // Raw weighted score (Sprint 8.4: now includes color and occasion signals)
     const rawScore =
       cand.cfScore        * weights.cf         +
       embeddingSim        * weights.embedding   +
@@ -332,7 +379,9 @@ export async function rankForUser(
       celebrityAffinity   * weights.celebrity   +
       brandAffinity       * weights.brand       +
       categoryAffinity    * weights.category    +
-      priceAffinity       * weights.price;
+      priceAffinity       * weights.price       +
+      colorSim            * (weights.color   ?? 0) +
+      occasionSim         * (weights.occasion ?? 0);
 
     // Feedback penalty: user has explicitly dismissed or hidden this product
     const feedbackPenalty = negativeSignals.has(cand.productId) ? -0.15 : 0;
@@ -356,6 +405,8 @@ export async function rankForUser(
         brandAffinity:     parseFloat(brandAffinity.toFixed(6)),
         categoryAffinity:  parseFloat(categoryAffinity.toFixed(6)),
         priceAffinity:     parseFloat(priceAffinity.toFixed(6)),
+        colorSim:          parseFloat(colorSim.toFixed(6)),     // Sprint 8.4
+        occasionSim:       parseFloat(occasionSim.toFixed(6)),  // Sprint 8.4
         businessBoost:     parseFloat((biz.boost + biz.penalty + feedbackPenalty).toFixed(6)),
         diversityPenalty:  0, // set below
       },

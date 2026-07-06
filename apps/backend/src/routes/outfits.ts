@@ -5,6 +5,10 @@ import { celebrityStore } from "./celebrities.js";
 import { productRepository } from "../repositories/product.repository.js";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
+import {
+  invalidateGlobalRecommendationsCache,
+  invalidateProductRecommendationsCache,
+} from "../services/recommendation.service.js";
 
 // ── Public type re-export ──────────────────────────────────────────────────────
 // OutfitEntry now lives in the repository. Re-export so any existing import of
@@ -127,6 +131,7 @@ outfitsRouter.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (
   });
 
   syncToStore(newItem);
+  invalidateGlobalRecommendationsCache();
 
   const celebMap = new Map(celebrityStore.map((c) => [c.id, c.name]));
   res.status(201).json({
@@ -165,6 +170,8 @@ outfitsRouter.put("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async
   }
 
   syncToStore(updated);
+  invalidateGlobalRecommendationsCache();
+  invalidateProductRecommendationsCache(updated.id);
 
   const celebMap = new Map(celebrityStore.map((c) => [c.id, c.name]));
   res.json({ data: { ...updated, celebrityName: celebMap.get(updated.celebrityId) || updated.celebrityId } });
@@ -179,5 +186,7 @@ outfitsRouter.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), as
     return;
   }
   removeFromStore(id);
+  invalidateGlobalRecommendationsCache();
+  invalidateProductRecommendationsCache(id);
   res.json({ message: "Deleted" });
 });

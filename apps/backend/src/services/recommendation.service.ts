@@ -27,6 +27,7 @@ import {
   getBrandToProductEdges,
 } from "./recommendation-graph.service.js";
 import { EXPLANATION_TEXT, type ExplanationKey } from "./explanation.service.js";
+import { rankCandidates } from "./recommendation-ranking.service.js";
 import type { ScoreBreakdown } from "./ranking.service.js";
 import type { GraphEdge } from "./recommendation-graph.service.js";
 import type { RankedProduct } from "./ranking.service.js";
@@ -136,15 +137,16 @@ const TTL = {
 };
 
 const KEY = {
-  home:        (uid: string) => `recs:home:${uid}`,
-  product:     (pid: string) => `recs:prod:${pid}`,
-  celebrity:   (cid: string) => `recs:celeb-page:${cid}`,
-  trending:    ()             => "recs:trending",
-  newArrivals: ()             => "recs:new-arrivals",
-  popular:     ()             => "recs:popular",
-  recent:      (uid: string) => `recs:recent:${uid}`,
-  cont:        (uid: string) => `recs:cont:${uid}`,
-  cart:        (uid: string) => `recs:cart:${uid}`,
+  home:              (uid: string)               => `recs:home:${uid}`,
+  product:           (pid: string)               => `recs:prod:${pid}`,
+  celebrity:         (cid: string)               => `recs:celeb-page:${cid}`,
+  celebrityPersonal: (uid: string, cid: string)  => `recs:celeb-pers:${uid}:${cid}`,
+  trending:          ()                          => "recs:trending",
+  newArrivals:       ()                          => "recs:new-arrivals",
+  popular:           ()                          => "recs:popular",
+  recent:            (uid: string)               => `recs:recent:${uid}`,
+  cont:              (uid: string)               => `recs:cont:${uid}`,
+  cart:              (uid: string)               => `recs:cart:${uid}`,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -381,22 +383,73 @@ async function getPopularProductItems(limit: number): Promise<RecommendationItem
   return items;
 }
 
-// ── Celebrity recommendations (public) ───────────────────────────────────────
+// ── Celebrity recommendations (public, personalized when userId provided) ────
 
 export async function getCelebrityRecommendations(
   celebrityId: string,
-  limit = 20
+  limit = 20,
+  userId?: string
 ): Promise<RecommendationItem[] | null> {
   const celeb = await prisma.celebrity.findUnique({ where: { id: celebrityId }, select: { id: true } });
   if (!celeb) return null;
 
+  // Personalized path: use multi-signal ranker when a logged-in user is present
+  if (userId) {
+    const cacheKey = KEY.celebrityPersonal(userId, celebrityId);
+    const cached   = cacheService.get<RecommendationItem[]>(cacheKey);
+    if (cached) return cached;
+
+    const [candidateIds, userFeatures] = await Promise.all([
+      prisma.product.findMany({
+        where:   { celebrityId, isPublished: true, deletedAt: null },
+        select:  { id: true },
+        orderBy: { publishedAt: "desc" },
+        take:    limit * 4,
+      }).then((rows) => rows.map((r) => r.id)),
+      getUserFeatures(userId).catch(() => null),
+    ]);
+
+    const negativeIds = cacheService.get<string[]>(`feedback:neg:${userId}`) ?? [];
+    const ranked = await rankCandidates(candidateIds, {
+      userFeatures,
+      negativeFeedback: new Set(negativeIds),
+    }, { limit });
+
+    const items: RecommendationItem[] = ranked.map((r) => ({
+      productId:      r.productId,
+      score:          r.score,
+      reason:         r.reason,
+      confidence:     r.confidence,
+      explanation:    r.explanation,
+      rankingSignals: r.breakdown,
+    }));
+
+    cacheService.set(cacheKey, items, TTL.CELEBRITY);
+    return items;
+  }
+
+  // Anonymous path: popularity-based ranking via graph edges
   const cacheKey = KEY.celebrity(celebrityId);
   const cached   = cacheService.get<RecommendationItem[]>(cacheKey);
   if (cached) return cached;
 
-  const edges     = await getCelebrityToProductEdges(celebrityId, limit * 2);
-  const published = await guardPublished(edges.map((e) => e.targetId));
-  const items     = edges.filter((e) => published.has(e.targetId)).slice(0, limit).map(edgeToItem);
+  // Use new ranker even for anonymous — but with popularity-only weights
+  const candidateIds = await prisma.product.findMany({
+    where:   { celebrityId, isPublished: true, deletedAt: null },
+    select:  { id: true },
+    orderBy: { publishedAt: "desc" },
+    take:    limit * 4,
+  }).then((rows) => rows.map((r) => r.id));
+
+  const ranked = await rankCandidates(candidateIds, {}, { limit });
+  const items: RecommendationItem[] = ranked.map((r) => ({
+    productId:      r.productId,
+    score:          r.score,
+    reason:         r.reason,
+    confidence:     r.confidence,
+    explanation:    r.explanation,
+    rankingSignals: r.breakdown,
+  }));
 
   cacheService.set(cacheKey, items, TTL.CELEBRITY);
   return items;
@@ -583,7 +636,8 @@ export async function getHomeRecommendations(
 
 export async function getProductRecommendations(
   productId: string,
-  limit = 8
+  limit = 8,
+  userId?: string
 ): Promise<{ sections: RecommendationSection<ProductSectionType>[] } | null> {
   const product = await prisma.product.findUnique({
     where:  { id: productId },
@@ -625,18 +679,21 @@ export async function getProductRecommendations(
   ]);
 
   // "Complete The Look": same celebrity, DIFFERENT category
-  const completeLookRows = await prisma.product.findMany({
-    where:   {
-      celebrityId: product.celebrityId,
-      category:    { not: product.category },
-      isPublished: true,
-      deletedAt:   null,
-      id:          { not: productId },
-    },
-    select:  { id: true, orderCount: true },
-    orderBy: { orderCount: "desc" },
-    take:    limit,
-  });
+  const [completeLookRows, userFeatures] = await Promise.all([
+    prisma.product.findMany({
+      where:   {
+        celebrityId: product.celebrityId,
+        category:    { not: product.category },
+        isPublished: true,
+        deletedAt:   null,
+        id:          { not: productId },
+      },
+      select:  { id: true, orderCount: true },
+      orderBy: { orderCount: "desc" },
+      take:    limit * 2,
+    }),
+    userId ? getUserFeatures(userId).catch(() => null) : Promise.resolve(null),
+  ]);
 
   // Build sets and filter
   const allCandidateIds = [
@@ -673,6 +730,40 @@ export async function getProductRecommendations(
       makeItem(p.id, Math.max(0, 1 - idx / limit), "SAME_CELEBRITY", EXPLANATION_TEXT.FAVOURITE_CELEBRITY, 0.5)
     );
 
+  // Sprint 8.4: use multi-signal ranker for SAME_CELEBRITY and SAME_BRAND sections
+  const userCtx = { userFeatures: userFeatures ?? null };
+  const celebCandidateIds = celebEdges
+    .filter((e) => e.targetId !== productId && published.has(e.targetId))
+    .map((e) => e.targetId);
+  const brandCandidateIds = brandEdges
+    .filter((e) => e.targetId !== productId && published.has(e.targetId))
+    .map((e) => e.targetId);
+
+  const [rankedCelebItems, rankedBrandItems] = await Promise.all([
+    celebCandidateIds.length > 0
+      ? rankCandidates(celebCandidateIds, userCtx, { excludeIds: new Set([productId]), limit })
+          .then((rs) => rs.map((r) => ({
+            productId:      r.productId,
+            score:          r.score,
+            reason:         r.reason,
+            confidence:     r.confidence,
+            explanation:    r.explanation,
+            rankingSignals: r.breakdown,
+          } as RecommendationItem)))
+      : Promise.resolve(filterEdges(celebEdges).filter((e) => e.targetId !== productId).slice(0, limit).map(edgeToItem)),
+    brandCandidateIds.length > 0
+      ? rankCandidates(brandCandidateIds, userCtx, { excludeIds: new Set([productId]), limit })
+          .then((rs) => rs.map((r) => ({
+            productId:      r.productId,
+            score:          r.score,
+            reason:         r.reason,
+            confidence:     r.confidence,
+            explanation:    r.explanation,
+            rankingSignals: r.breakdown,
+          } as RecommendationItem)))
+      : Promise.resolve(filterEdges(brandEdges).slice(0, limit).map(edgeToItem)),
+  ]);
+
   const sections: RecommendationSection<ProductSectionType>[] = [
     {
       type:  "SIMILAR_PRODUCTS",
@@ -692,12 +783,12 @@ export async function getProductRecommendations(
     {
       type:  "SAME_CELEBRITY",
       title: PRODUCT_TITLES.SAME_CELEBRITY,
-      items: filterEdges(celebEdges).filter((e) => e.targetId !== productId).slice(0, limit).map(edgeToItem),
+      items: rankedCelebItems,
     },
     {
       type:  "SAME_BRAND",
       title: PRODUCT_TITLES.SAME_BRAND,
-      items: filterEdges(brandEdges).slice(0, limit).map(edgeToItem),
+      items: rankedBrandItems,
     },
   ];
 

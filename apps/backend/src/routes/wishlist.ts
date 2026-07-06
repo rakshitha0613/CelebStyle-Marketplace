@@ -6,6 +6,7 @@ import {
   CommerceNotFoundError,
   CommerceForbiddenError,
 } from "../lib/commerce.errors.js";
+import { invalidateUserRecommendationsCache } from "../services/recommendation.service.js";
 
 export const wishlistRouter = Router();
 
@@ -45,6 +46,7 @@ wishlistRouter.post("/", async (req, res) => {
       return;
     }
     const item = await wishlistService.addItem(req.user!.id, productId);
+    invalidateUserRecommendationsCache(req.user!.id);
     res.status(201).json({ data: item });
   } catch (err) {
     handleError(err, res);
@@ -55,6 +57,7 @@ wishlistRouter.post("/", async (req, res) => {
 wishlistRouter.delete("/", async (req, res) => {
   try {
     await wishlistService.clearWishlist(req.user!.id);
+    invalidateUserRecommendationsCache(req.user!.id);
     res.status(204).send();
   } catch (err) {
     handleError(err, res);

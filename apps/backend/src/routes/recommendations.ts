@@ -73,7 +73,7 @@ recommendationsRouter.get(
     if (!productId) { res.status(400).json({ error: "productId required" }); return; }
 
     const limit  = parseLimit(req.query["limit"], 8);
-    const result = await getProductRecommendations(productId, limit);
+    const result = await getProductRecommendations(productId, limit, req.user?.id);
 
     if (!result) {
       res.status(404).json({ error: "Product not found or not published" });
@@ -94,7 +94,7 @@ recommendationsRouter.get(
     if (!celebrityId) { res.status(400).json({ error: "celebrityId required" }); return; }
 
     const limit  = parseLimit(req.query["limit"], 20);
-    const result = await getCelebrityRecommendations(celebrityId, limit);
+    const result = await getCelebrityRecommendations(celebrityId, limit, req.user?.id);
 
     if (!result) {
       res.status(404).json({ error: "Celebrity not found" });

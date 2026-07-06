@@ -12,6 +12,10 @@ import {
   markImpressionClicked,
 } from "../services/feedback.service.js";
 import {
+  invalidateUserRecommendationsCache,
+} from "../services/recommendation.service.js";
+import { invalidateRankingCache } from "../services/ranking.service.js";
+import {
   getExperiments,
   getExperiment,
   getExperimentAssignment,
@@ -86,6 +90,12 @@ feedbackRouter.post(
       revenue:      body.revenue,
       metadata:     body.metadata,
     });
+
+    // Sprint 8.4: Invalidate user recommendation caches on meaningful feedback
+    if (userId && ["DISMISS", "HIDE", "PURCHASE", "WISHLIST", "ADD_TO_CART"].includes(body.feedbackType)) {
+      invalidateUserRecommendationsCache(userId);
+      invalidateRankingCache(userId);
+    }
 
     res.status(result.isDuplicate ? 200 : 201).json({ data: result });
   }
