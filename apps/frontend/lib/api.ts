@@ -1620,6 +1620,54 @@ export async function uploadImageUrl(url: string): Promise<UploadResult> {
   return res.data;
 }
 
+// ─── Manufacturer Portal ──────────────────────────────────────────────────────
+
+export type RoutingAssignment = {
+  id: string;
+  orderId: string;
+  orderItemId: string;
+  manufacturerId: string | null;
+  manufacturerName: string;
+  status: string;
+  trackingCode: string | null;
+  acceptedAt: string | null;
+  dispatchedAt: string | null;
+  order: {
+    orderNumber: string;
+    customerEmail: string;
+    shippingName: string;
+    shippingAddress: string;
+    status: string;
+    createdAt: string;
+  };
+  orderItem: {
+    productSlug: string;
+    productName: string;
+    category: string;
+    size: string;
+    unitPrice: number;
+    imageUrl: string;
+  };
+};
+
+export async function getMyRoutingAssignments(): Promise<RoutingAssignment[]> {
+  try {
+    const res = await apiFetch<{ data: RoutingAssignment[] }>("/api/fulfillment/routing/mine");
+    return res.data;
+  } catch { return []; }
+}
+
+export async function acceptRouting(routingId: string): Promise<void> {
+  await apiFetch(`/api/fulfillment/routing/${routingId}/accept`, { method: "POST" });
+}
+
+export async function dispatchRouting(routingId: string, trackingCode?: string): Promise<void> {
+  await apiFetch(`/api/fulfillment/routing/${routingId}/dispatch`, {
+    method: "POST",
+    body: JSON.stringify({ trackingCode }),
+  });
+}
+
 export async function uploadImageBase64(base64: string, filename?: string): Promise<UploadResult> {
   const res = await apiFetch<{ data: UploadResult }>("/api/upload", {
     method: "POST",
