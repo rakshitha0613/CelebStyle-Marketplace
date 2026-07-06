@@ -718,3 +718,551 @@ export async function logARSession(payload: ARSessionPayload): Promise<void> {
     // Intentionally swallowed — analytics are non-blocking
   }
 }
+
+// ─── Community ────────────────────────────────────────────────────────────────
+
+export type CommunityPost = {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string | null;
+  caption: string;
+  imageUrl: string | null;
+  outfitId: string | null;
+  outfitName: string | null;
+  tags: string[];
+  likeCount: number;
+  liked: boolean;
+  commentCount: number;
+  shares: number;
+  reportCount: number;
+  status: "ACTIVE" | "HIDDEN" | "DELETED";
+  contestEntry: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CommunityComment = {
+  id: string;
+  postId: string;
+  userId: string;
+  userName: string;
+  body: string;
+  likes: string[];
+  createdAt: string;
+};
+
+export async function getCommunityFeed(params?: {
+  limit?: number;
+  offset?: number;
+  tag?: string;
+  userId?: string;
+}): Promise<{ posts: CommunityPost[]; total: number; offset: number; limit: number }> {
+  const qs = new URLSearchParams();
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.offset) qs.set("offset", String(params.offset));
+  if (params?.tag) qs.set("tag", params.tag);
+  if (params?.userId) qs.set("userId", params.userId);
+  const query = qs.toString() ? `?${qs}` : "";
+  const res = await apiFetch<{ data: { posts: CommunityPost[]; total: number; offset: number; limit: number } }>(
+    `/api/community/posts${query}`
+  );
+  return res.data;
+}
+
+export async function getTrendingPosts(limit = 10): Promise<CommunityPost[]> {
+  try {
+    const res = await apiFetch<{ data: CommunityPost[] }>(
+      `/api/community/posts/trending?limit=${limit}`
+    );
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function getContestPosts(limit = 20): Promise<CommunityPost[]> {
+  try {
+    const res = await apiFetch<{ data: CommunityPost[] }>(
+      `/api/community/posts/contest?limit=${limit}`
+    );
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function createCommunityPost(body: {
+  caption: string;
+  imageUrl?: string;
+  outfitId?: string;
+  outfitName?: string;
+  tags?: string[];
+  contestEntry?: boolean;
+}): Promise<CommunityPost> {
+  const res = await apiFetch<{ data: CommunityPost }>("/api/community/posts", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+export async function likeCommunityPost(postId: string): Promise<{ liked: boolean; likeCount: number }> {
+  const res = await apiFetch<{ data: { liked: boolean; likeCount: number } }>(
+    `/api/community/posts/${postId}/like`,
+    { method: "POST" }
+  );
+  return res.data;
+}
+
+export async function getPostComments(postId: string): Promise<CommunityComment[]> {
+  try {
+    const res = await apiFetch<{ data: { comments: CommunityComment[] } }>(
+      `/api/community/posts/${postId}/comments`
+    );
+    return res.data.comments;
+  } catch {
+    return [];
+  }
+}
+
+export async function addComment(postId: string, body: string): Promise<CommunityComment> {
+  const res = await apiFetch<{ data: CommunityComment }>(
+    `/api/community/posts/${postId}/comments`,
+    { method: "POST", body: JSON.stringify({ body }) }
+  );
+  return res.data;
+}
+
+export async function shareCommunityPost(postId: string): Promise<void> {
+  try {
+    await apiFetch(`/api/community/posts/${postId}/share`, { method: "POST" });
+  } catch { /* fire-and-forget */ }
+}
+
+export async function reportCommunityPost(postId: string, reason: string): Promise<void> {
+  await apiFetch(`/api/community/posts/${postId}/report`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function deleteCommunityPost(postId: string): Promise<void> {
+  await apiFetch(`/api/community/posts/${postId}`, { method: "DELETE" });
+}
+
+// ── Fan Ratings ───────────────────────────────────────────────────────────────
+
+export type FanRating = {
+  id: string;
+  userId: string;
+  userName: string;
+  celebrityId: string;
+  rating: number;
+  review: string | null;
+  createdAt: string;
+};
+
+export async function getFanRatings(celebrityId: string): Promise<{
+  ratings: FanRating[];
+  average: number | null;
+  count: number;
+}> {
+  try {
+    const res = await apiFetch<{ data: { ratings: FanRating[]; average: number | null; count: number } }>(
+      `/api/community/fan-ratings/${celebrityId}`
+    );
+    return res.data;
+  } catch {
+    return { ratings: [], average: null, count: 0 };
+  }
+}
+
+export async function submitFanRating(
+  celebrityId: string,
+  rating: number,
+  review?: string
+): Promise<FanRating> {
+  const res = await apiFetch<{ data: FanRating }>(
+    `/api/community/fan-ratings/${celebrityId}`,
+    { method: "POST", body: JSON.stringify({ rating, review }) }
+  );
+  return res.data;
+}
+
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+
+export type Review = {
+  id: string;
+  userId: string;
+  userName: string;
+  outfitId: string;
+  orderId: string | null;
+  rating: number;
+  title: string;
+  body: string;
+  verified: boolean;
+  images: string[];
+  helpfulCount: number;
+  helpful: boolean;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function getOutfitReviews(outfitId: string): Promise<{
+  reviews: Review[];
+  total: number;
+  average: number | null;
+}> {
+  try {
+    const res = await apiFetch<{ data: { reviews: Review[]; total: number; average: number | null } }>(
+      `/api/reviews/outfit/${outfitId}`
+    );
+    return res.data;
+  } catch {
+    return { reviews: [], total: 0, average: null };
+  }
+}
+
+export async function submitReview(body: {
+  outfitId: string;
+  orderId?: string;
+  rating: number;
+  title?: string;
+  body: string;
+}): Promise<Review> {
+  const res = await apiFetch<{ data: Review }>("/api/reviews", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+export async function markReviewHelpful(reviewId: string): Promise<{ helpful: boolean; helpfulCount: number }> {
+  const res = await apiFetch<{ data: { helpful: boolean; helpfulCount: number } }>(
+    `/api/reviews/${reviewId}/helpful`,
+    { method: "POST" }
+  );
+  return res.data;
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+export type AppNotification = {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string;
+  actionUrl: string | null;
+  read: boolean;
+  createdAt: string;
+};
+
+export type PriceAlert = {
+  id: string;
+  outfitId: string;
+  outfitName: string;
+  targetPrice: number;
+  currentPrice: number;
+  active: boolean;
+  createdAt: string;
+};
+
+export type CelebrityAlert = {
+  id: string;
+  celebrityId: string;
+  celebrityName: string;
+  active: boolean;
+  createdAt: string;
+};
+
+export async function getNotifications(params?: { unread?: boolean; limit?: number; offset?: number }): Promise<{
+  notifications: AppNotification[];
+  total: number;
+  unreadCount: number;
+}> {
+  try {
+    const qs = new URLSearchParams();
+    if (params?.unread) qs.set("unread", "true");
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.offset) qs.set("offset", String(params.offset));
+    const query = qs.toString() ? `?${qs}` : "";
+    const res = await apiFetch<{ data: { notifications: AppNotification[]; total: number; unreadCount: number } }>(
+      `/api/notifications${query}`
+    );
+    return res.data;
+  } catch {
+    return { notifications: [], total: 0, unreadCount: 0 };
+  }
+}
+
+export async function markNotificationRead(id: string): Promise<void> {
+  await apiFetch(`/api/notifications/${id}/read`, { method: "PATCH" });
+}
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await apiFetch("/api/notifications/read-all", { method: "POST" });
+}
+
+export async function getPriceAlerts(): Promise<PriceAlert[]> {
+  try {
+    const res = await apiFetch<{ data: PriceAlert[] }>("/api/notifications/price-alerts");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function createPriceAlert(
+  outfitId: string,
+  outfitName: string,
+  targetPrice: number,
+  currentPrice: number
+): Promise<PriceAlert> {
+  const res = await apiFetch<{ data: PriceAlert }>("/api/notifications/price-alerts", {
+    method: "POST",
+    body: JSON.stringify({ outfitId, outfitName, targetPrice, currentPrice }),
+  });
+  return res.data;
+}
+
+export async function deletePriceAlert(id: string): Promise<void> {
+  await apiFetch(`/api/notifications/price-alerts/${id}`, { method: "DELETE" });
+}
+
+export async function getCelebrityAlerts(): Promise<CelebrityAlert[]> {
+  try {
+    const res = await apiFetch<{ data: CelebrityAlert[] }>("/api/notifications/celebrity-alerts");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function followCelebrity(
+  celebrityId: string,
+  celebrityName: string
+): Promise<CelebrityAlert> {
+  const res = await apiFetch<{ data: CelebrityAlert }>("/api/notifications/celebrity-alerts", {
+    method: "POST",
+    body: JSON.stringify({ celebrityId, celebrityName }),
+  });
+  return res.data;
+}
+
+export async function unfollowCelebrity(alertId: string): Promise<void> {
+  await apiFetch(`/api/notifications/celebrity-alerts/${alertId}`, { method: "DELETE" });
+}
+
+// ─── Size Profile ─────────────────────────────────────────────────────────────
+
+export type SizeProfile = {
+  id: string;
+  height: number | null;
+  weight: number | null;
+  chest: number | null;
+  waist: number | null;
+  hips: number | null;
+  inseam: number | null;
+  shoulder: number | null;
+  topSize: string | null;
+  bottomSize: string | null;
+  dressSize: string | null;
+  shoeSize: string | null;
+  fitPreference: "SLIM" | "REGULAR" | "RELAXED" | null;
+  notes: string | null;
+  updatedAt: string;
+};
+
+export async function getSizeProfile(): Promise<SizeProfile | null> {
+  try {
+    const res = await apiFetch<{ data: SizeProfile | null }>("/api/profile/size");
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveSizeProfile(data: Partial<Omit<SizeProfile, "id" | "updatedAt">>): Promise<SizeProfile> {
+  const res = await apiFetch<{ data: SizeProfile }>("/api/profile/size", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+// ─── Saved Looks ──────────────────────────────────────────────────────────────
+
+export type SavedLook = {
+  id: string;
+  outfitId: string;
+  outfitName: string;
+  imageUrl: string | null;
+  screenshotUrl: string | null;
+  notes: string | null;
+  savedAt: string;
+};
+
+export async function getSavedLooks(): Promise<SavedLook[]> {
+  try {
+    const res = await apiFetch<{ data: SavedLook[] }>("/api/profile/saved-looks");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function saveLook(body: {
+  outfitId: string;
+  outfitName: string;
+  imageUrl?: string;
+  screenshotUrl?: string;
+  notes?: string;
+}): Promise<SavedLook> {
+  const res = await apiFetch<{ data: SavedLook }>("/api/profile/saved-looks", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+export async function deleteSavedLook(id: string): Promise<void> {
+  await apiFetch(`/api/profile/saved-looks/${id}`, { method: "DELETE" });
+}
+
+// ─── Invoices ─────────────────────────────────────────────────────────────────
+
+export type Invoice = {
+  id: string;
+  orderId: string;
+  invoiceNumber: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{ name: string; quantity: number; price: number; subtotal: number }>;
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  total: number;
+  status: string;
+  issuedAt: string;
+};
+
+export async function getInvoiceForOrder(orderId: string): Promise<Invoice | null> {
+  try {
+    const res = await apiFetch<{ data: Invoice }>(`/api/invoices/order/${orderId}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Returns ──────────────────────────────────────────────────────────────────
+
+export type ReturnRequest = {
+  id: string;
+  orderId: string;
+  userId: string;
+  reason: string;
+  description: string | null;
+  status: string;
+  items: Array<{ orderItemId: string; quantity: number; reason?: string }>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function getMyReturns(): Promise<ReturnRequest[]> {
+  try {
+    const res = await apiFetch<{ data: ReturnRequest[] }>("/api/returns");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function createReturn(body: {
+  orderId: string;
+  reason: string;
+  description?: string;
+  items: Array<{ orderItemId: string; quantity: number; reason?: string }>;
+}): Promise<ReturnRequest> {
+  const res = await apiFetch<{ data: ReturnRequest }>("/api/returns", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+// ─── Settlements ──────────────────────────────────────────────────────────────
+
+export type Settlement = {
+  id: string;
+  manufacturerId: string;
+  manufacturerName: string;
+  period: string;
+  grossRevenue: number;
+  platformFee: number;
+  netAmount: number;
+  status: string;
+  paidAt: string | null;
+  createdAt: string;
+};
+
+export async function getSettlements(): Promise<Settlement[]> {
+  try {
+    const res = await apiFetch<{ data: Settlement[] }>("/api/settlements");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+// ─── Blog ─────────────────────────────────────────────────────────────────────
+
+export type BlogPost = {
+  id: string;
+  slug: string;
+  authorId: string;
+  authorName: string;
+  celebrityId: string | null;
+  title: string;
+  summary: string;
+  body: string;
+  coverImage: string | null;
+  tags: string[];
+  outfitIds: string[];
+  published: boolean;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function getBlogPosts(params?: {
+  tag?: string;
+  celebrityId?: string;
+  search?: string;
+  limit?: number;
+}): Promise<{ posts: BlogPost[]; total: number }> {
+  try {
+    const qs = new URLSearchParams();
+    if (params?.tag) qs.set("tag", params.tag);
+    if (params?.celebrityId) qs.set("celebrityId", params.celebrityId);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.limit) qs.set("limit", String(params.limit));
+    const query = qs.toString() ? `?${qs}` : "";
+    const res = await apiFetch<{ data: { posts: BlogPost[]; total: number } }>(`/api/blog${query}`);
+    return res.data;
+  } catch {
+    return { posts: [], total: 0 };
+  }
+}
+
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  try {
+    const res = await apiFetch<{ data: BlogPost }>(`/api/blog/${slug}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}

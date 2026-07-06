@@ -12,6 +12,8 @@ export function Navbar() {
         <nav className="hidden items-center gap-8 text-sm font-medium text-text md:flex">
           <Link href="/celebrities">Celebrities</Link>
           <Link href="/search">Search</Link>
+          <Link href="/community">Community</Link>
+          <Link href="/blog">Blog</Link>
           <Link href="/storefronts">Storefronts</Link>
           <Link href="/cart">Cart</Link>
           <NavAuth />

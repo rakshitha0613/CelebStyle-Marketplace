@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
-import { getManufacturers, getOutfit, getProductRecs } from "@/lib/api";
+import { getManufacturers, getOutfit, getProductRecs, getOutfitReviews } from "@/lib/api";
 import type { Outfit } from "@/lib/api";
 import { OutfitGallery } from "./outfit-client";
+import { ReviewsSection } from "./reviews-client";
 import { RecommendationCarousel } from "@/components/recommendation-carousel";
 
 type OutfitDetailPageProps = {
@@ -11,10 +12,11 @@ type OutfitDetailPageProps = {
 
 export default async function OutfitDetailPage({ params }: OutfitDetailPageProps) {
   const { id } = await params;
-  const [outfit, manufacturers, productSections] = await Promise.all([
+  const [outfit, manufacturers, productSections, reviewData] = await Promise.all([
     getOutfit(id),
     getManufacturers(),
     getProductRecs(id, 6),
+    getOutfitReviews(id),
   ]);
 
   if (!outfit) notFound();
@@ -35,6 +37,12 @@ export default async function OutfitDetailPage({ params }: OutfitDetailPageProps
     <main>
       <Navbar />
       <OutfitGallery outfit={outfit} manufacturers={manufacturers} />
+      <ReviewsSection
+        outfitId={id}
+        initialReviews={reviewData.reviews}
+        initialAverage={reviewData.average}
+        initialTotal={reviewData.total}
+      />
       <RecommendationCarousel
         subtitle="You May Also Like"
         title={firstSection?.title ?? "Similar Products"}

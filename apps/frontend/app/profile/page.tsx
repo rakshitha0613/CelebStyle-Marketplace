@@ -283,6 +283,36 @@ export default function ProfilePage() {
               >
                 Wishlist
               </Link>
+              <Link
+                href="/saved-looks"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Saved Looks
+              </Link>
+              <Link
+                href="/notifications"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Notifications
+              </Link>
+              <Link
+                href="/size-profile"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Size Profile
+              </Link>
+              <Link
+                href="/invoices"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Invoices
+              </Link>
+              <Link
+                href="/returns"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Returns
+              </Link>
               <button
                 onClick={handleLogout}
                 className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-text/60 transition hover:bg-black/5"

@@ -24,8 +24,15 @@ export function SearchClient({ initialOutfits, celebrities, allOccasions, allCat
   const [category, setCategory] = useState(initialFilters.category);
   const [celebrityId, setCelebrityId] = useState(initialFilters.celebrityId);
   const [colorPalette, setColorPalette] = useState("");
+  const [movieName, setMovieName] = useState("");
+  const [characterName, setCharacterName] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [sortBy, setSortBy] = useState<"relevance" | "price_asc" | "price_desc" | "newest">("relevance");
 
   const allColors = [...new Set(initialOutfits.map((o) => o.colorPalette).filter(Boolean))].sort();
+  const allMovies = [...new Set(initialOutfits.map((o) => o.movieName).filter(Boolean))].sort();
+  const allCharacters = [...new Set(initialOutfits.map((o) => o.characterName).filter(Boolean))].sort() as string[];
+  const allIndustries = [...new Set(celebrities.map((c) => c.industry))].sort();
 
   const filtered = useMemo(() => {
     let results = [...initialOutfits];
@@ -46,8 +53,18 @@ export function SearchClient({ initialOutfits, celebrities, allOccasions, allCat
     if (category) results = results.filter((o) => o.category === category);
     if (celebrityId) results = results.filter((o) => o.celebrityId === celebrityId);
     if (colorPalette) results = results.filter((o) => o.colorPalette === colorPalette);
+    if (movieName) results = results.filter((o) => o.movieName === movieName);
+    if (characterName) results = results.filter((o) => o.characterName === characterName);
+    if (industry) {
+      const celebsInIndustry = new Set(celebrities.filter((c) => c.industry === industry).map((c) => c.id));
+      results = results.filter((o) => celebsInIndustry.has(o.celebrityId));
+    }
+    // Sorting
+    if (sortBy === "price_asc") results.sort((a, b) => a.price - b.price);
+    else if (sortBy === "price_desc") results.sort((a, b) => b.price - a.price);
+    else if (sortBy === "newest") results.sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
     return results;
-  }, [initialOutfits, search, occasion, category, celebrityId, colorPalette]);
+  }, [initialOutfits, celebrities, search, occasion, category, celebrityId, colorPalette, movieName, characterName, industry, sortBy]);
 
   const clearFilters = () => {
     setSearch("");
@@ -55,6 +72,10 @@ export function SearchClient({ initialOutfits, celebrities, allOccasions, allCat
     setCategory("");
     setCelebrityId("");
     setColorPalette("");
+    setMovieName("");
+    setCharacterName("");
+    setIndustry("");
+    setSortBy("relevance");
   };
 
   const handleTagClick = (filterType: "occasion" | "category" | "color", value: string) => {
@@ -63,7 +84,7 @@ export function SearchClient({ initialOutfits, celebrities, allOccasions, allCat
     if (filterType === "color") setColorPalette(value);
   };
 
-  const activeFilterCount = [search, occasion, category, celebrityId, colorPalette].filter(Boolean).length;
+  const activeFilterCount = [search, occasion, category, celebrityId, colorPalette, movieName, characterName, industry].filter(Boolean).length;
 
   return (
     <>
@@ -78,7 +99,7 @@ export function SearchClient({ initialOutfits, celebrities, allOccasions, allCat
           )}
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Search</label>
             <input
@@ -151,6 +172,62 @@ export function SearchClient({ initialOutfits, celebrities, allOccasions, allCat
                   {celeb.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Industry / Region</label>
+            <select
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              className="w-full rounded-xl border border-black/10 bg-background px-4 py-2.5 text-sm text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            >
+              <option value="">All industries</option>
+              {allIndustries.map((ind) => (
+                <option key={ind} value={ind}>{ind}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Movie / Show</label>
+            <select
+              value={movieName}
+              onChange={(e) => setMovieName(e.target.value)}
+              className="w-full rounded-xl border border-black/10 bg-background px-4 py-2.5 text-sm text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            >
+              <option value="">All movies</option>
+              {allMovies.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Character</label>
+            <select
+              value={characterName}
+              onChange={(e) => setCharacterName(e.target.value)}
+              className="w-full rounded-xl border border-black/10 bg-background px-4 py-2.5 text-sm text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            >
+              <option value="">All characters</option>
+              {allCharacters.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Sort By</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="w-full rounded-xl border border-black/10 bg-background px-4 py-2.5 text-sm text-primary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            >
+              <option value="relevance">Relevance</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="newest">Newest</option>
             </select>
           </div>
         </div>

@@ -6,8 +6,10 @@ import { adminLogin, adminLogout, getStoredToken } from "@/lib/api";
 import { CelebritiesTab } from "./tabs/celebrities-tab";
 import { OutfitsTab } from "./tabs/outfits-tab";
 import { ManufacturersTab } from "./tabs/manufacturers-tab";
+import { ModerationTab } from "./tabs/moderation-tab";
+import { AnalyticsTab } from "./tabs/analytics-tab";
 
-type Tab = "overview" | "celebrities" | "outfits" | "manufacturers";
+type Tab = "overview" | "celebrities" | "outfits" | "manufacturers" | "analytics" | "moderation";
 
 type AdminClientProps = {
   initialCelebrities: Celebrity[];
@@ -103,7 +105,9 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
     { id: "overview", label: "Overview" },
     { id: "celebrities", label: `Celebrities (${celebrities.length})` },
     { id: "outfits", label: `Outfits (${outfits.length})` },
-    { id: "manufacturers", label: `Manufacturers (${manufacturers.length})` }
+    { id: "manufacturers", label: `Manufacturers (${manufacturers.length})` },
+    { id: "analytics", label: "Analytics" },
+    { id: "moderation", label: "Moderation" },
   ];
 
   return (
@@ -134,12 +138,12 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
       </div>
 
       {/* Tab nav */}
-      <div className="mt-10 flex gap-1 rounded-2xl border border-black/6 bg-white p-1.5 shadow-sm">
+      <div className="mt-10 flex flex-wrap gap-1 rounded-2xl border border-black/6 bg-white p-1.5 shadow-sm">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+            className={`rounded-xl px-4 py-2.5 text-sm font-medium transition whitespace-nowrap ${
               tab === t.id
                 ? "bg-primary text-background shadow-sm"
                 : "text-text/60 hover:text-primary"
@@ -187,7 +191,9 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
               {[
                 { label: "Manage Celebrities", desc: "Add, edit, or remove celebrity profiles", tab: "celebrities" as Tab },
                 { label: "Manage Outfits", desc: "Add outfit entries, tag metadata, link manufacturers", tab: "outfits" as Tab },
-                { label: "Manage Manufacturers", desc: "Onboard and verify tailor/manufacturer network", tab: "manufacturers" as Tab }
+                { label: "Manage Manufacturers", desc: "Onboard and verify tailor/manufacturer network", tab: "manufacturers" as Tab },
+                { label: "Analytics", desc: "Revenue, commissions, and catalogue performance", tab: "analytics" as Tab },
+                { label: "Moderation", desc: "Review reported community posts and content", tab: "moderation" as Tab },
               ].map((action) => (
                 <button
                   key={action.label}
@@ -212,6 +218,14 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
 
         {tab === "manufacturers" && (
           <ManufacturersTab manufacturers={manufacturers} setManufacturers={setManufacturers} />
+        )}
+
+        {tab === "analytics" && (
+          <AnalyticsTab outfitCount={outfits.length} celebrityCount={celebrities.length} />
+        )}
+
+        {tab === "moderation" && (
+          <ModerationTab />
         )}
       </div>
     </>
