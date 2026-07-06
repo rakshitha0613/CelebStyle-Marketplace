@@ -78,7 +78,21 @@ function Garment3DPlaceholder({
     }
 
     if (config.physicsEnabled && !config.reducedMotion) {
-      physicsService.step(Math.min(delta, MAX_DELTA), DEFAULT_PHYSICS_CONFIG);
+      const dt = Math.min(delta, MAX_DELTA);
+      physicsService.tickAnimatedWind(dt, 0.5);
+      if (landmarks) {
+        const ls = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
+        const rs = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
+        if (ls && rs) {
+          physicsService.updateBodyCenter(
+            (ls.x + rs.x) * 0.5,
+            (ls.y + rs.y) * 0.5,
+            (ls.z + rs.z) * 0.5,
+            dt,
+          );
+        }
+      }
+      physicsService.stepWithInertia(dt, DEFAULT_PHYSICS_CONFIG);
     }
   });
 
@@ -169,7 +183,21 @@ function Garment3DModel({
     }
 
     if (config.physicsEnabled && !config.reducedMotion) {
-      physicsService.step(Math.min(delta, MAX_DELTA), DEFAULT_PHYSICS_CONFIG);
+      const dt = Math.min(delta, MAX_DELTA);
+      physicsService.tickAnimatedWind(dt, 0.5);
+      if (landmarks) {
+        const ls = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
+        const rs = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
+        if (ls && rs) {
+          physicsService.updateBodyCenter(
+            (ls.x + rs.x) * 0.5,
+            (ls.y + rs.y) * 0.5,
+            (ls.z + rs.z) * 0.5,
+            dt,
+          );
+        }
+      }
+      physicsService.stepWithInertia(dt, DEFAULT_PHYSICS_CONFIG);
     }
   });
 

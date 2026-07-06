@@ -9,11 +9,13 @@ import { GarmentAssetLoader } from './garment-asset.loader.js';
 import { GarmentRenderer } from './garment-renderer.js';
 import {
   computeBodyMeasurements,
-  computeGarmentAlignment,
+  computeEnhancedGarmentAlignment,
 } from './garment-alignment.service.js';
+import { PoseSmoother } from './pose-smoother.service.js';
 
 export class GarmentOverlayService {
   private poseService: PoseService;
+  private poseSmoother = new PoseSmoother();
   private assetLoader: GarmentAssetLoader;
   private renderer: GarmentRenderer;
   private config: GarmentOverlayConfig;
@@ -55,9 +57,12 @@ export class GarmentOverlayService {
     if (!this.initialized || !this.currentAsset || !this.currentImage) return;
     if (!this.config.visible) return;
 
-    const landmarks = this.poseService.detectLandmarks(video, timestamp);
+    const rawLandmarks = this.poseService.detectLandmarks(video, timestamp);
+    if (!rawLandmarks) { this.lastLandmarks = null; return; }
+
+    // Smooth raw landmarks before every downstream calculation
+    const landmarks = this.poseSmoother.smooth(rawLandmarks);
     this.lastLandmarks = landmarks;
-    if (!landmarks) return;
 
     const measurements = computeBodyMeasurements(
       landmarks,
@@ -67,9 +72,12 @@ export class GarmentOverlayService {
     );
     if (!measurements) return;
 
-    const alignment = computeGarmentAlignment(
+    const alignment = computeEnhancedGarmentAlignment(
       measurements,
       this.currentAsset,
+      landmarks,
+      canvasWidth,
+      canvasHeight,
       this.config.opacity,
       this.config.mirrored,
       this.config.visibilityThreshold,
@@ -102,6 +110,7 @@ export class GarmentOverlayService {
     this.lastLandmarks  = null;
     this.currentAsset   = null;
     this.currentImage   = null;
+    this.poseSmoother.reset();
   }
 
   destroy(): void {
