@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { getCelebrity, getOutfits, getStorefront } from "@/lib/api";
+import { StorefrontActions } from "./storefront-actions";
 
 type Props = {
   params: Promise<{ celebrityId: string }>;
@@ -32,6 +33,7 @@ export default async function StorefrontDetailPage({ params }: Props) {
             <p className="text-xs uppercase tracking-[0.36em] text-accent">{storefront.verified ? "Verified storefront" : "Storefront pending review"}</p>
             <h1 className="mt-3 font-serif text-5xl text-primary">{storefront.displayName}</h1>
             <p className="mt-4 text-text/70">{storefront.message}</p>
+          <StorefrontActions celebrityId={celebrityId} />
           </div>
         </div>
 
