@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { CommerceNotFoundError, CommerceForbiddenError } from "../lib/commerce.errors.js";
@@ -7,7 +8,7 @@ function generateInvoiceNumber(): string {
   const year = d.getFullYear();
   const mon  = String(d.getMonth() + 1).padStart(2, "0");
   const day  = String(d.getDate()).padStart(2, "0");
-  const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const rand = randomBytes(3).toString("hex").toUpperCase();
   return `INV-${year}${mon}${day}-${rand}`;
 }
 
