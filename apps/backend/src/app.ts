@@ -36,6 +36,7 @@ import { notificationsRouter } from "./routes/notifications.js";
 import { blogRouter } from "./routes/blog.js";
 import { specialOrdersRouter } from "./routes/special-orders.js";
 import { uploadRouter } from "./routes/upload.js";
+import { couponsRouter } from "./routes/coupons.js";
 import { correlationIdMiddleware } from "./lib/correlation.js";
 import { logger } from "./lib/logger.js";
 import {
@@ -123,6 +124,7 @@ export function createApp() {
   app.use("/api/notifications", notificationsRouter);
   app.use("/api/blog", blogRouter);
   app.use("/api/upload", uploadRouter);
+  app.use("/api/coupons", couponsRouter);
 
   // ── Global error handler ──────────────────────────────────────────────────────
   app.use((error: unknown, request: express.Request, response: express.Response, _next: express.NextFunction) => {

@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Celebrity, Outfit, Manufacturer } from "@/lib/api";
-import { adminLogin, adminLogout, getStoredToken } from "@/lib/api";
+import type { Celebrity, Outfit, Manufacturer, Coupon } from "@/lib/api";
+import { adminLogin, adminLogout, getStoredToken, getCoupons } from "@/lib/api";
 import { CelebritiesTab } from "./tabs/celebrities-tab";
 import { OutfitsTab } from "./tabs/outfits-tab";
 import { ManufacturersTab } from "./tabs/manufacturers-tab";
 import { ModerationTab } from "./tabs/moderation-tab";
 import { AnalyticsTab } from "./tabs/analytics-tab";
 import { ReportsTab } from "./tabs/reports-tab";
+import { CouponsTab } from "./tabs/coupons-tab";
 
-type Tab = "overview" | "celebrities" | "outfits" | "manufacturers" | "analytics" | "moderation" | "reports";
+type Tab = "overview" | "celebrities" | "outfits" | "manufacturers" | "analytics" | "moderation" | "reports" | "coupons";
 
 type AdminClientProps = {
   initialCelebrities: Celebrity[];
@@ -23,6 +24,7 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
   const [celebrities, setCelebrities] = useState(initialCelebrities);
   const [outfits, setOutfits] = useState(initialOutfits);
   const [manufacturers, setManufacturers] = useState(initialManufacturers);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
 
   // ── Login gate ──────────────────────────────────────────────────────────────
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -32,7 +34,9 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
   const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(!!getStoredToken());
+    const token = getStoredToken();
+    setIsLoggedIn(!!token);
+    if (token) getCoupons().then(setCoupons).catch(() => {});
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -107,6 +111,7 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
     { id: "celebrities", label: `Celebrities (${celebrities.length})` },
     { id: "outfits", label: `Outfits (${outfits.length})` },
     { id: "manufacturers", label: `Manufacturers (${manufacturers.length})` },
+    { id: "coupons", label: `Coupons (${coupons.length})` },
     { id: "analytics", label: "Analytics" },
     { id: "reports", label: "Reports" },
     { id: "moderation", label: "Moderation" },
@@ -197,6 +202,7 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
                 { label: "Analytics", desc: "Revenue, commissions, and catalogue performance", tab: "analytics" as Tab },
                 { label: "Reports", desc: "Settlement and commission reports with date filters", tab: "reports" as Tab },
                 { label: "Moderation", desc: "Review reported community posts and content", tab: "moderation" as Tab },
+                { label: "Coupons", desc: "Create and manage discount codes and promotions", tab: "coupons" as Tab },
               ].map((action) => (
                 <button
                   key={action.label}
@@ -233,6 +239,10 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
 
         {tab === "moderation" && (
           <ModerationTab />
+        )}
+
+        {tab === "coupons" && (
+          <CouponsTab coupons={coupons} setCoupons={setCoupons} />
         )}
       </div>
     </>

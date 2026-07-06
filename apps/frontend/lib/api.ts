@@ -1627,3 +1627,49 @@ export async function uploadImageBase64(base64: string, filename?: string): Prom
   });
   return res.data;
 }
+
+// ─── Coupon Admin ─────────────────────────────────────────────────────────────
+
+export type Coupon = {
+  id: string;
+  code: string;
+  type: "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIPPING" | "BUY_X_GET_Y" | "FIRST_ORDER";
+  value: number;
+  minOrderAmount: number;
+  maxDiscountAmount: number | null;
+  usageLimit: number | null;
+  usageLimitPerUser: number;
+  usedCount: number;
+  startsAt: string;
+  expiresAt: string | null;
+  isActive: boolean;
+  createdAt: string;
+  _count?: { usages: number };
+};
+
+export async function getCoupons(): Promise<Coupon[]> {
+  try {
+    const res = await apiFetch<{ data: Coupon[] }>("/api/coupons");
+    return res.data;
+  } catch { return []; }
+}
+
+export async function createCoupon(body: Partial<Coupon>): Promise<Coupon> {
+  const res = await apiFetch<{ data: Coupon }>("/api/coupons", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+export async function updateCoupon(id: string, body: Partial<Coupon>): Promise<Coupon> {
+  const res = await apiFetch<{ data: Coupon }>(`/api/coupons/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+export async function deactivateCoupon(id: string): Promise<void> {
+  await apiFetch(`/api/coupons/${id}`, { method: "DELETE" });
+}
