@@ -1,19 +1,27 @@
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
+import { v2 as cloudinary } from "cloudinary";
 import { authenticate } from "../auth/middleware/authenticate.js";
+import { config } from "../env.js";
 
 export const uploadRouter = Router();
+
+// Configure Cloudinary from CLOUDINARY_URL env var (format: cloudinary://api_key:api_secret@cloud_name)
+if (config.cloudinary.enabled && config.cloudinary.url) {
+  cloudinary.config({ cloudinary_url: config.cloudinary.url });
+}
 
 /**
  * POST /api/upload
  *
- * Cloudinary simulation layer. Accepts:
- *   - { url: string }   — external URL to "upload" (returns same URL as secure_url)
- *   - { base64: string, filename?: string } — base64 data URI
+ * Accepts either:
+ *   { url: string }                        — upload from remote URL
+ *   { base64: string, filename?: string }  — upload base64 data URI
  *
- * In production, replace this handler body with actual Cloudinary SDK upload.
- * The response shape matches Cloudinary's upload API:
+ * Returns Cloudinary upload result shape:
  *   { data: { secure_url, public_id, width, height, format, resource_type } }
+ *
+ * When CLOUDINARY_URL is not set, falls back to URL passthrough (no storage).
  */
 uploadRouter.post("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -28,42 +36,62 @@ uploadRouter.post("/", authenticate, async (req: Request, res: Response, next: N
       return;
     }
 
-    const publicId = `celebstyle/${Date.now()}_${(filename ?? "upload").replace(/[^a-z0-9._-]/gi, "_")}`;
+    const folder = "celebstyle";
+    const publicId = filename
+      ? `${folder}/${filename.replace(/\.[^.]+$/, "").replace(/[^a-z0-9_-]/gi, "_")}`
+      : undefined;
 
-    if (url) {
-      // Passthrough — pretend URL was uploaded to Cloudinary
+    if (!config.cloudinary.enabled) {
+      // Fallback: return the source as-is (no cloud storage)
+      const sourceUrl = url ?? base64!;
+      const format = url
+        ? url.split(".").pop()?.split("?")[0] ?? "jpg"
+        : (base64!.match(/^data:image\/(\w+)/)?.[1] ?? "jpg");
       res.json({
         data: {
-          secure_url: url,
-          public_id: publicId,
+          secure_url: sourceUrl,
+          public_id: publicId ?? `${folder}/${Date.now()}`,
           resource_type: "image",
-          format: url.split(".").pop()?.split("?")[0] ?? "jpg",
-          simulated: true,
+          format,
+          width: null,
+          height: null,
         },
       });
       return;
     }
 
-    // base64 path — validate it's a data URI
-    const dataUriMatch = (base64 as string).match(/^data:(image\/\w+);base64,(.+)$/);
-    if (!dataUriMatch) {
-      res.status(400).json({ error: "base64 must be a valid data URI (data:image/...;base64,...)" });
-      return;
-    }
+    const source = url ?? base64!;
+    const result = await cloudinary.uploader.upload(source, {
+      folder,
+      ...(publicId ? { public_id: publicId } : {}),
+      resource_type: "auto",
+      overwrite: false,
+    });
 
-    const mimeType = dataUriMatch[1];
-    const format = mimeType.split("/")[1];
-
-    // In sim mode: return the data URI itself as the secure_url.
-    // A real Cloudinary integration would upload and return a CDN URL.
     res.json({
       data: {
-        secure_url: base64 as string,
-        public_id: publicId,
-        resource_type: "image",
-        format,
-        simulated: true,
+        secure_url:    result.secure_url,
+        public_id:     result.public_id,
+        resource_type: result.resource_type,
+        format:        result.format,
+        width:         result.width,
+        height:        result.height,
       },
     });
+  } catch (err) { next(err); }
+});
+
+/**
+ * DELETE /api/upload/:publicId — remove asset from Cloudinary
+ */
+uploadRouter.delete("/:publicId", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!config.cloudinary.enabled) {
+      res.json({ data: { message: "Deleted (no-op — Cloudinary not configured)" } });
+      return;
+    }
+    const publicId = decodeURIComponent(req.params.publicId as string);
+    await cloudinary.uploader.destroy(publicId);
+    res.json({ data: { message: "Deleted", publicId } });
   } catch (err) { next(err); }
 });

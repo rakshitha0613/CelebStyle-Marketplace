@@ -1,12 +1,18 @@
 /**
- * cache.service — in-memory TTL cache with a Redis-compatible interface.
+ * cache.service — TTL cache with optional Redis write-through.
  *
- * Design intent: swap the InMemoryCacheService implementation for a Redis
- * adapter without changing any call site. All public methods match what
- * ioredis / @upstash/redis would expose for simple get/set/del/has operations.
+ * Architecture:
+ *   - All synchronous call sites use the in-memory layer (unchanged behaviour).
+ *   - When REDIS_URL is configured, every write is also propagated to Redis
+ *     asynchronously (fire-and-forget), and the in-memory cache is pre-warmed
+ *     from Redis on startup via `warmFromRedis()`.
+ *   - Reads always hit in-memory first; this preserves the synchronous contract
+ *     required by the many existing call sites.
  */
 
-// ── Core interface (Redis-portable) ──────────────────────────────────────────
+import { config } from "../env.js";
+
+// ── Core interface ────────────────────────────────────────────────────────────
 
 export interface ICacheService {
   get<T>(key: string): T | null;
@@ -19,12 +25,12 @@ export interface ICacheService {
 // ── TTL constants (milliseconds) ─────────────────────────────────────────────
 
 export const TTL = {
-  USER_FEATURES:       10 * 60_000,   // 10 min
-  USER_EMBEDDING:       5 * 60_000,   //  5 min
-  PRODUCT_FEATURES:    15 * 60_000,   // 15 min
-  TRENDING:             5 * 60_000,   //  5 min
-  RECENTLY_VIEWED:     30 * 60_000,   // 30 min
-  FEATURE_SNAPSHOT:    10 * 60_000,   // 10 min
+  USER_FEATURES:       10 * 60_000,
+  USER_EMBEDDING:       5 * 60_000,
+  PRODUCT_FEATURES:    15 * 60_000,
+  TRENDING:             5 * 60_000,
+  RECENTLY_VIEWED:     30 * 60_000,
+  FEATURE_SNAPSHOT:    10 * 60_000,
 } as const;
 
 // ── Key builders ──────────────────────────────────────────────────────────────
@@ -87,7 +93,6 @@ class InMemoryCacheService implements ICacheService {
     this.store.clear();
   }
 
-  /** Evict all expired entries. Call periodically if memory is a concern. */
   evict(): void {
     for (const [key, entry] of this.store) {
       if (this.isExpired(entry)) this.store.delete(key);
@@ -99,13 +104,85 @@ class InMemoryCacheService implements ICacheService {
   }
 }
 
+// ── Redis write-through wrapper ───────────────────────────────────────────────
+
+class RedisBackedCacheService extends InMemoryCacheService {
+  private redis: import("ioredis").Redis | null = null;
+  private ready = false;
+
+  constructor() {
+    super();
+    this.connect();
+  }
+
+  private connect(): void {
+    if (!config.redis.enabled || !config.redis.url) return;
+    import("ioredis").then((mod) => {
+      // ioredis v5 exports default differently depending on module system
+      const Redis = (mod.default ?? mod) as unknown as new (url: string, opts: object) => import("ioredis").Redis;
+      const client = new Redis(config.redis.url!, { lazyConnect: true, maxRetriesPerRequest: 1 });
+      client.on("ready", () => { this.ready = true; });
+      client.on("error", () => { this.ready = false; });
+      client.connect().catch(() => { /* startup failure is non-fatal */ });
+      this.redis = client;
+    }).catch(() => { /* ioredis unavailable — in-memory only */ });
+  }
+
+  override set<T>(key: string, value: T, ttlMs?: number): void {
+    super.set(key, value, ttlMs);
+    if (this.ready && this.redis) {
+      const serialized = JSON.stringify(value);
+      const ttlSec = ttlMs ? Math.ceil(ttlMs / 1000) : 86_400;
+      this.redis.set(`cs:${key}`, serialized, "EX", ttlSec).catch(() => { /* best-effort */ });
+    }
+  }
+
+  override del(key: string): void {
+    super.del(key);
+    if (this.ready && this.redis) {
+      this.redis.del(`cs:${key}`).catch(() => { /* best-effort */ });
+    }
+  }
+
+  override clear(): void {
+    super.clear();
+    if (this.ready && this.redis) {
+      this.redis.keys("cs:*").then((keys) => {
+        if (keys.length > 0) this.redis!.del(...keys).catch(() => {});
+      }).catch(() => {});
+    }
+  }
+
+  /** Warm the in-memory cache from Redis on startup. Call once after connect. */
+  async warmFromRedis(): Promise<void> {
+    if (!this.ready || !this.redis) return;
+    try {
+      const keys = await this.redis.keys("cs:*");
+      if (keys.length === 0) return;
+      const pipeline = this.redis.pipeline();
+      for (const k of keys) pipeline.get(k);
+      const results = await pipeline.exec();
+      if (!results) return;
+      for (let i = 0; i < keys.length; i++) {
+        const [, raw] = results[i]!;
+        if (typeof raw === "string") {
+          try {
+            const parsed = JSON.parse(raw) as unknown;
+            const localKey = keys[i]!.replace(/^cs:/, "");
+            super.set(localKey, parsed);
+          } catch { /* skip malformed entries */ }
+        }
+      }
+    } catch { /* warming is non-critical */ }
+  }
+}
+
 // ── Domain helpers built on top of the core interface ─────────────────────────
 
 export type RecentlyViewedList = string[]; // productId[]
 const RV_MAX = 20;
 
-class CacheServiceWithHelpers extends InMemoryCacheService {
-  // Recently viewed
+class CacheServiceWithHelpers extends RedisBackedCacheService {
   getRecentlyViewed(sessionId: string): RecentlyViewedList {
     return this.get<RecentlyViewedList>(CacheKey.recentlyViewed(sessionId)) ?? [];
   }
@@ -116,7 +193,6 @@ class CacheServiceWithHelpers extends InMemoryCacheService {
     this.set(CacheKey.recentlyViewed(sessionId), list.slice(0, RV_MAX), TTL.RECENTLY_VIEWED);
   }
 
-  // User features
   getUserFeatures(userId: string): Record<string, unknown> | null {
     return this.get(CacheKey.userFeatures(userId));
   }
@@ -130,7 +206,6 @@ class CacheServiceWithHelpers extends InMemoryCacheService {
     this.del(CacheKey.featureSnapshot(userId));
   }
 
-  // Product features
   getProductFeatures(productId: string): Record<string, unknown> | null {
     return this.get(CacheKey.productFeatures(productId));
   }
@@ -139,7 +214,6 @@ class CacheServiceWithHelpers extends InMemoryCacheService {
     this.set(CacheKey.productFeatures(productId), features, TTL.PRODUCT_FEATURES);
   }
 
-  // Trending
   getTrending(window: string): Array<{ productId: string; score: number; rank: number }> | null {
     return this.get(CacheKey.trending(window));
   }

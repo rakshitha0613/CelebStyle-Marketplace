@@ -6,6 +6,7 @@ import { orderRepository } from "../repositories/order.repository.js";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
 import { refundService } from "../services/refund.service.js";
+import { sendOrderConfirmation, sendOrderShipped } from "../services/email.service.js";
 
 // ── Public type re-exports ─────────────────────────────────────────────────────
 export type {
@@ -103,6 +104,9 @@ ordersRouter.post("/", authenticate, async (req: Request, res: Response) => {
     userId: req.user!.id,
   });
 
+  const orderTotal = normalizedItems.reduce((s: number, i: { price: number; size: string }) => s + i.price, 0);
+  sendOrderConfirmation(customerEmail as string, order.id, orderTotal).catch(() => {});
+
   res.status(201).json({ data: order });
 });
 
@@ -138,6 +142,9 @@ ordersRouter.patch("/:id/status", authenticate, authorize("ADMIN", "SUPER_ADMIN"
   if (!order) {
     res.status(404).json({ message: "Order not found" });
     return;
+  }
+  if (status === "SHIPPED" && order.customerEmail) {
+    sendOrderShipped(order.customerEmail, order.id, order.id).catch(() => {});
   }
   res.json({ data: order });
 });
