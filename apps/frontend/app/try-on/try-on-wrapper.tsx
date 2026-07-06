@@ -14,6 +14,10 @@ const TryOnClient = dynamic(
   },
 );
 
-export function TryOnWrapper() {
-  return <TryOnClient />;
+type Props = {
+  preloadOutfitId?: string;
+};
+
+export function TryOnWrapper({ preloadOutfitId }: Props) {
+  return <TryOnClient preloadOutfitId={preloadOutfitId} />;
 }

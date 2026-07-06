@@ -6,7 +6,8 @@ import type { GarmentAsset, GarmentOverlayConfig, PoseLandmark } from '@/lib/ar/
 import type { Scene3DConfig } from '@/lib/ar/three.types';
 import type { ClothingSize, PhysicalMeasurements, SizeRecommendation, OutfitItem, OutfitSlot, OutfitScore, WishlistEntry, Outfit } from '@/lib/ar/fit.types';
 import { DEFAULT_SCENE_CONFIG } from '@/lib/ar/three.types';
-import { DEMO_GARMENTS } from '@/lib/ar/garment-catalogue';
+import { getOutfits } from '@/lib/api';
+import { outfitsToGarments } from '@/lib/ar/outfit-to-garment';
 import { BodyMeasurementService } from '@/lib/ar/body-measurement.service';
 import { SizeRecommendationService } from '@/lib/ar/size-recommendation.service';
 import { OutfitComposerService } from '@/lib/ar/outfit-composer.service';
@@ -59,12 +60,19 @@ function garmentAssetToItem(asset: GarmentAsset, slot: OutfitSlot, size: Clothin
   };
 }
 
-export default function TryOnClient() {
+interface TryOnClientProps {
+  preloadOutfitId?: string;
+}
+
+export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
   const [arConfig, setArConfig]           = useState<ARConfig>(DEFAULT_AR_CONFIG);
   const [overlayConfig, setOverlayConfig] = useState<GarmentOverlayConfig>(DEFAULT_OVERLAY_CONFIG);
   const [sceneConfig, setSceneConfig]     = useState<Scene3DConfig>(DEFAULT_SCENE_CONFIG);
   const [metrics, setMetrics]             = useState<FrameMetrics | null>(null);
-  const [selectedGarment, setSelectedGarment] = useState<GarmentAsset>(DEMO_GARMENTS[0]);
+  const [garments, setGarments]           = useState<GarmentAsset[]>([]);
+  const [garmentsLoading, setGarmentsLoading] = useState(true);
+  const [garmentsError, setGarmentsError] = useState(false);
+  const [selectedGarment, setSelectedGarment] = useState<GarmentAsset | null>(null);
   const [video, setVideo]       = useState<HTMLVideoElement | null>(null);
   const [landmarks, setLandmarks] = useState<PoseLandmark[] | null>(null);
 
@@ -100,16 +108,45 @@ export default function TryOnClient() {
     setSavedOutfits(wishlistSvc.current.loadSavedOutfits());
   }, []);
 
+  // ── Load real outfits from API and convert to GarmentAssets ───────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGarments() {
+      setGarmentsLoading(true);
+      setGarmentsError(false);
+      try {
+        const outfits = await getOutfits();
+        if (cancelled) return;
+        const converted = outfitsToGarments(outfits);
+        setGarments(converted);
+
+        // Pre-select the deep-linked outfit or fall back to the first garment
+        const preload = preloadOutfitId
+          ? converted.find((g) => g.id === preloadOutfitId) ?? converted[0]
+          : converted[0];
+        if (preload) setSelectedGarment(preload);
+      } catch {
+        if (!cancelled) setGarmentsError(true);
+      } finally {
+        if (!cancelled) setGarmentsLoading(false);
+      }
+    }
+
+    void loadGarments();
+    return () => { cancelled = true; };
+  }, [preloadOutfitId]);
+
   // ── Landmark → measurements → size rec ────────────────────────────────────
   useEffect(() => {
-    if (!landmarks || landmarks.length === 0) return;
+    if (!landmarks || landmarks.length === 0 || !selectedGarment) return;
     // Use a standard 640×480 reference; measurements are proportional
     const m = bodyMeasSvc.current.estimateMeasurements(landmarks, 640, 480);
     if (!m || m.confidence < 0.3) return;
     setMeasurements(m);
     const rec = sizeRecSvc.current.getRecommendedSize(m, selectedGarment.type);
     setSizeRec(rec);
-  }, [landmarks, selectedGarment.type]);
+  }, [landmarks, selectedGarment]);
 
   // ── Composer sync ──────────────────────────────────────────────────────────
   const syncComposer = useCallback(() => {
@@ -131,6 +168,7 @@ export default function TryOnClient() {
   }, []);
 
   const handleAddCurrentGarment = useCallback(() => {
+    if (!selectedGarment) return;
     const item = garmentAssetToItem(selectedGarment, 'top', sizeRec?.size ?? 'M');
     composerSvc.current.addItem(item);
     syncComposer();
@@ -253,18 +291,30 @@ export default function TryOnClient() {
 
           {/* Side panel */}
           <div className="space-y-4">
-            <GarmentControls
-              garments={DEMO_GARMENTS}
-              selected={selectedGarment}
-              onSelect={setSelectedGarment}
-              config={overlayConfig}
-              onConfigChange={updateOverlay}
-            />
+            {garmentsLoading ? (
+              <div className="bg-white/10 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                <span className="text-white/50 text-sm">Loading outfits…</span>
+              </div>
+            ) : garmentsError ? (
+              <div className="bg-white/10 rounded-xl p-4 text-sm text-red-400">
+                Failed to load outfits. Please refresh to retry.
+              </div>
+            ) : (
+              <GarmentControls
+                garments={garments}
+                selected={selectedGarment}
+                onSelect={setSelectedGarment}
+                config={overlayConfig}
+                onConfigChange={updateOverlay}
+              />
+            )}
 
             {/* Add to outfit quick action */}
             <button
               onClick={handleAddCurrentGarment}
-              className="w-full rounded-xl py-2 text-sm font-medium bg-white/8 hover:bg-white/12 text-white/70 hover:text-white transition-colors border border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+              disabled={!selectedGarment}
+              className="w-full rounded-xl py-2 text-sm font-medium bg-white/8 hover:bg-white/12 text-white/70 hover:text-white transition-colors border border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               + Add to Outfit Composer
             </button>

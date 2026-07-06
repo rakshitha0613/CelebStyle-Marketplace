@@ -6,10 +6,15 @@ export const metadata: Metadata = {
   description: 'Try on celebrity outfits using on-device AR — no data leaves your device.',
 };
 
-export default function TryOnPage() {
+type TryOnPageProps = {
+  searchParams: Promise<{ outfitId?: string }>;
+};
+
+export default async function TryOnPage({ searchParams }: TryOnPageProps) {
+  const { outfitId } = await searchParams;
   return (
     <main>
-      <TryOnWrapper />
+      <TryOnWrapper preloadOutfitId={outfitId} />
     </main>
   );
 }

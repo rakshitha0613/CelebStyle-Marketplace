@@ -6,6 +6,17 @@ import Link from "next/link";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { getStoredToken, addToWishlist } from "@/lib/api";
 
+function TryOnButton({ outfitId }: { outfitId: string }) {
+  return (
+    <Link
+      href={`/try-on?outfitId=${outfitId}`}
+      className="flex items-center justify-center gap-2 rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+    >
+      ◎ Try On (AR)
+    </Link>
+  );
+}
+
 function WishlistButton({ outfitId }: { outfitId: string }) {
   const router = useRouter();
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -151,6 +162,7 @@ export function OutfitGallery({ outfit, manufacturers }: { outfit: any; manufact
         <div className="space-y-6">
           <AddToCartButton outfit={outfit} />
           <WishlistButton outfitId={outfit.id} />
+          <TryOnButton outfitId={outfit.id} />
 
           <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.28em] text-accent">Delivery & Fit</p>
