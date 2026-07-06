@@ -1266,3 +1266,290 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
     return null;
   }
 }
+
+// ─── Storefront Analytics ─────────────────────────────────────────────────────
+
+export type StorefrontAnalytics = {
+  celebrityId: string;
+  totalViews: number;
+  uniqueVisitors: number;
+  conversions: number;
+  conversionRate: number;
+  monthly: Array<{ month: string; views: number; conversions: number }>;
+  topOutfits: Array<{ outfitId: string; views: number }>;
+};
+
+export type StorefrontPayout = {
+  id: string;
+  period: string;
+  gross: number;
+  commission: number;
+  status: string;
+  paidAt: string | null;
+};
+
+export async function getStorefrontAnalytics(celebrityId: string): Promise<StorefrontAnalytics | null> {
+  try {
+    const res = await apiFetch<{ data: StorefrontAnalytics }>(`/api/storefronts/${celebrityId}/analytics`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+export async function getStorefrontPayouts(celebrityId: string): Promise<{
+  payouts: StorefrontPayout[];
+  summary: CommissionSummary;
+} | null> {
+  try {
+    const res = await apiFetch<{ data: { payouts: StorefrontPayout[]; summary: CommissionSummary } }>(
+      `/api/storefronts/${celebrityId}/payouts`
+    );
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+export async function trackStorefrontView(celebrityId: string, outfitId?: string): Promise<void> {
+  try {
+    await apiFetch(`/api/storefronts/${celebrityId}/track`, {
+      method: "POST",
+      body: JSON.stringify({ outfitId }),
+    });
+  } catch { /* fire and forget */ }
+}
+
+// ─── Wishlist Privacy ─────────────────────────────────────────────────────────
+
+export async function getWishlistPrivacy(): Promise<{ isPublic: boolean }> {
+  try {
+    const res = await apiFetch<{ data: { isPublic: boolean } }>("/api/wishlist/privacy");
+    return res.data;
+  } catch {
+    return { isPublic: false };
+  }
+}
+
+export async function setWishlistPrivacy(isPublic: boolean): Promise<{ isPublic: boolean }> {
+  const res = await apiFetch<{ data: { isPublic: boolean } }>("/api/wishlist/privacy", {
+    method: "PATCH",
+    body: JSON.stringify({ isPublic }),
+  });
+  return res.data;
+}
+
+// ─── Special Orders ───────────────────────────────────────────────────────────
+
+export type BulkOrderItem = {
+  outfitId: string;
+  outfitName: string;
+  quantity: number;
+  size: string;
+  pricePerUnit: number;
+};
+
+export type BulkOrder = {
+  id: string;
+  userId: string;
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  deliveryAddress: string;
+  items: BulkOrderItem[];
+  totalUnits: number;
+  subtotal: number;
+  discountRate: number;
+  discountedTotal: number;
+  notes: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WeddingOrderItem = {
+  outfitId: string;
+  outfitName: string;
+  quantity: number;
+  size: string;
+  customFabric: string | null;
+  customColour: string | null;
+  customNotes: string | null;
+  pricePerUnit: number;
+};
+
+export type WeddingOrder = {
+  id: string;
+  brideName: string;
+  groomName: string;
+  weddingDate: string;
+  venue: string;
+  contactEmail: string;
+  contactPhone: string;
+  deliveryAddress: string;
+  items: WeddingOrderItem[];
+  subtotal: number;
+  rushFee: number;
+  total: number;
+  stylistNote: string | null;
+  status: string;
+  createdAt: string;
+};
+
+export type CustomizationRequest = {
+  id: string;
+  outfitId: string;
+  outfitName: string;
+  customFabric: string | null;
+  customColour: string | null;
+  embroidery: boolean;
+  embroideryText: string | null;
+  measurements: Record<string, number>;
+  additionalNotes: string | null;
+  estimatedPrice: number;
+  status: string;
+  quoteAmount: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function getMyBulkOrders(): Promise<BulkOrder[]> {
+  try {
+    const res = await apiFetch<{ data: BulkOrder[] }>("/api/special-orders/bulk");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function createBulkOrder(body: {
+  companyName?: string;
+  contactName?: string;
+  contactEmail: string;
+  contactPhone?: string;
+  deliveryAddress: string;
+  items: BulkOrderItem[];
+  notes?: string;
+}): Promise<BulkOrder> {
+  const res = await apiFetch<{ data: BulkOrder }>("/api/special-orders/bulk", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+export async function getMyWeddingOrders(): Promise<WeddingOrder[]> {
+  try {
+    const res = await apiFetch<{ data: WeddingOrder[] }>("/api/special-orders/wedding");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function createWeddingOrder(body: {
+  brideName?: string;
+  groomName?: string;
+  weddingDate: string;
+  venue?: string;
+  contactEmail: string;
+  contactPhone?: string;
+  deliveryAddress: string;
+  items: WeddingOrderItem[];
+  stylistNote?: string;
+}): Promise<WeddingOrder> {
+  const res = await apiFetch<{ data: WeddingOrder }>("/api/special-orders/wedding", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+export async function getMyCustomizations(): Promise<CustomizationRequest[]> {
+  try {
+    const res = await apiFetch<{ data: CustomizationRequest[] }>("/api/special-orders/customizations");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function createCustomization(body: {
+  outfitId: string;
+  outfitName?: string;
+  customFabric?: string;
+  customColour?: string;
+  embroidery?: boolean;
+  embroideryText?: string;
+  measurements?: Record<string, number>;
+  additionalNotes?: string;
+  estimatedPrice?: number;
+}): Promise<CustomizationRequest> {
+  const res = await apiFetch<{ data: CustomizationRequest }>("/api/special-orders/customizations", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return res.data;
+}
+
+// ─── Refunds ──────────────────────────────────────────────────────────────────
+
+export type Refund = {
+  id: string;
+  returnId: string;
+  orderId: string;
+  amount: number;
+  reason: string;
+  status: string;
+  processedAt: string | null;
+  createdAt: string;
+};
+
+export async function getMyRefunds(): Promise<Refund[]> {
+  try {
+    const res = await apiFetch<{ data: Refund[] }>("/api/refunds");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+// ── Admin reports ─────────────────────────────────────────────────────────────
+
+export type SettlementReport = {
+  totalSettlements: number;
+  totalPlatformFee: number;
+  totalCelebCommission: number;
+  totalManufacturerShare: number;
+  totalGross: number;
+  byStatus: Record<string, { count: number; amount: number }>;
+};
+
+export type CommissionReport = {
+  totalGross: number;
+  totalPlatformFee: number;
+  totalCelebCommission: number;
+  totalManufacturerShare: number;
+  byCelebrity: { celebrityId: string; gross: number; commission: number }[];
+};
+
+export async function getSettlementReport(params?: { from?: string; to?: string }): Promise<SettlementReport | null> {
+  try {
+    const qs = params ? "?" + new URLSearchParams(Object.entries(params).filter(([, v]) => v) as string[][]).toString() : "";
+    const res = await apiFetch<{ data: SettlementReport }>(`/api/settlements/report${qs}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+export async function getCommissionReport(params?: { from?: string; to?: string }): Promise<CommissionReport | null> {
+  try {
+    const qs = params ? "?" + new URLSearchParams(Object.entries(params).filter(([, v]) => v) as string[][]).toString() : "";
+    const res = await apiFetch<{ data: CommissionReport }>(`/api/commissions/report${qs}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}

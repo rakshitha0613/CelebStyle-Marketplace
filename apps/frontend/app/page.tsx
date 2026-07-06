@@ -3,6 +3,7 @@ import { Hero } from "@/components/hero";
 import { CelebrityCard } from "@/components/celebrity-card";
 import { OutfitCard } from "@/components/outfit-card";
 import { RecommendationCarousel } from "@/components/recommendation-carousel";
+import { OccasionSuggestions } from "@/components/occasion-suggestions";
 import { getCelebrities, getOutfits, getTrending, getNewArrivals } from "@/lib/api";
 import type { Outfit } from "@/lib/api";
 import Link from "next/link";
@@ -75,6 +76,8 @@ export default async function HomePage() {
         outfits={newArrivalOutfits}
         viewAllHref="/search"
       />
+
+      <OccasionSuggestions />
     </main>
   );
 }

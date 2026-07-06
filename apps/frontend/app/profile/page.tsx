@@ -313,6 +313,24 @@ export default function ProfilePage() {
               >
                 Returns
               </Link>
+              <Link
+                href="/refunds"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Refunds
+              </Link>
+              <Link
+                href="/bulk-order"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Bulk Orders
+              </Link>
+              <Link
+                href="/wedding-order"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Wedding Orders
+              </Link>
               <button
                 onClick={handleLogout}
                 className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-text/60 transition hover:bg-black/5"

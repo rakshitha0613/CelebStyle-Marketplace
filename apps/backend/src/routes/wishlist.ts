@@ -10,6 +10,9 @@ import { invalidateUserRecommendationsCache } from "../services/recommendation.s
 
 export const wishlistRouter = Router();
 
+// ── In-memory wishlist privacy settings ──────────────────────────────────────
+const wishlistPrivacy: Record<string, boolean> = {}; // userId → isPublic
+
 wishlistRouter.use(authenticate);
 
 function handleError(err: unknown, res: import("express").Response): void {
@@ -69,6 +72,38 @@ wishlistRouter.delete("/:id", async (req, res) => {
   try {
     await wishlistService.removeItem(req.user!.id, req.params.id as string);
     res.status(204).send();
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// GET /api/wishlist/privacy — get current privacy setting
+wishlistRouter.get("/privacy", async (req, res) => {
+  const isPublic = wishlistPrivacy[req.user!.id] ?? false;
+  res.json({ data: { isPublic } });
+});
+
+// PATCH /api/wishlist/privacy — toggle public/private
+wishlistRouter.patch("/privacy", async (req, res) => {
+  const { isPublic } = req.body as { isPublic?: boolean };
+  if (typeof isPublic !== "boolean") {
+    res.status(400).json({ error: "isPublic must be a boolean" });
+    return;
+  }
+  wishlistPrivacy[req.user!.id] = isPublic;
+  res.json({ data: { isPublic } });
+});
+
+// GET /api/wishlist/public/:userId — view another user's public wishlist (unauthenticated)
+wishlistRouter.get("/public/:userId", async (req, res) => {
+  const isPublic = wishlistPrivacy[req.params.userId as string] ?? false;
+  if (!isPublic) {
+    res.status(403).json({ error: "This wishlist is private" });
+    return;
+  }
+  try {
+    const items = await wishlistService.getItems(req.params.userId as string);
+    res.json({ data: items });
   } catch (err) {
     handleError(err, res);
   }

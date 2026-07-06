@@ -9,6 +9,8 @@ import {
   getWishlist,
   removeFromWishlist,
   clearWishlist,
+  getWishlistPrivacy,
+  setWishlistPrivacy,
 } from "@/lib/api";
 import type { WishlistItem } from "@/lib/api";
 
@@ -54,6 +56,8 @@ export default function WishlistPage() {
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
   const [movedIds, setMovedIds] = useState<Set<string>>(new Set());
+  const [isPublic, setIsPublic] = useState(false);
+  const [privacyLoading, setPrivacyLoading] = useState(false);
 
   const load = useCallback(async () => {
     const data = await getWishlist();
@@ -67,7 +71,17 @@ export default function WishlistPage() {
       return;
     }
     load();
+    getWishlistPrivacy().then((p) => setIsPublic(p.isPublic));
   }, [router, load]);
+
+  const handleTogglePrivacy = async () => {
+    setPrivacyLoading(true);
+    try {
+      const result = await setWishlistPrivacy(!isPublic);
+      setIsPublic(result.isPublic);
+    } catch { /* ignore */ }
+    finally { setPrivacyLoading(false); }
+  };
 
   const handleRemove = async (itemId: string) => {
     setRemovingId(itemId);
@@ -116,15 +130,26 @@ export default function WishlistPage() {
             <p className="text-xs uppercase tracking-[0.36em] text-accent">Saved</p>
             <h1 className="mt-3 font-serif text-5xl text-primary">Wishlist</h1>
           </div>
-          {items.length > 0 && (
+          <div className="flex items-center gap-4">
+            {/* Privacy toggle */}
             <button
-              onClick={handleClear}
-              disabled={clearing}
-              className="text-sm font-medium text-red-500 underline-offset-4 hover:underline disabled:opacity-50"
+              onClick={handleTogglePrivacy}
+              disabled={privacyLoading}
+              className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${isPublic ? "border-green-200 bg-green-50 text-green-700" : "border-black/10 bg-black/[0.02] text-text/60"} disabled:opacity-50`}
+              title={isPublic ? "Wishlist is public — click to make private" : "Wishlist is private — click to make public"}
             >
-              {clearing ? "Clearing…" : "Clear all"}
+              <span>{isPublic ? "🔓 Public" : "🔒 Private"}</span>
             </button>
-          )}
+            {items.length > 0 && (
+              <button
+                onClick={handleClear}
+                disabled={clearing}
+                className="text-sm font-medium text-red-500 underline-offset-4 hover:underline disabled:opacity-50"
+              >
+                {clearing ? "Clearing…" : "Clear all"}
+              </button>
+            )}
+          </div>
         </div>
 
         {loading ? (

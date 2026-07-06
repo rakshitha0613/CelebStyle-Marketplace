@@ -34,6 +34,7 @@ import { communityRouter } from "./routes/community.js";
 import { reviewsRouter } from "./routes/reviews.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { blogRouter } from "./routes/blog.js";
+import { specialOrdersRouter } from "./routes/special-orders.js";
 import { correlationIdMiddleware } from "./lib/correlation.js";
 import { logger } from "./lib/logger.js";
 import {
@@ -116,6 +117,7 @@ export function createApp() {
   app.use("/api/release", releaseRouter);
   app.use("/api/ar", arRouter);
   app.use("/api/community", communityRouter);
+  app.use("/api/special-orders", specialOrdersRouter);
   app.use("/api/reviews", reviewsRouter);
   app.use("/api/notifications", notificationsRouter);
   app.use("/api/blog", blogRouter);

@@ -8,8 +8,9 @@ import { OutfitsTab } from "./tabs/outfits-tab";
 import { ManufacturersTab } from "./tabs/manufacturers-tab";
 import { ModerationTab } from "./tabs/moderation-tab";
 import { AnalyticsTab } from "./tabs/analytics-tab";
+import { ReportsTab } from "./tabs/reports-tab";
 
-type Tab = "overview" | "celebrities" | "outfits" | "manufacturers" | "analytics" | "moderation";
+type Tab = "overview" | "celebrities" | "outfits" | "manufacturers" | "analytics" | "moderation" | "reports";
 
 type AdminClientProps = {
   initialCelebrities: Celebrity[];
@@ -107,6 +108,7 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
     { id: "outfits", label: `Outfits (${outfits.length})` },
     { id: "manufacturers", label: `Manufacturers (${manufacturers.length})` },
     { id: "analytics", label: "Analytics" },
+    { id: "reports", label: "Reports" },
     { id: "moderation", label: "Moderation" },
   ];
 
@@ -193,6 +195,7 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
                 { label: "Manage Outfits", desc: "Add outfit entries, tag metadata, link manufacturers", tab: "outfits" as Tab },
                 { label: "Manage Manufacturers", desc: "Onboard and verify tailor/manufacturer network", tab: "manufacturers" as Tab },
                 { label: "Analytics", desc: "Revenue, commissions, and catalogue performance", tab: "analytics" as Tab },
+                { label: "Reports", desc: "Settlement and commission reports with date filters", tab: "reports" as Tab },
                 { label: "Moderation", desc: "Review reported community posts and content", tab: "moderation" as Tab },
               ].map((action) => (
                 <button
@@ -222,6 +225,10 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
 
         {tab === "analytics" && (
           <AnalyticsTab outfitCount={outfits.length} celebrityCount={celebrities.length} />
+        )}
+
+        {tab === "reports" && (
+          <ReportsTab />
         )}
 
         {tab === "moderation" && (
