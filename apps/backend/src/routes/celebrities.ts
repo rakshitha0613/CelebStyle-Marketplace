@@ -1,34 +1,8 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { celebrityRecords } from "../data/catalogue.js";
 import { celebrityRepository } from "../repositories/celebrity.repository.js";
-import type { Celebrity } from "../repositories/celebrity.repository.js";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
-
-// ── Compatibility store ────────────────────────────────────────────────────────
-// outfits.ts and orders.ts import `celebrityStore` for celebrity id→name lookups
-// when enriching outfit and cart-item responses. We keep this array seeded from
-// the catalogue and in sync with every Prisma write so those lookups remain
-// accurate for the lifetime of the process.
-
-export const celebrityStore: Celebrity[] = [...(celebrityRecords as Celebrity[])];
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-function syncToStore(updated: Celebrity) {
-  const idx = celebrityStore.findIndex((c) => c.id === updated.id);
-  if (idx === -1) {
-    celebrityStore.push(updated);
-  } else {
-    celebrityStore[idx] = updated;
-  }
-}
-
-function removeFromStore(id: string) {
-  const idx = celebrityStore.findIndex((c) => c.id === id);
-  if (idx !== -1) celebrityStore.splice(idx, 1);
-}
 
 // ── Router ─────────────────────────────────────────────────────────────────────
 
@@ -100,7 +74,6 @@ celebritiesRouter.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), asy
     bannerImage:  bannerImage  || profileImage || "",
     styleTags:    normalizedTags,
   });
-  syncToStore(newItem);
   res.status(201).json({ data: newItem });
 });
 
@@ -128,7 +101,6 @@ celebritiesRouter.put("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), a
     res.status(404).json({ message: "Celebrity not found" });
     return;
   }
-  syncToStore(updated);
   res.json({ data: updated });
 });
 
@@ -140,6 +112,5 @@ celebritiesRouter.delete("/:id", authenticate, authorize("SUPER_ADMIN"), async (
     res.status(404).json({ message: "Celebrity not found" });
     return;
   }
-  removeFromStore(id);
   res.json({ message: "Deleted" });
 });

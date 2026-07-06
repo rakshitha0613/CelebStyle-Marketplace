@@ -1220,11 +1220,33 @@ export async function getSettlements(): Promise<Settlement[]> {
 
 // ─── Blog ─────────────────────────────────────────────────────────────────────
 
+type BlogPostRaw = {
+  id: string;
+  slug: string;
+  authorId: string;
+  author?: { name: string; profile?: { avatarUrl?: string | null } | null };
+  celebrityId: string | null;
+  title: string;
+  summary: string;
+  body: string;
+  coverImage: string | null;
+  tags: string[];
+  outfitIds?: string[];
+  productIds?: string[];
+  isPublished?: boolean;
+  published?: boolean;
+  viewCount?: number;
+  views?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type BlogPost = {
   id: string;
   slug: string;
   authorId: string;
   authorName: string;
+  author?: { name: string; profile?: { avatarUrl?: string | null } | null };
   celebrityId: string | null;
   title: string;
   summary: string;
@@ -1237,6 +1259,16 @@ export type BlogPost = {
   createdAt: string;
   updatedAt: string;
 };
+
+function normalizeBlogPost(raw: BlogPostRaw): BlogPost {
+  return {
+    ...raw,
+    authorName: raw.author?.name ?? "",
+    outfitIds: raw.outfitIds ?? raw.productIds ?? [],
+    published: raw.isPublished ?? raw.published ?? false,
+    views: raw.viewCount ?? raw.views ?? 0,
+  };
+}
 
 export async function getBlogPosts(params?: {
   tag?: string;
@@ -1251,8 +1283,8 @@ export async function getBlogPosts(params?: {
     if (params?.search) qs.set("search", params.search);
     if (params?.limit) qs.set("limit", String(params.limit));
     const query = qs.toString() ? `?${qs}` : "";
-    const res = await apiFetch<{ data: { posts: BlogPost[]; total: number } }>(`/api/blog${query}`);
-    return res.data;
+    const res = await apiFetch<{ data: { posts: BlogPostRaw[]; total: number } }>(`/api/blog${query}`);
+    return { posts: res.data.posts.map(normalizeBlogPost), total: res.data.total };
   } catch {
     return { posts: [], total: 0 };
   }
@@ -1260,8 +1292,8 @@ export async function getBlogPosts(params?: {
 
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    const res = await apiFetch<{ data: BlogPost }>(`/api/blog/${slug}`);
-    return res.data;
+    const res = await apiFetch<{ data: BlogPostRaw }>(`/api/blog/${slug}`);
+    return normalizeBlogPost(res.data);
   } catch {
     return null;
   }

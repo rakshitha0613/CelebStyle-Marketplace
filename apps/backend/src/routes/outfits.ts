@@ -1,56 +1,27 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { outfitRecords } from "../data/catalogue.js";
-import { celebrityStore } from "./celebrities.js";
 import { productRepository } from "../repositories/product.repository.js";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
+import { prisma } from "../lib/prisma.js";
 import {
   invalidateGlobalRecommendationsCache,
   invalidateProductRecommendationsCache,
 } from "../services/recommendation.service.js";
 
 // ── Public type re-export ──────────────────────────────────────────────────────
-// OutfitEntry now lives in the repository. Re-export so any existing import of
-// the type from this module continues to resolve without modification.
 export type { OutfitEntry } from "../repositories/product.repository.js";
 import type { OutfitEntry } from "../repositories/product.repository.js";
 
-// ── Compatibility store ────────────────────────────────────────────────────────
-// orders.ts and storefronts.ts import `outfitStore` synchronously and use it
-// for id→data lookups at order-creation and storefront-seeding time. We keep
-// this array initialised from the catalogue and in sync with every Prisma write
-// so those lookups remain accurate for the lifetime of the process.
-// Phase B.4 (orders) and B.5 (storefronts) will remove these dependencies.
+// ── Celebrity name lookup ──────────────────────────────────────────────────────
+// Fetches a slug→name map from Postgres. Used to enrich outfit responses.
 
-export const outfitStore: OutfitEntry[] = outfitRecords.map((o) => ({
-  id:              o.id,
-  celebrityId:     o.celebrityId,
-  movieName:       o.movieName,
-  occasion:        o.occasion,
-  category:        o.category,
-  colorPalette:    o.colorPalette,
-  price:           o.price,
-  imageUrl:        o.imageUrl,
-  images:          o.images          ?? [],
-  description:     o.description,
-  year:            o.year,
-  characterName:   o.characterName,
-  manufacturerIds: o.manufacturerIds ?? [],
-}));
-
-function syncToStore(updated: OutfitEntry) {
-  const idx = outfitStore.findIndex((o) => o.id === updated.id);
-  if (idx === -1) {
-    outfitStore.push(updated);
-  } else {
-    outfitStore[idx] = updated;
-  }
-}
-
-function removeFromStore(id: string) {
-  const idx = outfitStore.findIndex((o) => o.id === id);
-  if (idx !== -1) outfitStore.splice(idx, 1);
+async function buildCelebMap(): Promise<Map<string, string>> {
+  const rows = await prisma.celebrity.findMany({
+    where: { isActive: true, deletedAt: null },
+    select: { slug: true, name: true },
+  });
+  return new Map(rows.map((c) => [c.slug, c.name]));
 }
 
 // ── Router ─────────────────────────────────────────────────────────────────────
@@ -67,8 +38,8 @@ outfitsRouter.get("/", async (req: Request, res: Response) => {
   if (category)   results = results.filter((o) => o.category.toLowerCase().includes(category.toLowerCase()));
   if (year)       results = results.filter((o) => String(o.year) === year);
   if (search) {
+    const celebMap = await buildCelebMap();
     const q = search.toLowerCase();
-    const celebMap = new Map(celebrityStore.map((c) => [c.id, c.name]));
     results = results.filter(
       (o) =>
         o.movieName.toLowerCase().includes(q)        ||
@@ -81,8 +52,7 @@ outfitsRouter.get("/", async (req: Request, res: Response) => {
     );
   }
 
-  // Enrich with celebrity name
-  const celebMap = new Map(celebrityStore.map((c) => [c.id, c.name]));
+  const celebMap = await buildCelebMap();
   const enriched = results.map((o) => ({
     ...o,
     celebrityName: celebMap.get(o.celebrityId) || o.celebrityId,
@@ -97,7 +67,7 @@ outfitsRouter.get("/:id", async (req: Request, res: Response) => {
     res.status(404).json({ message: "Outfit not found" });
     return;
   }
-  const celebMap = new Map(celebrityStore.map((c) => [c.id, c.name]));
+  const celebMap = await buildCelebMap();
   res.json({ data: { ...item, celebrityName: celebMap.get(item.celebrityId) || item.celebrityId } });
 });
 
@@ -130,10 +100,9 @@ outfitsRouter.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (
     manufacturerIds: Array.isArray(manufacturerIds) ? (manufacturerIds as string[]) : [],
   });
 
-  syncToStore(newItem);
   invalidateGlobalRecommendationsCache();
 
-  const celebMap = new Map(celebrityStore.map((c) => [c.id, c.name]));
+  const celebMap = await buildCelebMap();
   res.status(201).json({
     data: { ...newItem, celebrityName: celebMap.get(newItem.celebrityId) || newItem.celebrityId },
   });
@@ -169,11 +138,10 @@ outfitsRouter.put("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async
     return;
   }
 
-  syncToStore(updated);
   invalidateGlobalRecommendationsCache();
   invalidateProductRecommendationsCache(updated.id);
 
-  const celebMap = new Map(celebrityStore.map((c) => [c.id, c.name]));
+  const celebMap = await buildCelebMap();
   res.json({ data: { ...updated, celebrityName: celebMap.get(updated.celebrityId) || updated.celebrityId } });
 });
 
@@ -185,7 +153,6 @@ outfitsRouter.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), as
     res.status(404).json({ message: "Outfit not found" });
     return;
   }
-  removeFromStore(id);
   invalidateGlobalRecommendationsCache();
   invalidateProductRecommendationsCache(id);
   res.json({ message: "Deleted" });

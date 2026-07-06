@@ -1,12 +1,11 @@
 import { Router } from "express";
 import type { Request, Response, NextFunction } from "express";
-import { celebrityStore } from "./celebrities.js";
-import { outfitStore } from "./outfits.js";
 import { orderRepository } from "../repositories/order.repository.js";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
 import { refundService } from "../services/refund.service.js";
 import { sendOrderConfirmation, sendOrderShipped } from "../services/email.service.js";
+import { prisma } from "../lib/prisma.js";
 
 // ── Public type re-exports ─────────────────────────────────────────────────────
 export type {
@@ -73,25 +72,45 @@ ordersRouter.post("/", authenticate, async (req: Request, res: Response) => {
     return;
   }
 
-  // Enrich cart items with outfit/celebrity data from the compatibility stores
-  const normalizedItems = (items as any[]).map((item) => {
-    const outfit = outfitStore.find((entry) => entry.id === item.outfitId);
-    const celebrity = celebrityStore.find(
-      (entry) => entry.id === (outfit?.celebrityId || item.celebrityId)
-    );
+  // Enrich cart items with authoritative product/celebrity data from PostgreSQL
+  const cartItems = items as Array<Record<string, unknown>>;
+  const outfitSlugs = [...new Set(cartItems.map((i) => i.outfitId as string).filter(Boolean))];
+
+  const products = outfitSlugs.length > 0
+    ? await prisma.product.findMany({
+        where: { slug: { in: outfitSlugs }, isActive: true, deletedAt: null },
+        select: {
+          slug: true,
+          movieName: true,
+          category: true,
+          basePrice: true,
+          imageUrl: true,
+          celebrity: { select: { slug: true, name: true } },
+          manufacturerLinks: {
+            where: { manufacturer: { isActive: true, deletedAt: null } },
+            orderBy: { priority: "asc" },
+            include: { manufacturer: { select: { slug: true } } },
+          },
+        },
+      })
+    : [];
+
+  const productMap = new Map(products.map((p) => [p.slug, p]));
+
+  const normalizedItems = cartItems.map((item) => {
+    const prod = productMap.get(item.outfitId as string);
     return {
-      outfitId: (item.outfitId as string) ?? "",
-      outfitName: (item.outfitName as string) || outfit?.movieName || "Unknown look",
-      celebrityId: outfit?.celebrityId || (item.celebrityId as string) || "",
-      celebrityName:
-        celebrity?.name || (item.celebrityName as string) || "Unknown celebrity",
-      category: (item.category as string) || outfit?.category || "Look",
-      price: Number(item.price) || Number(outfit?.price) || 0,
-      size: (item.size as string) || "M",
-      imageUrl: (item.imageUrl as string) || outfit?.imageUrl || "",
+      outfitId:        (item.outfitId        as string) ?? "",
+      outfitName:      (item.outfitName      as string) || prod?.movieName        || "Unknown look",
+      celebrityId:     prod?.celebrity.slug  || (item.celebrityId  as string)    || "",
+      celebrityName:   prod?.celebrity.name  || (item.celebrityName as string)   || "Unknown celebrity",
+      category:        (item.category        as string) || prod?.category         || "Look",
+      price:           Number(item.price)    || prod?.basePrice                  || 0,
+      size:            (item.size            as string) || "M",
+      imageUrl:        (item.imageUrl        as string) || prod?.imageUrl         || "",
       manufacturerIds: Array.isArray(item.manufacturerIds)
         ? (item.manufacturerIds as string[])
-        : outfit?.manufacturerIds || [],
+        : (prod?.manufacturerLinks.map((l) => l.manufacturer.slug) ?? []),
     };
   });
 
