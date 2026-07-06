@@ -320,6 +320,12 @@ export default function ProfilePage() {
                 Refunds
               </Link>
               <Link
+                href="/customizations"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Customisations
+              </Link>
+              <Link
                 href="/bulk-order"
                 className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
               >

@@ -1553,3 +1553,29 @@ export async function getCommissionReport(params?: { from?: string; to?: string 
     return null;
   }
 }
+
+// ── Cloudinary (simulated) image upload ───────────────────────────────────────
+
+export type UploadResult = {
+  secure_url: string;
+  public_id: string;
+  format: string;
+  resource_type: string;
+  simulated: boolean;
+};
+
+export async function uploadImageUrl(url: string): Promise<UploadResult> {
+  const res = await apiFetch<{ data: UploadResult }>("/api/upload", {
+    method: "POST",
+    body: JSON.stringify({ url }),
+  });
+  return res.data;
+}
+
+export async function uploadImageBase64(base64: string, filename?: string): Promise<UploadResult> {
+  const res = await apiFetch<{ data: UploadResult }>("/api/upload", {
+    method: "POST",
+    body: JSON.stringify({ base64, filename }),
+  });
+  return res.data;
+}

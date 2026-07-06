@@ -163,6 +163,12 @@ export function OutfitGallery({ outfit, manufacturers }: { outfit: any; manufact
           <AddToCartButton outfit={outfit} />
           <WishlistButton outfitId={outfit.id} />
           <TryOnButton outfitId={outfit.id} />
+          <Link
+            href={`/customizations/new?outfitId=${outfit.id}&outfitName=${encodeURIComponent(outfit.category)}`}
+            className="flex items-center justify-center gap-2 rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+          >
+            ✂ Customise This Outfit
+          </Link>
 
           <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-[0.28em] text-accent">Delivery & Fit</p>
