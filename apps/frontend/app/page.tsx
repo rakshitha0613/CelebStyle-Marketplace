@@ -2,13 +2,28 @@ import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { CelebrityCard } from "@/components/celebrity-card";
 import { OutfitCard } from "@/components/outfit-card";
-import { getCelebrities, getOutfits } from "@/lib/api";
+import { RecommendationCarousel } from "@/components/recommendation-carousel";
+import { getCelebrities, getOutfits, getTrending, getNewArrivals } from "@/lib/api";
+import type { Outfit } from "@/lib/api";
 import Link from "next/link";
 
 export default async function HomePage() {
-  const [celebrities, outfits] = await Promise.all([getCelebrities(), getOutfits()]);
+  const [celebrities, outfits, trending, newArrivals] = await Promise.all([
+    getCelebrities(),
+    getOutfits(),
+    getTrending(10),
+    getNewArrivals(10),
+  ]);
   const featured = celebrities.slice(0, 6);
   const featuredOutfits = outfits.slice(0, 6);
+
+  const outfitMap = new Map(outfits.map((o) => [o.id, o]));
+  const trendingOutfits = trending.items
+    .map((item) => outfitMap.get(item.productId))
+    .filter((o): o is Outfit => o !== undefined);
+  const newArrivalOutfits = newArrivals.items
+    .map((item) => outfitMap.get(item.productId))
+    .filter((o): o is Outfit => o !== undefined);
 
   return (
     <main>
@@ -46,6 +61,20 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      <RecommendationCarousel
+        subtitle="AI Picks"
+        title="Trending Now"
+        outfits={trendingOutfits}
+        viewAllHref="/search"
+      />
+
+      <RecommendationCarousel
+        subtitle="Just Arrived"
+        title="New Arrivals"
+        outfits={newArrivalOutfits}
+        viewAllHref="/search"
+      />
     </main>
   );
 }

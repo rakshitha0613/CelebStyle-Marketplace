@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
-import { getCelebrity, getOutfits, getManufacturers } from "@/lib/api";
+import { getCelebrity, getOutfits, getManufacturers, getCelebrityRecs } from "@/lib/api";
+import type { Outfit } from "@/lib/api";
 import Link from "next/link";
 import { FallbackImage } from "./fallback-image";
+import { RecommendationCarousel } from "@/components/recommendation-carousel";
 
 type CelebrityDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -10,16 +12,23 @@ type CelebrityDetailPageProps = {
 
 export default async function CelebrityDetailPage({ params }: CelebrityDetailPageProps) {
   const { id } = await params;
-  const [celebrity, allOutfits, manufacturers] = await Promise.all([
+  const [celebrity, allOutfits, manufacturers, celebRecs] = await Promise.all([
     getCelebrity(id),
     getOutfits({ celebrityId: id }),
-    getManufacturers()
+    getManufacturers(),
+    getCelebrityRecs(id, 8),
   ]);
 
   if (!celebrity) notFound();
 
   const mfrMap = new Map(manufacturers.map((m) => [m.id, m]));
   const occasionGroups = [...new Set(allOutfits.map((o) => o.occasion))].sort();
+
+  // Resolve celebrity recommendation productIds against this celebrity's already-loaded outfits
+  const outfitMap = new Map(allOutfits.map((o) => [o.id, o]));
+  const recOutfits = celebRecs.items
+    .map((item) => outfitMap.get(item.productId))
+    .filter((o): o is Outfit => o !== undefined);
 
   // Separate film/character outfits vs event/red carpet outfits
   const filmOutfits = allOutfits.filter(o =>
@@ -206,6 +215,12 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
             {allOutfits.length === 0 && (
               <p className="mt-12 text-text/50">No outfits catalogued yet.</p>
             )}
+
+            <RecommendationCarousel
+              subtitle="Recommended Looks"
+              title="Top Picks From This Artist"
+              outfits={recOutfits}
+            />
           </div>
 
           {/* Right — profile card */}

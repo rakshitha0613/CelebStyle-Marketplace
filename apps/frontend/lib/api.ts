@@ -625,3 +625,70 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
   });
   return res.data;
 }
+
+// ─── Recommendations ──────────────────────────────────────────────────────────
+
+export type RecommendationItem = {
+  productId: string;
+  score: number;
+  reason: string;
+  confidence: number;
+  explanation: string;
+};
+
+export type RecommendationSection = {
+  section?: string;
+  type?: string;
+  title: string;
+  items: RecommendationItem[];
+};
+
+export async function getTrending(limit = 8): Promise<RecommendationSection> {
+  try {
+    const res = await apiFetch<{ data: RecommendationSection }>(
+      `/api/recommendations/trending?limit=${limit}`
+    );
+    return res.data;
+  } catch {
+    return { title: "Trending Now", items: [] };
+  }
+}
+
+export async function getNewArrivals(limit = 8): Promise<RecommendationSection> {
+  try {
+    const res = await apiFetch<{ data: RecommendationSection }>(
+      `/api/recommendations/new-arrivals?limit=${limit}`
+    );
+    return res.data;
+  } catch {
+    return { title: "New Arrivals", items: [] };
+  }
+}
+
+export async function getProductRecs(
+  productId: string,
+  limit = 6
+): Promise<RecommendationSection[]> {
+  try {
+    const res = await apiFetch<{ data: { sections: RecommendationSection[] } }>(
+      `/api/recommendations/product/${productId}?limit=${limit}`
+    );
+    return res.data.sections ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getCelebrityRecs(
+  celebrityId: string,
+  limit = 8
+): Promise<RecommendationSection> {
+  try {
+    const res = await apiFetch<{ data: RecommendationSection }>(
+      `/api/recommendations/celebrity/${celebrityId}?limit=${limit}`
+    );
+    return res.data;
+  } catch {
+    return { title: "More From This Artist", items: [] };
+  }
+}
