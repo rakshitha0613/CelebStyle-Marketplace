@@ -119,25 +119,61 @@ storefrontsRouter.get("/:celebrityId/payouts", authenticate, async (req: Request
     return;
   }
 
-  const payData = await storefrontRepository.commission();
-  const summary = payData ?? { gross: 0, platformFee: 0, celebrityCommission: 0, manufacturerShare: 0 };
-
   const now = new Date();
-  const payouts = [];
-  const monthlyGross = summary.gross / 6;
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+  // Fetch orders that have at least one item from this celebrity, in the last 6 months
+  const orders = await prisma.order.findMany({
+    where: {
+      status: { notIn: ["AWAITING_PAYMENT", "CANCELLED"] },
+      paymentStatus: "CAPTURED",
+      createdAt: { gte: sixMonthsAgo },
+      items: { some: { celebrityId } },
+    },
+    select: {
+      id: true,
+      subtotal: true,
+      createdAt: true,
+      commission: { select: { platformFee: true, celebrityCommission: true, manufacturerShare: true } },
+    },
+  });
+
+  // Group by month
+  const monthMap = new Map<string, { gross: number; commission: number; platformFee: number; manufacturerShare: number }>();
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const gross = monthlyGross;
-    payouts.push({
-      id: `payout-${monthKey}-${celebrityId}`,
-      period: monthKey,
-      gross: Math.round(gross),
-      commission: Math.round(gross * 0.05),
-      status: i > 0 ? "PAID" : "PENDING",
-      paidAt: i > 0 ? new Date(d.getFullYear(), d.getMonth() + 1, 5).toISOString() : null,
-    });
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    monthMap.set(key, { gross: 0, commission: 0, platformFee: 0, manufacturerShare: 0 });
   }
+
+  for (const order of orders) {
+    const d = order.createdAt;
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    if (!monthMap.has(key)) continue;
+    const m = monthMap.get(key)!;
+    m.gross          += order.subtotal;
+    m.commission     += order.commission?.celebrityCommission ?? 0;
+    m.platformFee    += order.commission?.platformFee        ?? 0;
+    m.manufacturerShare += order.commission?.manufacturerShare ?? 0;
+  }
+
+  const payouts = [...monthMap.entries()].map(([period, m], idx) => ({
+    id: `payout-${period}-${celebrityId}`,
+    period,
+    gross:      m.gross,
+    commission: m.commission,
+    status: idx < monthMap.size - 1 ? "PAID" : "PENDING",
+    paidAt: idx < monthMap.size - 1
+      ? new Date(parseInt(period.slice(0, 4)), parseInt(period.slice(5, 7)), 5).toISOString()
+      : null,
+  }));
+
+  const summary = {
+    gross:              orders.reduce((s, o) => s + o.subtotal, 0),
+    platformFee:        orders.reduce((s, o) => s + (o.commission?.platformFee ?? 0), 0),
+    celebrityCommission: orders.reduce((s, o) => s + (o.commission?.celebrityCommission ?? 0), 0),
+    manufacturerShare:  orders.reduce((s, o) => s + (o.commission?.manufacturerShare ?? 0), 0),
+  };
 
   res.json({ data: { payouts, summary } });
 });
