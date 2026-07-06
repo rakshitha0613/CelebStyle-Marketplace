@@ -6,7 +6,7 @@ import type { GarmentAsset, GarmentOverlayConfig, PoseLandmark } from '@/lib/ar/
 import type { Scene3DConfig } from '@/lib/ar/three.types';
 import type { ClothingSize, PhysicalMeasurements, SizeRecommendation, OutfitItem, OutfitSlot, OutfitScore, WishlistEntry, Outfit } from '@/lib/ar/fit.types';
 import { DEFAULT_SCENE_CONFIG } from '@/lib/ar/three.types';
-import { getOutfits } from '@/lib/api';
+import { getOutfits, logARSession } from '@/lib/api';
 import { outfitsToGarments } from '@/lib/ar/outfit-to-garment';
 import { BodyMeasurementService } from '@/lib/ar/body-measurement.service';
 import { SizeRecommendationService } from '@/lib/ar/size-recommendation.service';
@@ -102,6 +102,38 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
   const scoringSvc  = useRef(new OutfitScoringService());
   const wishlistSvc = useRef(new WishlistOverlayService());
 
+  // ── AR session analytics refs ───────────────────────────────────────────────
+  const sessionStartRef       = useRef<number>(Date.now());
+  const wasAddedToCartRef     = useRef<boolean>(false);
+  const selectedGarmentRef    = useRef<GarmentAsset | null>(null);
+
+  // Keep selectedGarmentRef current so the unmount cleanup reads the right value
+  useEffect(() => {
+    selectedGarmentRef.current = selectedGarment;
+  }, [selectedGarment]);
+
+  // Log the session when the component unmounts
+  useEffect(() => {
+    sessionStartRef.current = Date.now();
+    return () => {
+      const productId = selectedGarmentRef.current?.id;
+      if (!productId) return;
+      const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
+      // Skip sub-second sessions (avoids React Strict Mode double-invoke noise in dev)
+      if (durationSeconds < 1) return;
+      void logARSession({
+        productId,
+        durationSeconds,
+        wasAddedToCart: wasAddedToCartRef.current,
+        platform: 'web',
+        deviceType:
+          typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
+            ? 'mobile'
+            : 'desktop',
+      });
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Hydrate wishlist/saved from storage on mount
   useEffect(() => {
     setWishlist(wishlistSvc.current.getWishlist());
@@ -169,6 +201,7 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
 
   const handleAddCurrentGarment = useCallback(() => {
     if (!selectedGarment) return;
+    wasAddedToCartRef.current = true;
     const item = garmentAssetToItem(selectedGarment, 'top', sizeRec?.size ?? 'M');
     composerSvc.current.addItem(item);
     syncComposer();
@@ -200,6 +233,7 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
   }, []);
 
   const handleAddAllToCart = useCallback((outfit: Outfit) => {
+    wasAddedToCartRef.current = true;
     wishlistSvc.current.addAllToCart(outfit);
   }, []);
 

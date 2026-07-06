@@ -692,3 +692,29 @@ export async function getCelebrityRecs(
     return { title: "More From This Artist", items: [] };
   }
 }
+
+// ─── AR Session Analytics ─────────────────────────────────────────────────────
+
+export type ARSessionPayload = {
+  productId: string;
+  durationSeconds: number;
+  wasAddedToCart: boolean;
+  deviceType?: string;
+  platform?: string;
+  screenshotUrl?: string;
+};
+
+/**
+ * Fire-and-forget: log a completed AR try-on session to the backend.
+ * Never throws — analytics must not affect the AR experience.
+ */
+export async function logARSession(payload: ARSessionPayload): Promise<void> {
+  try {
+    await apiFetch("/api/ar/session", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // Intentionally swallowed — analytics are non-blocking
+  }
+}

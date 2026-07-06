@@ -29,6 +29,7 @@ import { securityRouter } from "./routes/security.js";
 import { releaseRouter } from "./routes/release.js";
 import { profileRouter } from "./routes/profile.js";
 import { wishlistRouter } from "./routes/wishlist.js";
+import { arRouter } from "./routes/ar.js";
 import { correlationIdMiddleware } from "./lib/correlation.js";
 import { logger } from "./lib/logger.js";
 import {
@@ -109,6 +110,7 @@ export function createApp() {
   app.use("/api/ops", opsRouter);
   app.use("/api/security", securityRouter);
   app.use("/api/release", releaseRouter);
+  app.use("/api/ar", arRouter);
 
   // ── Global error handler ──────────────────────────────────────────────────────
   app.use((error: unknown, request: express.Request, response: express.Response, _next: express.NextFunction) => {
