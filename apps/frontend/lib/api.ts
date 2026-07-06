@@ -411,6 +411,8 @@ export type Order = {
     outfitId: string;
     manufacturerId: string | null;
     manufacturerName: string;
+    trackingCode: string | null;
+    routingStatus: string;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -576,6 +578,20 @@ export async function createOrder(body: {
 
 export async function payOrder(id: string): Promise<Order> {
   const res = await apiFetch<{ data: Order }>(`/api/orders/${id}/pay`, { method: "POST" });
+  return res.data;
+}
+
+export type CouponResult = {
+  valid: boolean;
+  code: string;
+  type: string;
+  discountRupees: number;
+  message: string;
+};
+
+export async function lookupCoupon(code: string, subtotal: number): Promise<CouponResult> {
+  const qs = new URLSearchParams({ code, subtotal: String(subtotal) });
+  const res = await apiFetch<{ data: CouponResult }>(`/api/checkout/coupon/lookup?${qs}`);
   return res.data;
 }
 

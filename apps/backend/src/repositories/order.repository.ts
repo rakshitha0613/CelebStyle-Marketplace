@@ -38,6 +38,8 @@ export type OrderEntry = {
     outfitId: string;
     manufacturerId: string | null;
     manufacturerName: string;
+    trackingCode: string | null;
+    routingStatus: string;
   }>;
   createdAt: string;
   updatedAt: string;
@@ -76,6 +78,7 @@ const INCLUDE = {
       orderItem: { select: { productSlug: true } },
       manufacturer: { select: { slug: true } },
     },
+    orderBy: { assignedAt: "asc" as const },
   },
 } as const;
 
@@ -88,6 +91,7 @@ type Row = Prisma.OrderGetPayload<{
         orderItem: { select: { productSlug: true } };
         manufacturer: { select: { slug: true } };
       };
+      orderBy: { assignedAt: "asc" };
     };
   };
 }>;
@@ -130,6 +134,8 @@ function toApi(row: Row): OrderEntry {
       outfitId: r.orderItem.productSlug,
       manufacturerId: r.manufacturer?.slug ?? null,
       manufacturerName: r.manufacturerName,
+      trackingCode: r.trackingCode ?? null,
+      routingStatus: r.status,
     })),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

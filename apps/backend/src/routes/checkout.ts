@@ -60,6 +60,34 @@ checkoutRouter.get("/tax", async (req, res) => {
   }
 });
 
+// GET /api/checkout/coupon/lookup?code=XXX&subtotal=YYYY
+// Validates a coupon against a given rupee subtotal without requiring a server-side cart.
+// Used by the localStorage-based checkout flow.
+checkoutRouter.get("/coupon/lookup", async (req, res) => {
+  try {
+    const code     = typeof req.query.code     === "string" ? req.query.code.trim().toUpperCase()  : "";
+    const subtotal = typeof req.query.subtotal === "string" ? parseFloat(req.query.subtotal)       : 0;
+
+    if (!code) {
+      res.status(400).json({ message: "code is required" });
+      return;
+    }
+    if (!subtotal || subtotal <= 0) {
+      res.status(400).json({ message: "subtotal must be a positive number (rupees)" });
+      return;
+    }
+
+    const { Money } = await import("../lib/money.js");
+    const subtotalPaise = Money.toPaise(subtotal);
+    const shippingPaise = subtotal >= 25_000 ? 0 : Money.toPaise(499);
+
+    const result = await couponService.validate(code, req.user!.id, subtotalPaise, shippingPaise, []);
+    res.json({ data: { ...result, discountRupees: Money.toRupees(result.discountPaise) } });
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
 // POST /api/checkout/coupon/apply
 checkoutRouter.post("/coupon/apply", async (req, res) => {
   try {

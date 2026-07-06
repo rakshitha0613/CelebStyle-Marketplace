@@ -168,15 +168,34 @@ export default function OrderPage() {
             </div>
 
             <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.28em] text-accent">Manufacturer Routing</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-accent">Shipment Tracking</p>
               <div className="mt-4 space-y-3">
                 {order.routing.map((route) => (
                   <div
                     key={`${route.outfitId}-${route.manufacturerId || "unassigned"}`}
                     className="rounded-2xl border border-black/6 px-4 py-3 text-sm"
                   >
-                    <p className="font-medium text-primary">{route.manufacturerName}</p>
-                    <p className="text-xs text-text/50">{route.manufacturerId || "Needs assignment"}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-primary">{route.manufacturerName}</p>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        route.routingStatus === "DISPATCHED" || route.routingStatus === "DELIVERED"
+                          ? "bg-green-100 text-green-700"
+                          : route.routingStatus === "ACCEPTED"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-secondary text-text/60"
+                      }`}>
+                        {route.routingStatus.toLowerCase().replace(/_/g, " ")}
+                      </span>
+                    </div>
+                    {route.trackingCode ? (
+                      <p className="mt-1 text-xs font-mono text-accent">
+                        Tracking: {route.trackingCode}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-text/40">
+                        {route.manufacturerId ? "Awaiting dispatch" : "Needs assignment"}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
-import { createOrder, simulatePayment, getStoredToken, getCurrentUser, getAddresses } from "@/lib/api";
+import { createOrder, simulatePayment, getStoredToken, getCurrentUser, getAddresses, lookupCoupon } from "@/lib/api";
+import type { CouponResult } from "@/lib/api";
 
 type CartItem = {
   outfitId: string;
@@ -142,6 +143,10 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponResult, setCouponResult] = useState<CouponResult | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
 
   useEffect(() => {
     if (!getStoredToken()) { router.replace("/login?redirect=/checkout"); return; }
@@ -158,8 +163,25 @@ export default function CheckoutPage() {
   }, [router]);
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price, 0), [items]);
-  const shipping = subtotal >= 25000 ? 0 : 499;
-  const total = subtotal + shipping;
+  const discount = couponResult?.valid ? couponResult.discountRupees : 0;
+  const shipping = (subtotal - discount) >= 25000 ? 0 : 499;
+  const total = subtotal - discount + shipping;
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError("");
+    setCouponResult(null);
+    try {
+      const result = await lookupCoupon(couponCode.trim(), subtotal);
+      setCouponResult(result);
+      if (!result.valid) setCouponError(result.message);
+    } catch {
+      setCouponError("Invalid or expired coupon code");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handleProceed = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,6 +248,31 @@ export default function CheckoutPage() {
                 <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Delivery Address</label>
                 <textarea value={address} onChange={(e) => setAddress(e.target.value)} required rows={4} className="w-full rounded-xl border border-black/10 bg-background px-4 py-3 text-sm text-primary" placeholder="Street, city, state, pincode" />
               </div>
+              <div>
+                <label className="mb-2 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Coupon Code (optional)</label>
+                <div className="flex gap-2">
+                  <input
+                    value={couponCode}
+                    onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponResult(null); setCouponError(""); }}
+                    placeholder="Enter code"
+                    className="flex-1 rounded-xl border border-black/10 bg-background px-4 py-3 text-sm text-primary uppercase tracking-wider"
+                  />
+                  <button
+                    type="button"
+                    onClick={applyCoupon}
+                    disabled={couponLoading || !couponCode.trim()}
+                    className="rounded-xl bg-secondary px-4 py-3 text-sm font-medium text-primary transition hover:opacity-80 disabled:opacity-40"
+                  >
+                    {couponLoading ? "..." : "Apply"}
+                  </button>
+                </div>
+                {couponResult?.valid && (
+                  <p className="mt-1.5 text-xs text-green-700 font-medium">
+                    ✓ {couponResult.message} (−₹{couponResult.discountRupees.toLocaleString("en-IN")})
+                  </p>
+                )}
+                {couponError && <p className="mt-1.5 text-xs text-red-600">{couponError}</p>}
+              </div>
               <div className="rounded-xl border border-[#072654]/20 bg-[#072654]/5 px-4 py-3 flex items-center gap-3">
                 <span className="text-xl">🔒</span>
                 <div>
@@ -242,12 +289,18 @@ export default function CheckoutPage() {
               <p className="text-xs uppercase tracking-[0.28em] text-accent">Order Summary</p>
               <div className="mt-4 space-y-3 text-sm text-text/70">
                 <div className="flex justify-between"><span>Items ({items.length})</span><span>₹{subtotal.toLocaleString("en-IN")}</span></div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-700 font-medium">
+                    <span>Coupon ({couponResult?.code})</span>
+                    <span>−₹{discount.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
                 <div className="flex justify-between"><span>Shipping</span><span>{shipping === 0 ? "Free" : `₹${shipping.toLocaleString("en-IN")}`}</span></div>
                 <div className="flex justify-between border-t border-black/6 pt-3 text-base font-medium text-primary"><span>Total</span><span>₹{total.toLocaleString("en-IN")}</span></div>
               </div>
-              {subtotal < 25000 && (
+              {(subtotal - discount) < 25000 && (
                 <p className="mt-3 text-xs text-text/40">
-                  Free shipping on orders over ₹25,000 (₹{(25000 - subtotal).toLocaleString("en-IN")} away)
+                  Free shipping on orders over ₹25,000 (₹{(25000 - (subtotal - discount)).toLocaleString("en-IN")} away)
                 </p>
               )}
               <div className="mt-6 space-y-2">
