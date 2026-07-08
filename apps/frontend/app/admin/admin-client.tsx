@@ -3,15 +3,99 @@
 import { useState, useEffect } from "react";
 import type { Celebrity, Outfit, Manufacturer, Coupon } from "@/lib/api";
 import { adminLogin, adminLogout, getStoredToken, getCoupons } from "@/lib/api";
-import { CelebritiesTab } from "./tabs/celebrities-tab";
-import { OutfitsTab } from "./tabs/outfits-tab";
-import { ManufacturersTab } from "./tabs/manufacturers-tab";
-import { ModerationTab } from "./tabs/moderation-tab";
-import { AnalyticsTab } from "./tabs/analytics-tab";
-import { ReportsTab } from "./tabs/reports-tab";
-import { CouponsTab } from "./tabs/coupons-tab";
 
-type Tab = "overview" | "celebrities" | "outfits" | "manufacturers" | "analytics" | "moderation" | "reports" | "coupons";
+// Legacy tabs
+import { CelebritiesTab }  from "./tabs/celebrities-tab";
+import { OutfitsTab }      from "./tabs/outfits-tab";
+import { ManufacturersTab } from "./tabs/manufacturers-tab";
+import { ModerationTab }   from "./tabs/moderation-tab";
+import { AnalyticsTab }    from "./tabs/analytics-tab";
+import { ReportsTab }      from "./tabs/reports-tab";
+import { CouponsTab }      from "./tabs/coupons-tab";
+
+// New tabs
+import { DashboardTab }    from "./tabs/dashboard-tab";
+import { UsersTab }        from "./tabs/users-tab";
+import { OrdersTab }       from "./tabs/orders-tab";
+import { ReviewsTab }      from "./tabs/reviews-tab";
+import { ReturnsTab }      from "./tabs/returns-tab";
+import { SettlementsTab }  from "./tabs/settlements-tab";
+import { InventoryTab }    from "./tabs/inventory-tab";
+import { BlogTab }         from "./tabs/blog-tab";
+import { StorefrontsTab }  from "./tabs/storefronts-tab";
+import { AuditTab }        from "./tabs/audit-tab";
+import { SettingsTab }     from "./tabs/settings-tab";
+
+type Tab =
+  | "dashboard"
+  | "users"
+  | "orders"
+  | "celebrities"
+  | "outfits"
+  | "manufacturers"
+  | "storefronts"
+  | "inventory"
+  | "returns"
+  | "settlements"
+  | "reviews"
+  | "blog"
+  | "moderation"
+  | "coupons"
+  | "analytics"
+  | "reports"
+  | "audit"
+  | "settings";
+
+type NavSection = {
+  label: string;
+  items: { id: Tab; label: string }[];
+};
+
+const NAV: NavSection[] = [
+  {
+    label: "Overview",
+    items: [
+      { id: "dashboard",    label: "Dashboard" },
+      { id: "analytics",    label: "Analytics" },
+      { id: "reports",      label: "Reports" },
+    ],
+  },
+  {
+    label: "Commerce",
+    items: [
+      { id: "orders",       label: "Orders" },
+      { id: "returns",      label: "Returns & Refunds" },
+      { id: "settlements",  label: "Settlements" },
+      { id: "inventory",    label: "Inventory" },
+      { id: "coupons",      label: "Coupons" },
+    ],
+  },
+  {
+    label: "Catalogue",
+    items: [
+      { id: "outfits",      label: "Outfits" },
+      { id: "celebrities",  label: "Celebrities" },
+      { id: "manufacturers",label: "Manufacturers" },
+      { id: "storefronts",  label: "Storefronts" },
+    ],
+  },
+  {
+    label: "Community",
+    items: [
+      { id: "users",        label: "Users" },
+      { id: "reviews",      label: "Reviews" },
+      { id: "moderation",   label: "Moderation" },
+      { id: "blog",         label: "Blog" },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { id: "audit",        label: "Audit Logs" },
+      { id: "settings",     label: "Settings" },
+    ],
+  },
+];
 
 type AdminClientProps = {
   initialCelebrities: Celebrity[];
@@ -20,17 +104,17 @@ type AdminClientProps = {
 };
 
 export function AdminClient({ initialCelebrities, initialOutfits, initialManufacturers }: AdminClientProps) {
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("dashboard");
   const [celebrities, setCelebrities] = useState(initialCelebrities);
-  const [outfits, setOutfits] = useState(initialOutfits);
+  const [outfits, setOutfits]         = useState(initialOutfits);
   const [manufacturers, setManufacturers] = useState(initialManufacturers);
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [coupons, setCoupons]         = useState<Coupon[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // ── Login gate ──────────────────────────────────────────────────────────────
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
+  const [isLoggedIn, setIsLoggedIn]     = useState(false);
+  const [loginEmail, setLoginEmail]     = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const [loginError, setLoginError]     = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
@@ -63,7 +147,7 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
       <div className="mt-16 flex justify-center">
         <div className="w-full max-w-sm rounded-[28px] border border-black/6 bg-white p-8 shadow-sm">
           <h2 className="font-serif text-3xl text-primary">Admin Login</h2>
-          <p className="mt-2 text-sm text-text/70">Sign in with your administrator credentials to manage the catalogue.</p>
+          <p className="mt-2 text-sm text-text/70">Sign in with your administrator credentials to manage the platform.</p>
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Email</label>
@@ -101,154 +185,108 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
     );
   }
 
-  const industryCounts = celebrities.reduce<Record<string, number>>((acc, c) => {
-    acc[c.industry] = (acc[c.industry] || 0) + 1;
-    return acc;
-  }, {});
-
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "overview", label: "Overview" },
-    { id: "celebrities", label: `Celebrities (${celebrities.length})` },
-    { id: "outfits", label: `Outfits (${outfits.length})` },
-    { id: "manufacturers", label: `Manufacturers (${manufacturers.length})` },
-    { id: "coupons", label: `Coupons (${coupons.length})` },
-    { id: "analytics", label: "Analytics" },
-    { id: "reports", label: "Reports" },
-    { id: "moderation", label: "Moderation" },
-  ];
+  const currentLabel = NAV.flatMap((s) => s.items).find((i) => i.id === tab)?.label ?? "Dashboard";
 
   return (
-    <>
-      {/* Logout bar */}
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={handleLogout}
-          className="rounded-full border border-black/10 px-4 py-2 text-xs font-medium text-text/60 transition hover:bg-secondary hover:text-primary"
-        >
-          Sign out
-        </button>
-      </div>
+    <div className="flex min-h-screen gap-0 -mx-4 sm:-mx-8 md:-mx-12 lg:-mx-16 xl:-mx-24">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-30 bg-black/30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
 
-      {/* Stats */}
-      <div className="mt-4 grid gap-4 md:grid-cols-4">
-        {[
-          { label: "Celebrities", value: celebrities.length },
-          { label: "Outfits", value: outfits.length },
-          { label: "Manufacturers", value: manufacturers.length },
-          { label: "Industries", value: Object.keys(industryCounts).length }
-        ].map((stat) => (
-          <div key={stat.label} className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.24em] text-accent">{stat.label}</p>
-            <p className="mt-3 font-serif text-4xl text-primary">{stat.value}</p>
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:sticky top-0 left-0 z-40 h-screen w-64 shrink-0 overflow-y-auto
+        border-r border-black/6 bg-white
+        transition-transform duration-200 ease-out
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}>
+        <div className="flex h-full flex-col">
+          {/* Logo */}
+          <div className="border-b border-black/6 px-6 py-5">
+            <p className="font-serif text-lg text-primary">CelebStyle</p>
+            <p className="text-xs text-text/40 mt-0.5">Admin Console</p>
           </div>
-        ))}
-      </div>
 
-      {/* Tab nav */}
-      <div className="mt-10 flex flex-wrap gap-1 rounded-2xl border border-black/6 bg-white p-1.5 shadow-sm">
-        {tabs.map((t) => (
+          {/* Nav */}
+          <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+            {NAV.map((section) => (
+              <div key={section.label}>
+                <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-text/30">
+                  {section.label}
+                </p>
+                {section.items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => { setTab(item.id); setSidebarOpen(false); }}
+                    className={`w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
+                      tab === item.id
+                        ? "bg-primary text-background"
+                        : "text-text/70 hover:bg-secondary hover:text-primary"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </nav>
+
+          {/* Footer */}
+          <div className="border-t border-black/6 px-4 py-4">
+            <button
+              onClick={handleLogout}
+              className="w-full rounded-xl border border-black/10 px-4 py-2 text-sm text-text/60 transition hover:bg-secondary hover:text-primary"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {/* Top bar */}
+        <header className="sticky top-0 z-20 border-b border-black/6 bg-white/90 backdrop-blur-sm px-6 py-4 flex items-center gap-3">
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`rounded-xl px-4 py-2.5 text-sm font-medium transition whitespace-nowrap ${
-              tab === t.id
-                ? "bg-primary text-background shadow-sm"
-                : "text-text/60 hover:text-primary"
-            }`}
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-xl border border-black/10 p-2 text-text/60 hover:bg-secondary transition lg:hidden"
+            aria-label="Open menu"
           >
-            {t.label}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
           </button>
-        ))}
+          <h1 className="font-serif text-xl text-primary">{currentLabel}</h1>
+        </header>
+
+        <main className="p-6 lg:p-8">
+          {tab === "dashboard"    && <DashboardTab />}
+          {tab === "users"        && <UsersTab />}
+          {tab === "orders"       && <OrdersTab />}
+          {tab === "celebrities"  && <CelebritiesTab celebrities={celebrities} setCelebrities={setCelebrities} />}
+          {tab === "outfits"      && <OutfitsTab outfits={outfits} setOutfits={setOutfits} celebrities={celebrities} manufacturers={manufacturers} />}
+          {tab === "manufacturers"&& <ManufacturersTab manufacturers={manufacturers} setManufacturers={setManufacturers} />}
+          {tab === "storefronts"  && <StorefrontsTab />}
+          {tab === "inventory"    && <InventoryTab />}
+          {tab === "returns"      && <ReturnsTab />}
+          {tab === "settlements"  && <SettlementsTab />}
+          {tab === "reviews"      && <ReviewsTab />}
+          {tab === "blog"         && <BlogTab />}
+          {tab === "moderation"   && <ModerationTab />}
+          {tab === "coupons"      && <CouponsTab coupons={coupons} setCoupons={setCoupons} />}
+          {tab === "analytics"    && (
+            <AnalyticsTab
+              outfitCount={outfits.length}
+              celebrityCount={celebrities.length}
+              avgPrice={outfits.length > 0 ? Math.round(outfits.reduce((s, o) => s + o.price, 0) / outfits.length) : 0}
+            />
+          )}
+          {tab === "reports"      && <ReportsTab />}
+          {tab === "audit"        && <AuditTab />}
+          {tab === "settings"     && <SettingsTab />}
+        </main>
       </div>
-
-      {/* Tab content */}
-      <div className="mt-8">
-        {tab === "overview" && (
-          <div className="space-y-6">
-            <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.32em] text-accent">Industry Coverage</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {Object.entries(industryCounts)
-                  .sort(([a], [b]) => a.localeCompare(b))
-                  .map(([industry, count]) => (
-                    <span key={industry} className="rounded-full bg-secondary px-3 py-1 text-sm text-primary">
-                      {industry}: {count}
-                    </span>
-                  ))}
-              </div>
-            </div>
-            <div className="rounded-[24px] border border-black/6 bg-white p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.32em] text-accent">Occasion Breakdown</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {Object.entries(
-                  outfits.reduce<Record<string, number>>((acc, o) => {
-                    acc[o.occasion] = (acc[o.occasion] || 0) + 1;
-                    return acc;
-                  }, {})
-                )
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([occ, count]) => (
-                    <span key={occ} className="rounded-full bg-secondary px-3 py-1 text-sm text-primary">
-                      {occ}: {count}
-                    </span>
-                  ))}
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {[
-                { label: "Manage Celebrities", desc: "Add, edit, or remove celebrity profiles", tab: "celebrities" as Tab },
-                { label: "Manage Outfits", desc: "Add outfit entries, tag metadata, link manufacturers", tab: "outfits" as Tab },
-                { label: "Manage Manufacturers", desc: "Onboard and verify tailor/manufacturer network", tab: "manufacturers" as Tab },
-                { label: "Analytics", desc: "Revenue, commissions, and catalogue performance", tab: "analytics" as Tab },
-                { label: "Reports", desc: "Settlement and commission reports with date filters", tab: "reports" as Tab },
-                { label: "Moderation", desc: "Review reported community posts and content", tab: "moderation" as Tab },
-                { label: "Coupons", desc: "Create and manage discount codes and promotions", tab: "coupons" as Tab },
-              ].map((action) => (
-                <button
-                  key={action.label}
-                  onClick={() => setTab(action.tab)}
-                  className="rounded-[24px] border border-black/6 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-luxe"
-                >
-                  <p className="font-medium text-primary">{action.label}</p>
-                  <p className="mt-1 text-sm text-text/60">{action.desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {tab === "celebrities" && (
-          <CelebritiesTab celebrities={celebrities} setCelebrities={setCelebrities} />
-        )}
-
-        {tab === "outfits" && (
-          <OutfitsTab outfits={outfits} setOutfits={setOutfits} celebrities={celebrities} manufacturers={manufacturers} />
-        )}
-
-        {tab === "manufacturers" && (
-          <ManufacturersTab manufacturers={manufacturers} setManufacturers={setManufacturers} />
-        )}
-
-        {tab === "analytics" && (
-          <AnalyticsTab
-            outfitCount={outfits.length}
-            celebrityCount={celebrities.length}
-            avgPrice={outfits.length > 0 ? Math.round(outfits.reduce((s, o) => s + o.price, 0) / outfits.length) : 0}
-          />
-        )}
-
-        {tab === "reports" && (
-          <ReportsTab />
-        )}
-
-        {tab === "moderation" && (
-          <ModerationTab />
-        )}
-
-        {tab === "coupons" && (
-          <CouponsTab coupons={coupons} setCoupons={setCoupons} />
-        )}
-      </div>
-    </>
+    </div>
   );
 }

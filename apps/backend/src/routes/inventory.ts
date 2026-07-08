@@ -14,6 +14,31 @@ function handleError(err: unknown, res: Response, next: NextFunction): void {
   next(err);
 }
 
+// GET /api/inventory/admin — all inventory for admin panel
+inventoryRouter.get(
+  "/admin",
+  authenticate,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { prisma } = await import("../lib/prisma.js");
+      const items = await prisma.inventory.findMany({
+        orderBy: [{ product: { movieName: "asc" } }, { variant: { size: "asc" } }],
+        select: {
+          id: true,
+          quantity: true,
+          lowStockThreshold: true,
+          reservedQuantity: true,
+          product: { select: { id: true, movieName: true, imageUrl: true, basePrice: true } },
+          variant: { select: { id: true, size: true, color: true, sku: true } },
+          warehouse: { select: { id: true, name: true, city: true } },
+        },
+      });
+      return res.status(200).json({ data: items });
+    } catch (err) { return next(err); }
+  }
+);
+
 // GET /api/inventory/product/:productId — inventory levels by product (public)
 inventoryRouter.get(
   "/product/:productId",
