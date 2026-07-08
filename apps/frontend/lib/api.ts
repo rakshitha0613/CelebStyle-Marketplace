@@ -439,12 +439,16 @@ export type CommissionSummary = {
 // ─── Celebrities ──────────────────────────────────────────────────────────────
 
 export async function getCelebrities(params?: { industry?: string; search?: string }): Promise<Celebrity[]> {
-  const qs = new URLSearchParams();
-  if (params?.industry) qs.set("industry", params.industry);
-  if (params?.search) qs.set("search", params.search);
-  const query = qs.toString() ? `?${qs}` : "";
-  const res = await apiFetch<{ data: Celebrity[] }>(`/api/celebrities${query}`);
-  return res.data;
+  try {
+    const qs = new URLSearchParams();
+    if (params?.industry) qs.set("industry", params.industry);
+    if (params?.search) qs.set("search", params.search);
+    const query = qs.toString() ? `?${qs}` : "";
+    const res = await apiFetch<{ data: Celebrity[] }>(`/api/celebrities${query}`);
+    return res.data;
+  } catch {
+    return [];
+  }
 }
 
 export async function getCelebrity(id: string): Promise<Celebrity | null> {
@@ -479,15 +483,19 @@ export async function getOutfits(params?: {
   search?: string;
   year?: string;
 }): Promise<Outfit[]> {
-  const qs = new URLSearchParams();
-  if (params?.celebrityId) qs.set("celebrityId", params.celebrityId);
-  if (params?.occasion) qs.set("occasion", params.occasion);
-  if (params?.category) qs.set("category", params.category);
-  if (params?.search) qs.set("search", params.search);
-  if (params?.year) qs.set("year", params.year);
-  const query = qs.toString() ? `?${qs}` : "";
-  const res = await apiFetch<{ data: Outfit[] }>(`/api/outfits${query}`);
-  return res.data;
+  try {
+    const qs = new URLSearchParams();
+    if (params?.celebrityId) qs.set("celebrityId", params.celebrityId);
+    if (params?.occasion) qs.set("occasion", params.occasion);
+    if (params?.category) qs.set("category", params.category);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.year) qs.set("year", params.year);
+    const query = qs.toString() ? `?${qs}` : "";
+    const res = await apiFetch<{ data: Outfit[] }>(`/api/outfits${query}`);
+    return res.data;
+  } catch {
+    return [];
+  }
 }
 
 export async function getOutfit(id: string): Promise<Outfit | null> {
@@ -516,8 +524,12 @@ export async function deleteOutfit(id: string): Promise<void> {
 // ─── Manufacturers ────────────────────────────────────────────────────────────
 
 export async function getManufacturers(): Promise<Manufacturer[]> {
-  const res = await apiFetch<{ data: Manufacturer[] }>("/api/manufacturers");
-  return res.data;
+  try {
+    const res = await apiFetch<{ data: Manufacturer[] }>("/api/manufacturers");
+    return res.data;
+  } catch {
+    return [];
+  }
 }
 
 export async function createManufacturer(body: Omit<Manufacturer, "id">): Promise<Manufacturer> {
@@ -606,8 +618,12 @@ export async function simulatePayment(orderNumber: string): Promise<Order> {
 // ─── Storefronts ─────────────────────────────────────────────────────────────
 
 export async function getStorefronts(): Promise<Storefront[]> {
-  const res = await apiFetch<{ data: Storefront[] }>("/api/storefronts");
-  return res.data;
+  try {
+    const res = await apiFetch<{ data: Storefront[] }>("/api/storefronts");
+    return res.data;
+  } catch {
+    return [];
+  }
 }
 
 export async function getStorefront(celebrityId: string): Promise<Storefront | null> {
@@ -774,16 +790,20 @@ export async function getCommunityFeed(params?: {
   tag?: string;
   userId?: string;
 }): Promise<{ posts: CommunityPost[]; total: number; offset: number; limit: number }> {
-  const qs = new URLSearchParams();
-  if (params?.limit) qs.set("limit", String(params.limit));
-  if (params?.offset) qs.set("offset", String(params.offset));
-  if (params?.tag) qs.set("tag", params.tag);
-  if (params?.userId) qs.set("userId", params.userId);
-  const query = qs.toString() ? `?${qs}` : "";
-  const res = await apiFetch<{ data: { posts: CommunityPost[]; total: number; offset: number; limit: number } }>(
-    `/api/community/posts${query}`
-  );
-  return res.data;
+  try {
+    const qs = new URLSearchParams();
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.offset) qs.set("offset", String(params.offset));
+    if (params?.tag) qs.set("tag", params.tag);
+    if (params?.userId) qs.set("userId", params.userId);
+    const query = qs.toString() ? `?${qs}` : "";
+    const res = await apiFetch<{ data: { posts: CommunityPost[]; total: number; offset: number; limit: number } }>(
+      `/api/community/posts${query}`
+    );
+    return res.data;
+  } catch {
+    return { posts: [], total: 0, offset: params?.offset ?? 0, limit: params?.limit ?? 10 };
+  }
 }
 
 export async function getTrendingPosts(limit = 10): Promise<CommunityPost[]> {
