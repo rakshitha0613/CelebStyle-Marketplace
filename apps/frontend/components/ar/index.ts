@@ -13,4 +13,5 @@ export { SizeRecommendationPanel } from './SizeRecommendationPanel';
 export { OutfitScoreCard } from './OutfitScoreCard';
 export { OutfitComposer } from './OutfitComposer';
 export { WishlistPanel } from './WishlistPanel';
+export { ImageUploadCanvas } from './ImageUploadCanvas';
 export { default as TryOnClient } from './TryOnClient';

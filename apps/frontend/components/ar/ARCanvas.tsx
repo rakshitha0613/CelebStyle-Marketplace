@@ -37,6 +37,7 @@ export function ARCanvas({ config, onMetrics, onMask, onVideoReady, sceneChildre
   const [status, setStatus] = useState<ARStatus>('IDLE');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<FrameMetrics | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Keep config ref current so the init closure uses latest values
   useEffect(() => { configRef.current = config; }, [config]);
@@ -120,15 +121,15 @@ export function ARCanvas({ config, onMetrics, onMask, onVideoReady, sceneChildre
       cancelled = true;
       stopAll();
     };
-    // onMetrics/onMask intentionally omitted — stable via ref
+    // retryCount triggers re-init; onMetrics/onMask stable via ref
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stopAll]);
+  }, [stopAll, retryCount]);
 
   const retry = useCallback(() => {
     stopAll();
     setStatus('IDLE');
-    // Re-trigger by remounting — parent can key this component
-    window.location.reload();
+    setErrorMsg(null);
+    setRetryCount((n) => n + 1); // triggers re-run of the init effect
   }, [stopAll]);
 
   return (

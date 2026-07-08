@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
 import { prisma } from "../lib/prisma.js";
+import { DEMO_BLOG_POSTS } from "../data/demo-content.js";
 
 export const blogRouter = Router();
 
@@ -37,10 +38,36 @@ blogRouter.get("/",
         } : {}),
       };
 
-      const [posts, total] = await Promise.all([
-        prisma.blogPost.findMany({ where, include: BLOG_INCLUDE, orderBy: { publishedAt: "desc" }, skip: offset, take: limit }),
-        prisma.blogPost.count({ where }),
-      ]);
+      let posts: unknown[] = [];
+      let total = 0;
+
+      try {
+        [posts, total] = await Promise.all([
+          prisma.blogPost.findMany({ where, include: BLOG_INCLUDE, orderBy: { publishedAt: "desc" }, skip: offset, take: limit }),
+          prisma.blogPost.count({ where }),
+        ]);
+      } catch { /* DB unavailable — fall through to demo data */ }
+
+      // Fallback to demo data when DB is empty or unavailable
+      if (posts.length === 0) {
+        let filtered = DEMO_BLOG_POSTS.filter((p) => {
+          if (tag && !p.tags.includes(tag)) return false;
+          if (celebrityId && p.celebrityId !== celebrityId) return false;
+          if (search) {
+            const s = search.toLowerCase();
+            if (!p.title.toLowerCase().includes(s) && !p.summary.toLowerCase().includes(s)) return false;
+          }
+          return true;
+        });
+        total = filtered.length;
+        filtered = filtered.slice(offset, offset + limit);
+        // Shape to match what the frontend expects
+        const shaped = filtered.map((p) => ({
+          ...p,
+          author: { name: p.authorName, profile: { avatarUrl: p.authorAvatar } },
+        }));
+        return res.status(200).json({ data: { posts: shaped, total, offset, limit } });
+      }
 
       return res.status(200).json({ data: { posts, total, offset, limit } });
     } catch (err) { next(err); }

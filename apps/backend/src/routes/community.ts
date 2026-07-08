@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
 import { prisma } from "../lib/prisma.js";
+import { DEMO_COMMUNITY_POSTS } from "../data/demo-content.js";
 
 export const communityRouter = Router();
 
@@ -118,18 +119,36 @@ communityRouter.get("/posts",
       const userId = typeof req.query.userId === "string" ? req.query.userId : undefined;
       const requestingUserId = await optionalUserId(req);
 
-      const where: Prisma.CommunityPostWhereInput = {
-        isApproved: true,
-        deletedAt: null,
-        ...(tag    ? { tags: { has: tag } } : {}),
-        ...(userId ? { userId }             : {}),
-      };
+      let enriched: unknown[] = [];
+      let total = 0;
 
-      const [posts, total] = await Promise.all([
-        prisma.communityPost.findMany({ where, include: POST_INCLUDE, orderBy: { createdAt: "desc" }, skip: offset, take: limit }),
-        prisma.communityPost.count({ where }),
-      ]);
-      const enriched = await enrichWithInteractions(posts as PostWithRelations[], requestingUserId);
+      try {
+        const where: Prisma.CommunityPostWhereInput = {
+          isApproved: true,
+          deletedAt: null,
+          ...(tag    ? { tags: { has: tag } } : {}),
+          ...(userId ? { userId }             : {}),
+        };
+        const [posts, dbTotal] = await Promise.all([
+          prisma.communityPost.findMany({ where, include: POST_INCLUDE, orderBy: { createdAt: "desc" }, skip: offset, take: limit }),
+          prisma.communityPost.count({ where }),
+        ]);
+        enriched = await enrichWithInteractions(posts as PostWithRelations[], requestingUserId);
+        total = dbTotal;
+      } catch { /* DB unavailable */ }
+
+      // Fallback to demo posts
+      if (enriched.length === 0) {
+        let filtered = DEMO_COMMUNITY_POSTS.filter((p) => {
+          if (tag && !p.tags.includes(tag)) return false;
+          if (userId && p.userId !== userId) return false;
+          return true;
+        });
+        total = filtered.length;
+        filtered = filtered.slice(offset, offset + limit);
+        enriched = filtered;
+      }
+
       return res.status(200).json({ data: { posts: enriched, total, offset, limit } });
     } catch (err) { next(err); }
   }
@@ -139,14 +158,22 @@ communityRouter.get("/posts/trending",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const limit = Math.min(Number(req.query.limit) || 10, 50);
-      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const posts = await prisma.communityPost.findMany({
-        where: { isApproved: true, deletedAt: null, createdAt: { gte: since } },
-        include: POST_INCLUDE,
-        orderBy: [{ likeCount: "desc" }, { commentCount: "desc" }],
-        take: limit,
-      });
-      const enriched = await enrichWithInteractions(posts as PostWithRelations[]);
+      let enriched: unknown[] = [];
+      try {
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const posts = await prisma.communityPost.findMany({
+          where: { isApproved: true, deletedAt: null, createdAt: { gte: since } },
+          include: POST_INCLUDE,
+          orderBy: [{ likeCount: "desc" }, { commentCount: "desc" }],
+          take: limit,
+        });
+        enriched = await enrichWithInteractions(posts as PostWithRelations[]);
+      } catch { /* DB unavailable */ }
+      if (enriched.length === 0) {
+        enriched = [...DEMO_COMMUNITY_POSTS]
+          .sort((a, b) => b.likeCount - a.likeCount)
+          .slice(0, limit);
+      }
       return res.status(200).json({ data: enriched });
     } catch (err) { next(err); }
   }

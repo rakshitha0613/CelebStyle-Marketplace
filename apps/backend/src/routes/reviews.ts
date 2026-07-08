@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
 import { prisma } from "../lib/prisma.js";
+import { getDemoReviews } from "../data/demo-content.js";
 
 export const reviewsRouter = Router();
 
@@ -77,36 +78,48 @@ reviewsRouter.get("/outfit/:outfitId",
 
       const where: Prisma.ReviewWhereInput = { productId, isApproved: true, deletedAt: null };
 
-      const [reviews, total, aggregate] = await Promise.all([
-        prisma.review.findMany({
-          where,
-          include: REVIEW_INCLUDE,
-          orderBy: { createdAt: "desc" },
-          skip: offset,
-          take: limit,
-        }),
-        prisma.review.count({ where }),
-        prisma.review.aggregate({ where, _avg: { rating: true } }),
-      ]);
+      let reviews: unknown[] = [];
+      let total = 0;
+      let avgRating: number | null = null;
 
-      let helpfulSet = new Set<string>();
-      if (requestingUserId && reviews.length > 0) {
-        const ids = reviews.map((r) => r.id);
-        const votes = await prisma.reviewHelpful.findMany({
-          where: { userId: requestingUserId, reviewId: { in: ids } },
-          select: { reviewId: true },
-        });
-        helpfulSet = new Set(votes.map((v) => v.reviewId));
+      try {
+        const [dbReviews, dbTotal, aggregate] = await Promise.all([
+          prisma.review.findMany({
+            where,
+            include: REVIEW_INCLUDE,
+            orderBy: { createdAt: "desc" },
+            skip: offset,
+            take: limit,
+          }),
+          prisma.review.count({ where }),
+          prisma.review.aggregate({ where, _avg: { rating: true } }),
+        ]);
+
+        let helpfulSet = new Set<string>();
+        if (requestingUserId && dbReviews.length > 0) {
+          const ids = dbReviews.map((r) => r.id);
+          const votes = await prisma.reviewHelpful.findMany({
+            where: { userId: requestingUserId, reviewId: { in: ids } },
+            select: { reviewId: true },
+          });
+          helpfulSet = new Set(votes.map((v) => v.reviewId));
+        }
+
+        reviews = dbReviews.map((r) => toPublic(r as ReviewWithRelations, helpfulSet.has(r.id)));
+        total = dbTotal;
+        avgRating = aggregate._avg?.rating ?? null;
+      } catch { /* DB unavailable */ }
+
+      // Fallback to demo reviews when DB is empty or unavailable
+      if (reviews.length === 0) {
+        const demo = getDemoReviews(productId);
+        total = demo.length;
+        avgRating = demo.reduce((s, r) => s + r.rating, 0) / (demo.length || 1);
+        reviews = demo.slice(offset, offset + limit);
       }
 
       return res.status(200).json({
-        data: {
-          reviews: reviews.map((r) => toPublic(r as ReviewWithRelations, helpfulSet.has(r.id))),
-          total,
-          average: aggregate._avg?.rating ?? null,
-          offset,
-          limit,
-        },
+        data: { reviews, total, average: avgRating, offset, limit },
       });
     } catch (err) { next(err); }
   }

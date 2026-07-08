@@ -34,7 +34,6 @@ export default async function BlogPage() {
                       src={post.coverImage}
                       alt={post.title}
                       className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
-                      onError={() => {}}
                     />
                   </div>
                 )}

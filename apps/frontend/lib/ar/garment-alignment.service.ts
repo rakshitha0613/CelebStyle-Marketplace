@@ -137,11 +137,11 @@ export function computeGarmentAlignment(
 
 /** Recommended scaleMultiplier per garment type. */
 export const GARMENT_SCALE_MULTIPLIERS: Record<string, number> = {
-  T_SHIRT: 1.15,
-  SHIRT:   1.18,
-  JACKET:  1.25,
-  HOODIE:  1.20,
-  DRESS:   1.22,
+  T_SHIRT: 1.30,
+  SHIRT:   1.35,
+  JACKET:  1.48,
+  HOODIE:  1.42,
+  DRESS:   1.28,
 };
 
 // ── Phase 3: enhanced fitting ─────────────────────────────────────────────────
