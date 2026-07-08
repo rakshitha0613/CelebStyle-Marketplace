@@ -1,18 +1,38 @@
 import { Router } from "express";
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { manufacturerRepository } from "../repositories/manufacturer.repository.js";
+import { MANUFACTURER_SEED } from "../lib/seeder.js";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
+import { logger } from "../lib/logger.js";
 
 // Re-export type for any consumers that import Manufacturer from this module
 export type { Manufacturer } from "../repositories/manufacturer.repository.js";
 
+// In-memory fallback — mirrors the seed data so cold-start / DB errors
+// never return HTTP 500 to the client.
+const FALLBACK = MANUFACTURER_SEED.map((m) => ({
+  id:           m.id,
+  name:         m.name,
+  location:     m.location,
+  rating:       Number(m.rating),
+  contactEmail: m.contactEmail,
+  verified:     m.verified,
+  specialties:  [...m.specialties],
+}));
+
 // ── Router ─────────────────────────────────────────────────────────────────────
 export const manufacturersRouter = Router();
 
-manufacturersRouter.get("/", async (_req: Request, res: Response) => {
-  const data = await manufacturerRepository.findAll();
-  res.json({ data });
+manufacturersRouter.get("/", async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await manufacturerRepository.findAll();
+    res.json({ data: data.length > 0 ? data : FALLBACK });
+  } catch (err) {
+    // Log the real Prisma / DB error — do not swallow it silently.
+    logger.error({ err }, "[manufacturers] DB query failed — serving in-memory fallback");
+    res.json({ data: FALLBACK });
+  }
 });
 
 manufacturersRouter.get("/:id", async (req: Request, res: Response) => {

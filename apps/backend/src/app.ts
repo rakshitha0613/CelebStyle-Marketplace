@@ -81,6 +81,11 @@ export function createApp() {
   // ── Rate limiting ─────────────────────────────────────────────────────────────
   app.use(globalRateLimit);
 
+  // ── Root route ────────────────────────────────────────────────────────────────
+  app.get("/", (_req, res) => {
+    res.json({ service: "CelebStyle Backend", status: "running", version: "1.0" });
+  });
+
   // ── Internal / infrastructure routes (no rate limit) ─────────────────────────
   app.use("/api/health", healthRouter);
   app.use("/metrics", metricsRouter);
