@@ -453,7 +453,7 @@ export default function CommunityPage() {
             <PostCard
               key={post.id}
               post={post}
-              currentUserId={user ? null : null}
+              currentUserId={user?.id ?? null}
               onLike={handleLike}
               onDelete={handleDelete}
             />

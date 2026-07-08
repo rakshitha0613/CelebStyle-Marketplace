@@ -21,7 +21,7 @@ function StatCard({ label, value, sub, color = "text-primary" }: StatCardProps) 
   );
 }
 
-export function AnalyticsTab({ outfitCount, celebrityCount }: { outfitCount: number; celebrityCount: number }) {
+export function AnalyticsTab({ outfitCount, celebrityCount, avgPrice }: { outfitCount: number; celebrityCount: number; avgPrice: number }) {
   const [commission, setCommission] = useState<CommissionSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -134,7 +134,7 @@ export function AnalyticsTab({ outfitCount, celebrityCount }: { outfitCount: num
           <StatCard label="Outfits" value={outfitCount.toString()} sub="In catalogue" />
           <StatCard
             label="Avg Price"
-            value={outfitCount > 0 ? "—" : "—"}
+            value={outfitCount > 0 ? `₹${avgPrice.toLocaleString("en-IN")}` : "—"}
             sub="Across all outfits"
           />
         </div>

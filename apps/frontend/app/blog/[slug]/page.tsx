@@ -85,7 +85,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       src={outfit.imageUrl}
                       alt={outfit.category}
                       className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
-                      onError={() => {}}
                     />
                   </div>
                   <div className="p-3">

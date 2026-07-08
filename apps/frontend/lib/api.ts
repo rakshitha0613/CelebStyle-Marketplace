@@ -29,20 +29,20 @@ function storeCustomerToken(token: string | null): void {
 }
 
 /**
- * Decodes the JWT payload (without verification) to read email and role.
+ * Decodes the JWT payload (without verification) to read id, email and role.
  * Returns null when no valid token is present or the token is locally expired.
  */
-export function getCurrentUser(): { email: string; role: string } | null {
+export function getCurrentUser(): { id: string; email: string; role: string } | null {
   if (typeof window === "undefined") return null;
   const token = localStorage.getItem(ADMIN_TOKEN_KEY) ?? localStorage.getItem(CUSTOMER_TOKEN_KEY);
   if (!token) return null;
   try {
     const raw = token.split(".")[1];
     const decoded = atob(raw.replace(/-/g, "+").replace(/_/g, "/"));
-    const p = JSON.parse(decoded) as { email?: string; role?: string; exp?: number };
+    const p = JSON.parse(decoded) as { sub?: string; email?: string; role?: string; exp?: number };
     if (p.exp && p.exp * 1000 < Date.now()) return null;
-    if (!p.email || !p.role) return null;
-    return { email: p.email, role: p.role };
+    if (!p.email || !p.role || !p.sub) return null;
+    return { id: p.sub, email: p.email, role: p.role };
   } catch {
     return null;
   }

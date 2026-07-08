@@ -230,7 +230,11 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
         )}
 
         {tab === "analytics" && (
-          <AnalyticsTab outfitCount={outfits.length} celebrityCount={celebrities.length} />
+          <AnalyticsTab
+            outfitCount={outfits.length}
+            celebrityCount={celebrities.length}
+            avgPrice={outfits.length > 0 ? Math.round(outfits.reduce((s, o) => s + o.price, 0) / outfits.length) : 0}
+          />
         )}
 
         {tab === "reports" && (
