@@ -3,9 +3,10 @@ import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
+import { refundService } from "../services/refund.service.js";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
-import type { UserRole, NotificationType } from "@prisma/client";
+import type { UserRole, NotificationType, OrderStatus, Prisma } from "@prisma/client";
 
 export const adminRouter = Router();
 
@@ -404,4 +405,311 @@ adminRouter.post("/notifications/broadcast", async (req: Request, res: Response)
   });
 
   res.json({ data: { sentCount: users.length } });
+});
+
+// ── Admin Orders Management ───────────────────────────────────────────────────
+
+const VALID_ORDER_STATUSES: OrderStatus[] = [
+  "PLACED","CONFIRMED","PRODUCTION_STARTED","QUALITY_CHECK",
+  "SHIPPED","OUT_FOR_DELIVERY","DELIVERED","CANCELLED","RETURN_REQUESTED","REFUNDED",
+];
+
+function serializeOrderDetail(order: Prisma.OrderGetPayload<{
+  include: {
+    items: true;
+    payments: { orderBy: { createdAt: "desc" } };
+    commission: true;
+    routing: { include: { manufacturer: { select: { slug: true; name: true } } }; orderBy: { assignedAt: "asc" } };
+  };
+}>) {
+  return {
+    id:              order.id,
+    orderNumber:     order.orderNumber,
+    customerEmail:   order.customerEmail,
+    shippingName:    order.shippingName,
+    shippingAddress: order.shippingAddress,
+    shippingCity:    order.shippingCity,
+    shippingState:   order.shippingState,
+    shippingPincode: order.shippingPincode,
+    subtotal:        Number(order.subtotal),
+    shippingAmount:  Number(order.shippingAmount),
+    discountAmount:  Number((order as Record<string, unknown>).discountAmount ?? 0),
+    total:           Number(order.total),
+    status:          order.status,
+    paymentStatus:   order.paymentStatus,
+    notes:           order.notes ?? null,
+    deliveredAt:     order.deliveredAt?.toISOString() ?? null,
+    createdAt:       order.createdAt.toISOString(),
+    updatedAt:       order.updatedAt.toISOString(),
+    items: order.items.map((item) => ({
+      id:          item.id,
+      productSlug: item.productSlug,
+      productName: item.productName,
+      category:    item.category,
+      size:        item.size,
+      quantity:    (item as Record<string, unknown>).quantity as number ?? 1,
+      unitPrice:   Number(item.unitPrice),
+      totalPrice:  Number(item.totalPrice),
+      imageUrl:    item.imageUrl,
+    })),
+    payments: order.payments.map((p) => ({
+      id:         p.id,
+      amount:     Number(p.amount),
+      status:     p.status,
+      method:     p.method,
+      provider:   p.provider,
+      capturedAt: p.capturedAt?.toISOString() ?? null,
+    })),
+    routing: order.routing.map((r) => ({
+      id:              r.id,
+      manufacturerName: r.manufacturerName,
+      manufacturerSlug: r.manufacturer?.slug ?? null,
+      trackingCode:    r.trackingCode ?? null,
+      status:          r.status,
+    })),
+    commission: order.commission ? {
+      platformFee:         Number(order.commission.platformFee),
+      celebrityCommission: Number(order.commission.celebrityCommission),
+      manufacturerShare:   Number(order.commission.manufacturerShare),
+    } : null,
+  };
+}
+
+// GET /api/admin/orders — paginated with search & status filter
+adminRouter.get("/orders", async (req: Request, res: Response) => {
+  const page   = Math.max(1, parseInt((req.query.page  as string) || "1"));
+  const limit  = Math.min(100, Math.max(1, parseInt((req.query.limit as string) || "20")));
+  const search = ((req.query.search as string) || "").trim();
+  const status = (req.query.status as string) || undefined;
+
+  const where: Prisma.OrderWhereInput = {
+    ...(search && {
+      OR: [
+        { orderNumber:   { contains: search, mode: "insensitive" } },
+        { customerEmail: { contains: search, mode: "insensitive" } },
+        { shippingName:  { contains: search, mode: "insensitive" } },
+      ],
+    }),
+    ...(status && VALID_ORDER_STATUSES.includes(status as OrderStatus) && { status: status as OrderStatus }),
+  };
+
+  const [rows, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        orderNumber: true,
+        customerEmail: true,
+        shippingName: true,
+        total: true,
+        status: true,
+        paymentStatus: true,
+        createdAt: true,
+        _count: { select: { items: true } },
+      },
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  const orders = rows.map((o) => ({
+    ...o,
+    total: Number(o.total),
+    createdAt: o.createdAt.toISOString(),
+  }));
+
+  res.json({ data: { orders, total, page, limit } });
+});
+
+// GET /api/admin/orders/:id — full detail
+adminRouter.get("/orders/:id", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const order = await prisma.order.findFirst({
+    where: { OR: [{ id }, { orderNumber: id }] },
+    include: {
+      items: true,
+      payments: { orderBy: { createdAt: "desc" } },
+      commission: true,
+      routing: {
+        include: { manufacturer: { select: { slug: true, name: true } } },
+        orderBy: { assignedAt: "asc" },
+      },
+    },
+  });
+  if (!order) { res.status(404).json({ message: "Order not found" }); return; }
+  res.json({ data: serializeOrderDetail(order) });
+});
+
+// PATCH /api/admin/orders/:id/status
+adminRouter.patch("/orders/:id/status", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const { status } = req.body as { status?: string };
+
+  if (!status || !VALID_ORDER_STATUSES.includes(status as OrderStatus)) {
+    res.status(400).json({ message: `status must be one of: ${VALID_ORDER_STATUSES.join(", ")}` });
+    return;
+  }
+
+  const existing = await prisma.order.findFirst({
+    where: { OR: [{ id }, { orderNumber: id }] },
+    select: { id: true },
+  });
+  if (!existing) { res.status(404).json({ message: "Order not found" }); return; }
+
+  await prisma.order.update({
+    where: { id: existing.id },
+    data: {
+      status: status as OrderStatus,
+      ...(status === "DELIVERED" && { deliveredAt: new Date() }),
+    },
+  });
+
+  const order = await prisma.order.findUniqueOrThrow({
+    where: { id: existing.id },
+    include: {
+      items: true,
+      payments: { orderBy: { createdAt: "desc" } },
+      commission: true,
+      routing: {
+        include: { manufacturer: { select: { slug: true, name: true } } },
+        orderBy: { assignedAt: "asc" },
+      },
+    },
+  });
+
+  res.json({ data: serializeOrderDetail(order) });
+});
+
+// PATCH /api/admin/orders/:id/tracking
+adminRouter.patch("/orders/:id/tracking", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const { trackingCode, routingId } = req.body as { trackingCode?: string; routingId?: string };
+
+  if (!trackingCode?.trim()) {
+    res.status(400).json({ message: "trackingCode is required" }); return;
+  }
+
+  const order = await prisma.order.findFirst({
+    where: { OR: [{ id }, { orderNumber: id }] },
+    select: {
+      id: true,
+      routing: { select: { id: true }, orderBy: { assignedAt: "asc" }, take: 1 },
+      items: { select: { id: true, productName: true }, take: 1 },
+    },
+  });
+  if (!order) { res.status(404).json({ message: "Order not found" }); return; }
+
+  let targetId = routingId ?? order.routing[0]?.id;
+
+  // Auto-create routing entry if none exists yet
+  if (!targetId && order.items[0]) {
+    const newRouting = await prisma.manufacturerRouting.create({
+      data: {
+        orderId: order.id,
+        orderItemId: order.items[0].id,
+        manufacturerName: "Assigned",
+        trackingCode: trackingCode.trim(),
+        assignedAt: new Date(),
+      },
+    });
+    targetId = newRouting.id;
+  }
+
+  if (!targetId) {
+    res.status(400).json({ message: "No order items found to attach routing" }); return;
+  }
+
+  await prisma.manufacturerRouting.update({
+    where: { id: targetId },
+    data: { trackingCode: trackingCode.trim() },
+  });
+
+  const updated = await prisma.order.findUniqueOrThrow({
+    where: { id: order.id },
+    include: {
+      items: true,
+      payments: { orderBy: { createdAt: "desc" } },
+      commission: true,
+      routing: {
+        include: { manufacturer: { select: { slug: true, name: true } } },
+        orderBy: { assignedAt: "asc" },
+      },
+    },
+  });
+
+  res.json({ data: serializeOrderDetail(updated) });
+});
+
+// POST /api/admin/orders/:id/cancel
+adminRouter.post("/orders/:id/cancel", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const { reason } = req.body as { reason?: string };
+
+  const order = await prisma.order.findFirst({
+    where: { OR: [{ id }, { orderNumber: id }] },
+    select: { id: true, status: true },
+  });
+  if (!order) { res.status(404).json({ message: "Order not found" }); return; }
+
+  const terminal = ["DELIVERED", "CANCELLED", "REFUNDED"];
+  if (terminal.includes(order.status)) {
+    res.status(400).json({ message: `Cannot cancel an order in status ${order.status}` }); return;
+  }
+
+  const updated = await prisma.order.update({
+    where: { id: order.id },
+    data: {
+      status: "CANCELLED",
+      ...(reason && { notes: reason }),
+    },
+    select: {
+      id: true, orderNumber: true, customerEmail: true, shippingName: true,
+      total: true, status: true, paymentStatus: true, createdAt: true,
+      _count: { select: { items: true } },
+    },
+  });
+
+  res.json({ data: { ...updated, total: Number(updated.total), createdAt: updated.createdAt.toISOString() } });
+});
+
+// POST /api/admin/orders/:id/refund
+adminRouter.post("/orders/:id/refund", async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const { amount, notes } = req.body as { amount?: number; notes?: string };
+
+  const order = await prisma.order.findFirst({
+    where: { OR: [{ id }, { orderNumber: id }] },
+    include: { payments: { where: { status: "CAPTURED" }, take: 1 } },
+  });
+  if (!order) { res.status(404).json({ message: "Order not found" }); return; }
+
+  const payment = order.payments[0];
+  if (!payment) {
+    res.status(400).json({ message: "No captured payment found for this order" }); return;
+  }
+
+  const refundAmount = amount ?? Number(order.total);
+
+  const refund = await refundService.initiate({
+    orderId:   order.id,
+    paymentId: payment.id,
+    amount:    refundAmount,
+    type:      "MANUAL",
+    notes:     notes ?? "Admin manual refund",
+    adminId:   req.user!.id,
+  });
+  await refundService.processManual(refund.id, req.user!.id, notes);
+
+  const updated = await prisma.order.findUniqueOrThrow({
+    where: { id: order.id },
+    select: {
+      id: true, orderNumber: true, customerEmail: true, shippingName: true,
+      total: true, status: true, paymentStatus: true, createdAt: true,
+      _count: { select: { items: true } },
+    },
+  });
+
+  res.json({ data: { ...updated, total: Number(updated.total), createdAt: updated.createdAt.toISOString() } });
 });

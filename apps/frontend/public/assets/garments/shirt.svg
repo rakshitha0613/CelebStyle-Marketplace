@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460" width="400" height="460">
+  <defs>
+    <linearGradient id="shirtBody" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#F8F8F8"/>
+      <stop offset="100%" stop-color="#EEEEEE"/>
+    </linearGradient>
+    <linearGradient id="shirtCollar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F4F4F4"/>
+    </linearGradient>
+    <pattern id="shirtStripe" x="0" y="0" width="20" height="1" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="20" y2="0" stroke="#E0E8F0" stroke-width="0.8"/>
+    </pattern>
+  </defs>
+  <!-- Shirt body with long sleeves -->
+  <path fill="url(#shirtBody)" stroke="#CCCCCC" stroke-width="1.5" stroke-linejoin="round"
+    d="M 72,37 C 90,18 145,8 200,8 C 255,8 310,18 328,37
+       L 390,75 L 390,340 L 352,340 L 350,108 L 308,102
+       L 308,370 L 92,370 L 92,102 L 50,108 L 48,340 L 10,340 L 10,75 Z"/>
+  <!-- Subtle blue stripe pattern -->
+  <path fill="url(#shirtStripe)" stroke="none"
+    d="M 72,37 C 90,18 145,8 200,8 C 255,8 310,18 328,37
+       L 390,75 L 390,340 L 352,340 L 350,108 L 308,102
+       L 308,370 L 92,370 L 92,102 L 50,108 L 48,340 L 10,340 L 10,75 Z" opacity="0.7"/>
+  <!-- Left collar -->
+  <path fill="url(#shirtCollar)" stroke="#C0C0C0" stroke-width="1.5" stroke-linejoin="round"
+    d="M 200,8 C 195,8 165,14 150,24 L 170,54 L 200,42 Z"/>
+  <!-- Right collar -->
+  <path fill="url(#shirtCollar)" stroke="#C0C0C0" stroke-width="1.5" stroke-linejoin="round"
+    d="M 200,8 C 205,8 235,14 250,24 L 230,54 L 200,42 Z"/>
+  <!-- Collar tie area -->
+  <path fill="none" stroke="#C0C0C0" stroke-width="1.5"
+    d="M 170,54 Q 200,62 230,54"/>
+  <!-- Button placket with stitching -->
+  <line x1="200" y1="42" x2="200" y2="365" stroke="#D4D4D4" stroke-width="1.5"/>
+  <line x1="196" y1="42" x2="196" y2="365" stroke="#E0E0E0" stroke-width="0.8" opacity="0.5"/>
+  <line x1="204" y1="42" x2="204" y2="365" stroke="#E0E0E0" stroke-width="0.8" opacity="0.5"/>
+  <!-- Mother-of-pearl buttons -->
+  <circle cx="200" cy="80"  r="5" fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="200" cy="80"  r="2" fill="none" stroke="#AAAAAA" stroke-width="0.8"/>
+  <circle cx="200" cy="110" r="5" fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="200" cy="110" r="2" fill="none" stroke="#AAAAAA" stroke-width="0.8"/>
+  <circle cx="200" cy="140" r="5" fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="200" cy="140" r="2" fill="none" stroke="#AAAAAA" stroke-width="0.8"/>
+  <circle cx="200" cy="170" r="5" fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="200" cy="200" r="5" fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="200" cy="230" r="5" fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="200" cy="260" r="5" fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <!-- Breast pocket (left chest) -->
+  <rect x="92" y="130" width="52" height="52" rx="2" fill="none" stroke="#CCCCCC" stroke-width="1.2"/>
+  <!-- Cuffs -->
+  <rect x="10"  y="298" width="40" height="42" rx="3" fill="#F8F8F8" stroke="#C0C0C0" stroke-width="1.5"/>
+  <rect x="350" y="298" width="40" height="42" rx="3" fill="#F8F8F8" stroke="#C0C0C0" stroke-width="1.5"/>
+  <!-- Cuff stitching lines -->
+  <line x1="10"  y1="308" x2="50"  y2="308" stroke="#E0E0E0" stroke-width="1"/>
+  <line x1="350" y1="308" x2="390" y2="308" stroke="#E0E0E0" stroke-width="1"/>
+  <!-- Cuff buttons - mother of pearl -->
+  <circle cx="30"  cy="321" r="4"   fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="30"  cy="321" r="1.5" fill="none"   stroke="#AAAAAA" stroke-width="0.8"/>
+  <circle cx="370" cy="321" r="4"   fill="#F0EEE8" stroke="#C0C0C0" stroke-width="1.2"/>
+  <circle cx="370" cy="321" r="1.5" fill="none"   stroke="#AAAAAA" stroke-width="0.8"/>
+  <!-- Shoulder seams -->
+  <line x1="92"  y1="102" x2="72"  y2="37" stroke="#D0D0D0" stroke-width="1.2"/>
+  <line x1="308" y1="102" x2="328" y2="37" stroke="#D0D0D0" stroke-width="1.2"/>
+  <!-- Hem stitch -->
+  <line x1="92" y1="362" x2="308" y2="362" stroke="#D4D4D4" stroke-width="1" stroke-dasharray="5,3"/>
+</svg>

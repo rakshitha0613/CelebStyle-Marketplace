@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 620" width="400" height="620">
+  <defs>
+    <linearGradient id="indoBody" x1="0" y1="0" x2="0.15" y2="1">
+      <stop offset="0%" stop-color="#1B2A4A"/>
+      <stop offset="50%" stop-color="#152038"/>
+      <stop offset="100%" stop-color="#0E1626"/>
+    </linearGradient>
+    <linearGradient id="indoPanel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1B2A4A"/>
+      <stop offset="100%" stop-color="#243556"/>
+    </linearGradient>
+    <linearGradient id="indoGold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B8860B"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <pattern id="indoEmb" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="8" cy="8" r="3" fill="none" stroke="#D4A017" stroke-width="0.6" opacity="0.3"/>
+      <line x1="4" y1="8" x2="12" y2="8" stroke="#D4A017" stroke-width="0.4" opacity="0.2"/>
+      <line x1="8" y1="4" x2="8" y2="12" stroke="#D4A017" stroke-width="0.4" opacity="0.2"/>
+    </pattern>
+  </defs>
+  <!-- Indo-Western jacket body (asymmetric hem) -->
+  <path fill="url(#indoBody)" stroke="#0E1626" stroke-width="1.5" stroke-linejoin="round"
+    d="M 72,43 C 84,18 140,8 200,8 C 260,8 316,18 328,43
+       L 390,82 L 390,370 L 350,370 L 348,106 L 308,100
+       L 308,490 L 200,510 L 92,490 L 92,100 L 52,106 L 50,370 L 10,370 L 10,82 Z"/>
+  <!-- Embroidery overlay -->
+  <path fill="url(#indoEmb)" stroke="none"
+    d="M 72,43 C 84,18 140,8 200,8 C 260,8 316,18 328,43
+       L 390,82 L 390,370 L 350,370 L 348,106 L 308,100
+       L 308,490 L 200,510 L 92,490 L 92,100 L 52,106 L 50,370 L 10,370 L 10,82 Z" opacity="0.7"/>
+  <!-- Left front panel (asymmetric overlap) -->
+  <path fill="url(#indoPanel)" stroke="#0E1626" stroke-width="1.5"
+    d="M 200,8 C 186,8 162,14 148,26 L 155,70 L 180,120 L 200,50 Z"/>
+  <!-- Right panel -->
+  <path fill="url(#indoPanel)" stroke="#0E1626" stroke-width="1.5"
+    d="M 200,8 C 214,8 238,14 252,26 L 245,70 L 220,120 L 200,50 Z"/>
+  <!-- Mandarin collar with gold trim -->
+  <path fill="#1B2A4A" stroke="#D4A017" stroke-width="2"
+    d="M 162,22 C 174,10 194,6 200,6 C 206,6 226,10 238,22 L 238,44 L 162,44 Z"/>
+  <!-- Gold collar inner trim -->
+  <path fill="url(#indoGold)" stroke="none"
+    d="M 164,24 C 176,12 194,8 200,8 C 206,8 224,12 236,24 L 236,28 C 224,16 206,12 200,12 C 194,12 176,16 164,28 Z" opacity="0.7"/>
+  <!-- Gold diagonal button closure -->
+  <path fill="none" stroke="#D4A017" stroke-width="1.5" opacity="0.6"
+    d="M 200,50 C 210,100 215,180 210,280"/>
+  <!-- Gold buttons along diagonal -->
+  <circle cx="202" cy="70"  r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="205" cy="96"  r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="207" cy="122" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="209" cy="150" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="178" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <!-- Gold border side panels (bandhgala detail) -->
+  <path fill="none" stroke="#D4A017" stroke-width="1.2" opacity="0.5" stroke-dasharray="4,3"
+    d="M 108,100 L 108,480 C 148,498 200,506 200,506 C 200,506 252,498 292,480 L 292,100"/>
+  <!-- Chest embroidery accents -->
+  <path fill="none" stroke="#D4A017" stroke-width="1" opacity="0.5"
+    d="M 118,150 Q 148,144 155,158 Q 148,172 118,166 Z"/>
+  <path fill="none" stroke="#D4A017" stroke-width="1" opacity="0.5"
+    d="M 282,150 Q 252,144 245,158 Q 252,172 282,166 Z"/>
+  <!-- Asymmetric lower hem gold trim -->
+  <path fill="url(#indoGold)" stroke="none"
+    d="M 92,482 L 92,492 Q 145,508 200,510 Q 255,508 308,492 L 308,482
+       Q 255,498 200,500 Q 145,498 92,482 Z"/>
+  <!-- Cuffs with gold trim -->
+  <rect x="10"  y="326" width="44" height="44" rx="4" fill="#1B2A4A" stroke="#D4A017" stroke-width="1.8"/>
+  <rect x="10"  y="326" width="44" height="7"  rx="2" fill="#D4A017" opacity="0.8"/>
+  <rect x="346" y="326" width="44" height="44" rx="4" fill="#1B2A4A" stroke="#D4A017" stroke-width="1.8"/>
+  <rect x="346" y="326" width="44" height="7"  rx="2" fill="#D4A017" opacity="0.8"/>
+  <!-- Gold cuff buttons -->
+  <circle cx="32"  cy="352" r="4" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="368" cy="352" r="4" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <!-- Shoulder seams -->
+  <line x1="92"  y1="100" x2="72"  y2="43" stroke="#D4A017" stroke-width="1" opacity="0.4"/>
+  <line x1="308" y1="100" x2="328" y2="43" stroke="#D4A017" stroke-width="1" opacity="0.4"/>
+</svg>

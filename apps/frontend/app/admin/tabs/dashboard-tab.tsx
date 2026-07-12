@@ -137,7 +137,7 @@ export function DashboardTab() {
               <div key={p.id} className="flex items-center gap-3">
                 <span className="w-5 text-xs text-text/40 font-medium shrink-0">#{i + 1}</span>
                 <div className="h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-secondary">
-                  <img src={p.imageUrl} alt={p.movieName} className="h-full w-full object-cover" />
+                  <img src={p.imageUrl || undefined} alt={p.movieName} className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-primary">{p.movieName}</p>
@@ -203,7 +203,7 @@ export function DashboardTab() {
             {lowStockItems.map((item) => (
               <div key={item.id} className="flex items-center justify-between rounded-xl bg-white p-3">
                 <div className="flex items-center gap-3">
-                  <img src={item.product.imageUrl} alt={item.product.movieName} className="h-8 w-8 rounded-lg object-cover" />
+                  <img src={item.product.imageUrl || undefined} alt={item.product.movieName} className="h-8 w-8 rounded-lg object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                   <div>
                     <p className="text-sm font-medium text-primary">{item.product.movieName}</p>
                     <p className="text-xs text-text/50">Size: {item.variant.size} • {item.warehouse.name}</p>

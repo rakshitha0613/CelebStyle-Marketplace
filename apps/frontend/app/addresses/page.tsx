@@ -324,7 +324,7 @@ export default function AddressesPage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Full Name" error={fieldErrors.fullName} required>
-                    <input type="text" {...field("fullName")} placeholder="Rakshitha Rachu" className={INPUT_CLS} />
+                    <input type="text" {...field("fullName")} placeholder="Priya Sharma" className={INPUT_CLS} />
                   </Field>
                   <Field label="Phone" error={fieldErrors.phone} required>
                     <input type="tel" {...field("phone")} placeholder="+91 98765 43210" className={INPUT_CLS} />

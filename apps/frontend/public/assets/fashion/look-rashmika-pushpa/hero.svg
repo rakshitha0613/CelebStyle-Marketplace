@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 820" width="420" height="820">
+  <rect width="100%" height="100%" fill="white"/>
+  <defs>
+    <linearGradient id="choli" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e39494"/>
+      <stop offset="100%" stop-color="#d76969"/>
+    </linearGradient>
+    <linearGradient id="skirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d76969"/>
+      <stop offset="100%" stop-color="#cf4848"/>
+    </linearGradient>
+  </defs>
+  <!-- Choli (fitted blouse) - similar to saree blouse -->
+  <path fill="url(#choli)" stroke="#951e1e" stroke-width="1.5" stroke-linejoin="round"
+    d="M 92,49 C 104,22 150,10 210,10 C 270,10 316,22 328,49
+       L 382,85 L 382,205 L 342,205 L 338,102 L 296,96
+       L 296,252 L 124,252 L 124,96 L 82,102 L 78,205 L 38,205 L 38,85 Z"/>
+  <!-- Neckline curve (sweetheart/round) -->
+  <path fill="none" stroke="#811a1a" stroke-width="1.5"
+    d="M 150,32 C 164,55 178,65 210,65 C 242,65 256,55 270,32"/>
+  <!-- Choli waist hem -->
+  <path fill="none" stroke="#951e1e" stroke-width="1.5"
+    d="M 96,246 C 140,260 280,260 324,246"/>
+  <!-- Lehenga skirt (heavily flared) -->
+  <path fill="url(#skirt)" stroke="#951e1e" stroke-width="1.5"
+    d="M 96,246 C 140,260 280,260 324,246
+       L 410,790 L 10,790 Z"/>
+  <!-- Skirt pleats/volume lines -->
+  <line x1="130" y1="266" x2="50" y2="782" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="160" y1="268" x2="110" y2="782" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="185" y1="270" x2="170" y2="782" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="210" y1="272" x2="210" y2="782" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="235" y1="270" x2="250" y2="782" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="260" y1="268" x2="310" y2="782" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="290" y1="266" x2="370" y2="782" stroke="#D4D4D4" stroke-width="1"/>
+  <!-- Dupatta suggestion (over one shoulder) -->
+  <path fill="none" stroke="#a75f5f" stroke-width="2" stroke-dasharray="8,4"
+    d="M 296,96 C 340,60 390,40 410,80 L 400,400 L 360,420"/>
+  <!-- Border at skirt hem -->
+  <rect x="10" y="772" width="400" height="18" rx="2" fill="#cf4848" stroke="#951e1e" stroke-width="1.2"/>
+  <!-- Decorative band at waist -->
+  <rect x="96" y="236" width="228" height="14" rx="2" fill="#d76969" stroke="#951e1e" stroke-width="1.2"/>
+  <!-- Sleeve cuffs -->
+  <rect x="38" y="162" width="44" height="43" rx="3" fill="#d76969" stroke="#951e1e" stroke-width="1.5"/>
+  <rect x="338" y="162" width="44" height="43" rx="3" fill="#d76969" stroke="#951e1e" stroke-width="1.5"/>
+  <!-- Shoulder seams -->
+  <line x1="124" y1="96" x2="92" y2="49" stroke="#a75f5f" stroke-width="1"/>
+  <line x1="296" y1="96" x2="328" y2="49" stroke="#a75f5f" stroke-width="1"/>
+</svg>

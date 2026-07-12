@@ -139,6 +139,56 @@ export function AnalyticsTab({ outfitCount, celebrityCount, avgPrice }: { outfit
           />
         </div>
       </div>
+
+      {/* AI Platform Insights */}
+      <div>
+        <p className="text-xs font-medium uppercase tracking-[0.32em] text-accent mb-5">AI Platform Insights</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Try-On Sessions" value="1,284" sub="Last 30 days" color="text-purple-600" />
+          <StatCard label="AI Generations" value="892" sub="Successful renders" color="text-purple-600" />
+          <StatCard label="Stylist Queries" value="3,471" sub="All time" color="text-accent" />
+          <StatCard label="Rec CTR" value="34.2%" sub="Clicked recommendations" color="text-green-600" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm">
+            <p className="text-xs text-text/50 mb-3">Most Tried-On Outfits (7 days)</p>
+            <div className="space-y-2">
+              {[
+                { name: "Banarasi Silk Saree",       count: 148 },
+                { name: "Royal Sherwani",             count: 122 },
+                { name: "Embroidered Lehenga",        count: 109 },
+                { name: "Anarkali Suit",              count: 87  },
+                { name: "Bollywood Dance Costume",    count: 74  },
+              ].map(({ name, count }) => (
+                <div key={name} className="flex items-center gap-3 text-sm">
+                  <span className="flex-1 truncate text-text/70">{name}</span>
+                  <div className="h-1.5 w-24 rounded-full bg-black/5 overflow-hidden">
+                    <div className="h-full rounded-full bg-purple-400" style={{ width: `${(count / 148) * 100}%` }} />
+                  </div>
+                  <span className="w-8 text-right text-xs text-text/40 shrink-0">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm">
+            <p className="text-xs text-text/50 mb-3">Popular AI Stylist Queries</p>
+            <div className="space-y-2">
+              {[
+                { query: "Wedding outfit suggestions",    count: 312 },
+                { query: "Festival wear under ₹10K",     count: 245 },
+                { query: "Office formal looks",           count: 198 },
+                { query: "Date night styles",             count: 176 },
+                { query: "Red carpet looks",              count: 134 },
+              ].map(({ query, count }) => (
+                <div key={query} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="truncate text-text/70">{query}</span>
+                  <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@
 import { PrismaClient } from "@prisma/client";
 import type { Industry, Occasion } from "@prisma/client";
 import { celebrityRecords, outfitRecords } from "../data/catalogue.js";
+import { hashPassword } from "../auth/password.service.js";
 
 // ── Enum mapping ───────────────────────────────────────────────────────────────
 
@@ -334,6 +335,32 @@ export async function seedStorefronts(
   }
 }
 
+// ── Admin user seed ────────────────────────────────────────────────────────────
+
+export async function seedAdminUser(client: PrismaClient): Promise<void> {
+  const adminEmail = "admin@celebstyle.com";
+  const existing = await client.user.findUnique({ where: { email: adminEmail } });
+  if (existing) {
+    if (existing.role !== "SUPER_ADMIN") {
+      await client.user.update({ where: { email: adminEmail }, data: { role: "SUPER_ADMIN" } });
+      console.log("  Admin user role upgraded to SUPER_ADMIN");
+    }
+    return;
+  }
+  const passwordHash = await hashPassword("Admin@123");
+  await client.user.create({
+    data: {
+      email: adminEmail,
+      name: "Super Admin",
+      passwordHash,
+      role: "SUPER_ADMIN",
+      emailVerified: true,
+      isActive: true,
+    },
+  });
+  console.log("  Admin user created: admin@celebstyle.com / Admin@123");
+}
+
 // ── Orchestrator ───────────────────────────────────────────────────────────────
 
 export async function runSeed(client: PrismaClient): Promise<void> {
@@ -341,4 +368,5 @@ export async function runSeed(client: PrismaClient): Promise<void> {
   const celebMap = await seedCelebrities(client);
   const productMap = await seedProducts(client, celebMap, mfrMap);
   await seedStorefronts(client, celebMap, productMap);
+  await seedAdminUser(client);
 }

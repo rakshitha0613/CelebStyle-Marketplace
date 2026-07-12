@@ -1,13 +1,21 @@
 import { Navbar } from "@/components/navbar";
 import { getCelebrities, getOutfits, getManufacturers } from "@/lib/api";
+import type { Celebrity, Outfit, Manufacturer } from "@/lib/api";
 import { AdminClient } from "./admin-client";
 
 export default async function AdminPage() {
-  const [celebrities, outfits, manufacturers] = await Promise.all([
-    getCelebrities(),
-    getOutfits(),
-    getManufacturers()
-  ]);
+  let celebrities: Celebrity[] = [];
+  let outfits: Outfit[] = [];
+  let manufacturers: Manufacturer[] = [];
+  try {
+    [celebrities, outfits, manufacturers] = await Promise.all([
+      getCelebrities(),
+      getOutfits(),
+      getManufacturers(),
+    ]);
+  } catch {
+    // Backend may be cold-starting; AdminClient will re-fetch client-side
+  }
 
   return (
     <main>

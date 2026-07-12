@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { getBlogPost, getOutfits } from "@/lib/api";
+import { BlogShareButton } from "./share-button";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     post.outfitIds.length > 0
       ? (await getOutfits()).filter((o) => post.outfitIds.includes(o.id)).slice(0, 4)
       : [];
+
+  const wordCount = post.body?.split(/\s+/).length ?? 0;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
     <main>
@@ -50,7 +54,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <h1 className="font-serif text-4xl sm:text-5xl text-primary leading-tight">{post.title}</h1>
 
         {/* Meta */}
-        <div className="mt-4 flex items-center gap-4 text-sm text-text/50">
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-text/50">
           <span>by {post.authorName}</span>
           <span>·</span>
           <span>
@@ -59,7 +63,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             })}
           </span>
           <span>·</span>
+          <span>{readingTime} min read</span>
+          <span>·</span>
           <span>{post.views} views</span>
+          <div className="ml-auto">
+            <BlogShareButton title={post.title} slug={post.slug} />
+          </div>
         </div>
 
         {/* Body */}
@@ -67,6 +76,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           {post.body.split("\n").map((para, i) =>
             para.trim() ? <p key={i}>{para}</p> : <br key={i} />
           )}
+        </div>
+
+        {/* Share CTA */}
+        <div className="mt-10 flex items-center justify-between rounded-[16px] border border-black/6 bg-secondary/30 p-5">
+          <div>
+            <p className="text-sm font-medium text-primary">Enjoyed this article?</p>
+            <p className="text-xs text-text/50">Share it with fellow fashion lovers</p>
+          </div>
+          <BlogShareButton title={post.title} slug={post.slug} />
         </div>
 
         {/* Related outfits */}
@@ -82,7 +100,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 >
                   <div className="aspect-[3/4] bg-black/5 overflow-hidden">
                     <img
-                      src={outfit.imageUrl}
+                      src={outfit.imageUrl || undefined}
                       alt={outfit.category}
                       className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
                     />
@@ -101,9 +119,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         )}
 
         {/* Back link */}
-        <div className="mt-12 border-t border-black/6 pt-8">
+        <div className="mt-12 border-t border-black/6 pt-8 flex items-center justify-between">
           <Link href="/blog" className="text-sm text-accent hover:underline">
             ← Back to Blog
+          </Link>
+          <Link href="/search" className="text-sm text-accent hover:underline">
+            Browse outfits →
           </Link>
         </div>
       </article>

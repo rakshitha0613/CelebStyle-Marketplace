@@ -39,6 +39,7 @@ function toPublicPost(
     imageUrl: post.images[0]?.url ?? null,
     images: post.images,
     productId: post.productId,
+    outfitId: post.productId,
     tags: post.tags,
     likeCount: post.likeCount,
     commentCount: post.commentCount,
@@ -86,19 +87,31 @@ async function optionalUserId(req: Request): Promise<string | undefined> {
 communityRouter.post("/posts", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { caption, imageUrl, productId, tags } = req.body as {
+      const { caption, imageUrl, productId: productIdField, outfitId, tags } = req.body as {
         caption?: string;
         imageUrl?: string;
         productId?: string;
+        outfitId?: string;
         tags?: string[];
       };
+      const productId = productIdField ?? outfitId;
       if (!caption?.trim()) return res.status(400).json({ error: "caption is required" });
+
+      // Resolve slug → cuid if productId provided (frontend sends slugs, DB FK needs cuids)
+      let resolvedProductId: string | null = null;
+      if (productId?.trim()) {
+        const product = await prisma.product.findFirst({
+          where: { OR: [{ id: productId.trim() }, { slug: productId.trim() }] },
+          select: { id: true },
+        });
+        resolvedProductId = product?.id ?? null;
+      }
 
       const post = await prisma.communityPost.create({
         data: {
           userId: req.user!.id,
           caption: caption.trim(),
-          productId: productId ?? null,
+          productId: resolvedProductId,
           tags: Array.isArray(tags) ? tags.slice(0, 10) : [],
           isApproved: true,
           images: imageUrl ? { create: [{ url: imageUrl, sortOrder: 0 }] } : undefined,
@@ -369,7 +382,9 @@ communityRouter.get("/moderation", authenticate, authorize("ADMIN", "SUPER_ADMIN
         include: POST_INCLUDE,
         orderBy: { createdAt: "desc" },
       });
-      return res.status(200).json({ data: posts.map((p) => toPublicPost(p as PostWithRelations)) });
+      return res.status(200).json({
+        data: posts.map((p) => ({ ...toPublicPost(p as PostWithRelations), reports: [] })),
+      });
     } catch (err) { next(err); }
   }
 );

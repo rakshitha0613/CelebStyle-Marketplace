@@ -1,0 +1,36 @@
+{
+  "id": "look-akshay-kumar-kesari",
+  "name": "Saffron Warrior Sherwani",
+  "category": "Sikh Warrior Sherwani",
+  "gender": "male",
+  "fabric": "Brocade",
+  "season": "All Season",
+  "occasion": "Festival",
+  "garmentType": "SHERWANI",
+  "neckStyle": "Mandarin",
+  "sleeveType": "Full",
+  "fit": "Regular",
+  "length": "Knee",
+  "anchorPoints": {
+    "leftShoulder": {
+      "x": 0.2,
+      "y": 0.08
+    },
+    "rightShoulder": {
+      "x": 0.8,
+      "y": 0.08
+    },
+    "leftHip": {
+      "x": 0.26,
+      "y": 0.7
+    },
+    "rightHip": {
+      "x": 0.74,
+      "y": 0.7
+    }
+  },
+  "segmentationType": "full-body",
+  "recommendedPose": "front-facing",
+  "colorPalette": "Saffron, gold, dark blue",
+  "generatedAt": "2026-07-11T06:03:52.097Z"
+}

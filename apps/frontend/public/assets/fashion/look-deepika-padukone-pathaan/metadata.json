@@ -1,0 +1,36 @@
+{
+  "id": "look-deepika-padukone-pathaan",
+  "name": "Action Combat Bodysuit",
+  "category": "Action Bodysuit",
+  "gender": "female",
+  "fabric": "Stretch",
+  "season": "All Season",
+  "occasion": "Party",
+  "garmentType": "DRESS",
+  "neckStyle": "High",
+  "sleeveType": "Full",
+  "fit": "Fitted",
+  "length": "Full",
+  "anchorPoints": {
+    "leftShoulder": {
+      "x": 0.2,
+      "y": 0.08
+    },
+    "rightShoulder": {
+      "x": 0.8,
+      "y": 0.08
+    },
+    "leftHip": {
+      "x": 0.26,
+      "y": 0.7
+    },
+    "rightHip": {
+      "x": 0.74,
+      "y": 0.7
+    }
+  },
+  "segmentationType": "full-body",
+  "recommendedPose": "front-facing",
+  "colorPalette": "Red, black, gold",
+  "generatedAt": "2026-07-11T06:03:52.080Z"
+}

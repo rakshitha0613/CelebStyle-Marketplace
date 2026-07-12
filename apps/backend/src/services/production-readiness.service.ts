@@ -89,10 +89,10 @@ const TECH_DEBT: TechDebtItem[] = [
   {
     id: "TD-07",
     area: "Images",
-    description: "Celebrity profile images fall back to third-party thum.io service — external dependency.",
+    description: "Celebrity and outfit images are self-hosted local SVG fashion assets — no external image dependencies.",
     priority: "low",
     effort: "high",
-    recommendation: "Pre-fetch and store celebrity images in managed cloud storage (S3/GCS).",
+    recommendation: "Upgrade to AI-generated WebP images via managed cloud storage for production.",
   },
   {
     id: "TD-08",

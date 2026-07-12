@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 495" width="420" height="900">
+  <rect width="100%" height="100%" fill="white"/>
+  <defs>
+    <linearGradient id="blouse" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e08c95"/>
+      <stop offset="100%" stop-color="#d35e6a"/>
+    </linearGradient>
+    <linearGradient id="drape" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d35e6a"/>
+      <stop offset="100%" stop-color="#faf7ef"/>
+    </linearGradient>
+    <linearGradient id="pallu" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e08c95"/>
+      <stop offset="100%" stop-color="#c93c4a"/>
+    </linearGradient>
+  </defs>
+  <!-- Saree blouse (choli) - short fitted top -->
+  <path fill="url(#blouse)" stroke="#901320" stroke-width="1.5" stroke-linejoin="round"
+    d="M 92,45 C 102,20 148,10 210,10 C 272,10 318,20 328,45
+       L 380,80 L 380,200 L 340,200 L 336,100 L 296,94
+       L 296,240 L 124,240 L 124,94 L 84,100 L 80,200 L 40,200 L 40,80 Z"/>
+  <!-- Blouse neckline curve -->
+  <path fill="none" stroke="#7d101b" stroke-width="1.5"
+    d="M 148,30 C 162,50 175,60 210,60 C 245,60 258,50 272,30"/>
+  <!-- Saree drape (main body) -->
+  <path fill="url(#drape)" stroke="#901320" stroke-width="1.5"
+    d="M 80,240 L 60,860 L 360,860 L 340,240 Z"/>
+  <!-- Drape pleats/folds -->
+  <line x1="140" y1="250" x2="120" y2="850" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="170" y1="250" x2="165" y2="850" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="210" y1="250" x2="210" y2="850" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="250" y1="250" x2="255" y2="850" stroke="#D4D4D4" stroke-width="1"/>
+  <line x1="280" y1="250" x2="300" y2="850" stroke="#D4D4D4" stroke-width="1"/>
+  <!-- Pallu (draped end over shoulder) -->
+  <path fill="url(#pallu)" stroke="#901320" stroke-width="1.5" stroke-linejoin="round"
+    d="M 296,94 L 360,50 L 400,130 L 400,450 L 350,450 L 330,240 L 296,240 Z"/>
+  <!-- Pallu border/trim -->
+  <path fill="none" stroke="#901320" stroke-width="1.5" stroke-dasharray="6,3"
+    d="M 360,50 L 400,130 L 400,450 L 380,450"/>
+  <!-- Pallu fold lines -->
+  <line x1="340" y1="100" x2="370" y2="440" stroke="#D8D8D8" stroke-width="0.8"/>
+  <line x1="360" y1="80" x2="395" y2="380" stroke="#D8D8D8" stroke-width="0.8"/>
+  <!-- Border at hem -->
+  <rect x="60" y="840" width="300" height="20" rx="2" fill="#C0192A" stroke="#901320" stroke-width="1.2"/>
+  <!-- Border at pallu hem -->
+  <rect x="350" y="430" width="50" height="20" rx="2" fill="#C0192A" stroke="#901320" stroke-width="1.2"/>
+  <!-- Blouse side seams -->
+  <line x1="124" y1="94" x2="92" y2="45" stroke="#a4585f" stroke-width="1"/>
+  <line x1="296" y1="94" x2="328" y2="45" stroke="#a4585f" stroke-width="1"/>
+  <!-- Sleeve cuffs -->
+  <rect x="40" y="160" width="44" height="40" rx="3" fill="#d35e6a" stroke="#901320" stroke-width="1.5"/>
+  <rect x="336" y="160" width="44" height="40" rx="3" fill="#d35e6a" stroke="#901320" stroke-width="1.5"/>
+</svg>

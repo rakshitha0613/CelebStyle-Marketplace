@@ -20,6 +20,34 @@ type ReviewWithRelations = Prisma.ReviewGetPayload<{
   };
 }>;
 
+const ADMIN_REVIEW_INCLUDE = {
+  user: { select: { id: true as const, name: true as const, email: true as const, profile: { select: { avatarUrl: true as const } } } },
+  product: { select: { id: true as const, movieName: true as const, imageUrl: true as const } },
+  images: { orderBy: { sortOrder: "asc" as const } },
+};
+
+type AdminReviewWithRelations = Prisma.ReviewGetPayload<{
+  include: {
+    user: { select: { id: true; name: true; email: true; profile: { select: { avatarUrl: true } } } };
+    product: { select: { id: true; movieName: true; imageUrl: true } };
+    images: { orderBy: { sortOrder: "asc" } };
+  };
+}>;
+
+function toAdminPublic(r: AdminReviewWithRelations) {
+  return {
+    id: r.id,
+    rating: r.rating,
+    title: r.title,
+    body: r.body,
+    isApproved: r.isApproved,
+    isVerifiedPurchase: r.isVerifiedPurchase,
+    createdAt: r.createdAt,
+    user: { id: r.user.id, name: r.user.name, email: r.user.email },
+    product: { id: r.product.id, movieName: r.product.movieName, imageUrl: r.product.imageUrl },
+  };
+}
+
 function toPublic(r: ReviewWithRelations, helpful = false) {
   return {
     id: r.id,
@@ -58,11 +86,11 @@ reviewsRouter.get("/pending", authenticate, authorize("ADMIN", "SUPER_ADMIN", "C
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const reviews = await prisma.review.findMany({
-        where: { isApproved: false, deletedAt: null },
-        include: REVIEW_INCLUDE,
+        where: { deletedAt: null },
+        include: ADMIN_REVIEW_INCLUDE,
         orderBy: { createdAt: "desc" },
       });
-      return res.status(200).json({ data: reviews.map((r) => toPublic(r as ReviewWithRelations)) });
+      return res.status(200).json({ data: reviews.map((r) => toAdminPublic(r as AdminReviewWithRelations)) });
     } catch (err) { next(err); }
   }
 );
@@ -141,8 +169,16 @@ reviewsRouter.post("/", authenticate,
       if (!rating || rating < 1 || rating > 5) return res.status(400).json({ error: "rating must be 1–5" });
       if (!body?.trim()) return res.status(400).json({ error: "body is required" });
 
+      // Resolve slug → cuid: the frontend sends outfit slugs, DB FK needs the cuid primary key
+      const product = await prisma.product.findFirst({
+        where: { OR: [{ id: outfitId.trim() }, { slug: outfitId.trim() }] },
+        select: { id: true },
+      });
+      if (!product) return res.status(404).json({ error: "Product not found" });
+      const resolvedProductId = product.id;
+
       const existing = await prisma.review.findUnique({
-        where: { userId_productId: { userId: req.user!.id, productId: outfitId.trim() } },
+        where: { userId_productId: { userId: req.user!.id, productId: resolvedProductId } },
       });
       if (existing) return res.status(409).json({ error: "You have already reviewed this product" });
 
@@ -150,7 +186,7 @@ reviewsRouter.post("/", authenticate,
       const review = await prisma.review.create({
         data: {
           userId: req.user!.id,
-          productId: outfitId.trim(),
+          productId: resolvedProductId,
           orderId: orderId ?? null,
           rating: Math.round(rating),
           title: title?.trim() ?? null,

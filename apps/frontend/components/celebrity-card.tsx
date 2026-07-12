@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { Celebrity } from "@/lib/api";
+import { LocalImage } from "./local-image";
 
 type CelebrityCardProps = {
   celebrity: Celebrity;
@@ -8,8 +11,8 @@ type CelebrityCardProps = {
 export function CelebrityCard({ celebrity }: CelebrityCardProps) {
   return (
     <Link href={`/celebrities/${celebrity.id}`} className="group overflow-hidden rounded-[28px] bg-white shadow-luxe transition duration-300 hover:-translate-y-1">
-      <div className="relative aspect-[4/5] overflow-hidden bg-primary">
-        <img
+      <div className="relative aspect-[4/5] overflow-hidden">
+        <LocalImage
           src={celebrity.profileImage}
           alt={celebrity.name}
           className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"

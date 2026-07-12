@@ -1,13 +1,18 @@
-# ── Stage 1: build ────────────────────────────────────────────────────────────
+# ── Stage 1: deps — install production + dev dependencies ─────────────────────
 # Railway build context is apps/backend/ — the monorepo root (and its
 # package-lock.json) is outside this context and cannot be referenced.
 # We therefore use `npm install` rather than `npm ci`.
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package.json ./
 RUN npm install
 
+# ── Stage 2: builder — compile TypeScript ─────────────────────────────────────
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client for the linux-musl target used by Alpine
@@ -16,10 +21,10 @@ RUN npx prisma generate
 # Compile TypeScript → dist/
 RUN npm run build
 
-# Remove devDependencies before we copy node_modules to the runtime image
+# Remove devDependencies before copying to the runtime image
 RUN npm prune --omit=dev
 
-# ── Stage 2: production runtime ───────────────────────────────────────────────
+# ── Stage 3: runner — production runtime ──────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
 

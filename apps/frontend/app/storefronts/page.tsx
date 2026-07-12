@@ -31,7 +31,7 @@ export default async function StorefrontsPage() {
         <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {storefronts.map((storefront) => (
             <Link key={storefront.celebrityId} href={`/storefronts/${storefront.celebrityId}`} className="overflow-hidden rounded-[28px] border border-black/6 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-luxe">
-              <div className="aspect-[4/3] bg-primary">
+              <div className="aspect-[4/3] bg-secondary/20">
                 <img src={storefront.bannerImage} alt={storefront.displayName} className="h-full w-full object-cover" />
               </div>
               <div className="p-6">

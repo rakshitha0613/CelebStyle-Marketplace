@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { updateOrderStatus, type OrderStatus } from "@/lib/api";
+import { updateOrderStatus, getCurrentUser, type OrderStatus } from "@/lib/api";
 
 const STATUSES: OrderStatus[] = ["placed", "production started", "shipped", "delivered"];
 
@@ -16,6 +16,8 @@ export function OrderStatusTracker({ orderId, currentStatus }: Props) {
   const [status, setStatus] = useState<OrderStatus>(currentStatus);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const user = getCurrentUser();
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   const currentIndex = STATUSES.indexOf(status);
 
@@ -66,7 +68,7 @@ export function OrderStatusTracker({ orderId, currentStatus }: Props) {
         })}
       </div>
 
-      {currentIndex < STATUSES.length - 1 && (
+      {isAdmin && currentIndex < STATUSES.length - 1 && (
         <button
           onClick={advance}
           disabled={loading}

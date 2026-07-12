@@ -67,7 +67,7 @@ export function StorefrontsTab() {
             <div key={s.id} className="rounded-[20px] border border-black/6 bg-white overflow-hidden shadow-sm">
               {s.bannerImage && (
                 <div className="h-28 overflow-hidden bg-secondary">
-                  <img src={s.bannerImage} alt={s.displayName} className="h-full w-full object-cover" />
+                  <img src={s.bannerImage} alt={s.displayName} className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.opacity = "0"; }} />
                 </div>
               )}
               <div className="p-5">
@@ -119,3 +119,4 @@ export function StorefrontsTab() {
     </div>
   );
 }
+

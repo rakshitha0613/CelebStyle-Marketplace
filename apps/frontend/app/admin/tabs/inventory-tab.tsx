@@ -102,7 +102,7 @@ export function InventoryTab() {
                   <tr key={item.id} className={`hover:bg-secondary/30 transition-colors ${item.quantity <= item.lowStockThreshold ? "bg-amber-50/50" : ""}`}>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
-                        <img src={item.product.imageUrl} alt={item.product.movieName} className="h-8 w-8 rounded-lg object-cover shrink-0" />
+                        <img src={item.product.imageUrl} alt={item.product.movieName} className="h-8 w-8 rounded-lg object-cover shrink-0" onError={(e) => { e.currentTarget.style.opacity = "0"; }} />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-primary max-w-[180px]">{item.product.movieName}</p>
                           <p className="text-xs text-text/40">₹{Number(item.product.basePrice).toLocaleString("en-IN")}</p>
@@ -183,3 +183,4 @@ export function InventoryTab() {
     </div>
   );
 }
+

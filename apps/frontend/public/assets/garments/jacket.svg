@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 500" width="420" height="500">
+  <defs>
+    <linearGradient id="jacketBody" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#2C1810"/>
+      <stop offset="50%" stop-color="#3D2218"/>
+      <stop offset="100%" stop-color="#1A0E08"/>
+    </linearGradient>
+    <linearGradient id="jacketLapel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3D2218"/>
+      <stop offset="100%" stop-color="#4A2A1E"/>
+    </linearGradient>
+    <linearGradient id="jacketSeam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5C3D28"/>
+      <stop offset="100%" stop-color="#4A2A1E"/>
+    </linearGradient>
+  </defs>
+  <!-- Jacket body (leather-look) -->
+  <path fill="url(#jacketBody)" stroke="#1A0E08" stroke-width="1.5" stroke-linejoin="round"
+    d="M 63,35 C 80,15 145,6 210,6 C 275,6 340,15 357,35
+       L 408,78 L 408,360 L 364,360 L 360,110 L 318,104
+       L 316,390 L 104,390 L 102,104 L 60,110 L 56,360 L 12,360 L 12,78 Z"/>
+  <!-- Left lapel - leather sheen -->
+  <path fill="url(#jacketLapel)" stroke="#1A0E08" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,6 C 200,6 155,14 138,28 L 158,80 L 200,55 L 210,6 Z"/>
+  <!-- Right lapel -->
+  <path fill="url(#jacketLapel)" stroke="#1A0E08" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,6 C 220,6 265,14 282,28 L 262,80 L 220,55 L 210,6 Z"/>
+  <!-- Lapel seam/notch -->
+  <line x1="138" y1="28" x2="158" y2="80" stroke="#1A0E08" stroke-width="2"/>
+  <line x1="282" y1="28" x2="262" y2="80" stroke="#1A0E08" stroke-width="2"/>
+  <!-- Lapel highlight (leather sheen) -->
+  <path fill="none" stroke="#5C3D28" stroke-width="1.5" opacity="0.5"
+    d="M 145,30 L 160,72 M 272,30 L 260,72"/>
+  <!-- Center front zipper -->
+  <rect x="204" y="55" width="12" height="335" fill="#4A2A1E" rx="2"/>
+  <line x1="210" y1="55" x2="210" y2="390" stroke="#5C3D28" stroke-width="1.5" opacity="0.7"/>
+  <!-- Zipper pull -->
+  <rect x="205" y="85" width="10" height="14" rx="2" fill="#8B7355" stroke="#6B5530" stroke-width="1"/>
+  <rect x="205" y="88" width="10" height="2"  rx="1" fill="#A08050"/>
+  <!-- Chest pockets - utility style -->
+  <rect x="128" y="135" width="54" height="38" rx="3" fill="none" stroke="#5C3D28" stroke-width="1.5"/>
+  <line x1="128" y1="148" x2="182" y2="148" stroke="#5C3D28" stroke-width="1" opacity="0.6"/>
+  <rect x="238" y="135" width="54" height="38" rx="3" fill="none" stroke="#5C3D28" stroke-width="1.5"/>
+  <line x1="238" y1="148" x2="292" y2="148" stroke="#5C3D28" stroke-width="1" opacity="0.6"/>
+  <!-- Chest pocket snaps -->
+  <circle cx="155" cy="140" r="4" fill="#8B7355" stroke="#6B5530" stroke-width="1"/>
+  <circle cx="265" cy="140" r="4" fill="#8B7355" stroke="#6B5530" stroke-width="1"/>
+  <!-- Lower utility pockets -->
+  <rect x="112" y="252" width="70" height="50" rx="4" fill="none" stroke="#5C3D28" stroke-width="1.5"/>
+  <line x1="112" y1="268" x2="182" y2="268" stroke="#5C3D28" stroke-width="1" opacity="0.6"/>
+  <rect x="238" y="252" width="70" height="50" rx="4" fill="none" stroke="#5C3D28" stroke-width="1.5"/>
+  <line x1="238" y1="268" x2="308" y2="268" stroke="#5C3D28" stroke-width="1" opacity="0.6"/>
+  <!-- Lower pocket snaps -->
+  <circle cx="147" cy="257" r="4" fill="#8B7355" stroke="#6B5530" stroke-width="1"/>
+  <circle cx="273" cy="257" r="4" fill="#8B7355" stroke="#6B5530" stroke-width="1"/>
+  <!-- Shoulder seams with stitching -->
+  <line x1="102" y1="104" x2="63"  y2="35" stroke="#5C3D28" stroke-width="1.5"/>
+  <line x1="318" y1="104" x2="357" y2="35" stroke="#5C3D28" stroke-width="1.5"/>
+  <!-- Hem stitching -->
+  <line x1="104" y1="382" x2="316" y2="382" stroke="#5C3D28" stroke-width="1" stroke-dasharray="5,3" opacity="0.6"/>
+  <!-- Sleeve cuffs with zipper detail -->
+  <rect x="12"  y="316" width="48" height="44" rx="3" fill="#2C1810" stroke="#5C3D28" stroke-width="1.5"/>
+  <rect x="360" y="316" width="48" height="44" rx="3" fill="#2C1810" stroke="#5C3D28" stroke-width="1.5"/>
+  <!-- Cuff zipper -->
+  <line x1="20" y1="330" x2="52" y2="330" stroke="#5C3D28" stroke-width="1.5"/>
+  <line x1="368" y1="330" x2="400" y2="330" stroke="#5C3D28" stroke-width="1.5"/>
+  <!-- Collar/neck line -->
+  <path fill="none" stroke="#5C3D28" stroke-width="1.5"
+    d="M 158,80 Q 185,64 210,66 Q 235,64 262,80"/>
+</svg>

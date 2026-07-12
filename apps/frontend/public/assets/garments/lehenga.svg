@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 820" width="420" height="820">
+  <defs>
+    <linearGradient id="lehengaCholi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C41E3A"/>
+      <stop offset="100%" stop-color="#9B1530"/>
+    </linearGradient>
+    <linearGradient id="lehengaSkirt" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#B22222"/>
+      <stop offset="50%" stop-color="#8B0000"/>
+      <stop offset="100%" stop-color="#7A0000"/>
+    </linearGradient>
+    <linearGradient id="lehengaGold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B8860B"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <pattern id="lehengaEmb" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M15,2 Q22,8 28,15 Q22,22 15,28 Q8,22 2,15 Q8,8 15,2 Z"
+            fill="none" stroke="#D4A017" stroke-width="0.8" opacity="0.4"/>
+      <circle cx="15" cy="15" r="2" fill="#D4A017" opacity="0.3"/>
+    </pattern>
+    <pattern id="lehengaBorderPat" x="0" y="0" width="20" height="12" patternUnits="userSpaceOnUse">
+      <path d="M0,6 Q5,0 10,6 Q15,12 20,6" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.9"/>
+    </pattern>
+  </defs>
+  <!-- Choli (fitted blouse) -->
+  <path fill="url(#lehengaCholi)" stroke="#9B1530" stroke-width="1.5" stroke-linejoin="round"
+    d="M 92,49 C 104,22 150,10 210,10 C 270,10 316,22 328,49
+       L 382,85 L 382,205 L 342,205 L 338,102 L 296,96
+       L 296,252 L 124,252 L 124,96 L 82,102 L 78,205 L 38,205 L 38,85 Z"/>
+  <!-- Choli embroidery overlay -->
+  <path fill="url(#lehengaEmb)" stroke="none"
+    d="M 92,49 C 104,22 150,10 210,10 C 270,10 316,22 328,49
+       L 382,85 L 382,205 L 342,205 L 338,102 L 296,96
+       L 296,252 L 124,252 L 124,96 L 82,102 L 78,205 L 38,205 L 38,85 Z" opacity="0.6"/>
+  <!-- Neckline curve (sweetheart) - gold trim -->
+  <path fill="none" stroke="#D4A017" stroke-width="2"
+    d="M 150,32 C 164,55 178,65 210,65 C 242,65 256,55 270,32"/>
+  <!-- Choli waist hem gold border -->
+  <path fill="url(#lehengaGold)" stroke="none"
+    d="M 96,240 Q 140,254 210,258 Q 280,254 324,240 L 324,252 Q 280,266 210,270 Q 140,266 96,252 Z"/>
+  <!-- Lehenga skirt (heavily flared) -->
+  <path fill="url(#lehengaSkirt)" stroke="#7A0000" stroke-width="1.5"
+    d="M 96,246 C 140,262 280,262 324,246
+       L 410,790 L 10,790 Z"/>
+  <!-- Skirt embroidery overlay -->
+  <path fill="url(#lehengaEmb)" stroke="none"
+    d="M 96,246 C 140,262 280,262 324,246 L 410,790 L 10,790 Z" opacity="0.5"/>
+  <!-- Skirt pleats/volume lines -->
+  <line x1="130" y1="266" x2="50"  y2="782" stroke="#6B0000" stroke-width="1" opacity="0.5"/>
+  <line x1="165" y1="268" x2="115" y2="782" stroke="#6B0000" stroke-width="1" opacity="0.5"/>
+  <line x1="190" y1="270" x2="172" y2="782" stroke="#6B0000" stroke-width="1" opacity="0.5"/>
+  <line x1="210" y1="272" x2="210" y2="782" stroke="#6B0000" stroke-width="1" opacity="0.5"/>
+  <line x1="230" y1="270" x2="248" y2="782" stroke="#6B0000" stroke-width="1" opacity="0.5"/>
+  <line x1="255" y1="268" x2="305" y2="782" stroke="#6B0000" stroke-width="1" opacity="0.5"/>
+  <line x1="290" y1="266" x2="370" y2="782" stroke="#6B0000" stroke-width="1" opacity="0.5"/>
+  <!-- Gold border at skirt hem (wide) -->
+  <rect x="10" y="768" width="400" height="22" fill="url(#lehengaGold)" rx="2"/>
+  <rect x="10" y="768" width="400" height="22" fill="url(#lehengaBorderPat)" opacity="0.9"/>
+  <!-- Decorative gold band at waist -->
+  <rect x="96" y="238" width="228" height="14" fill="url(#lehengaGold)" rx="3"/>
+  <!-- Dupatta hint (over shoulder, dashed outline) -->
+  <path fill="none" stroke="#D4A017" stroke-width="2" stroke-dasharray="8,4" opacity="0.6"
+    d="M 296,96 C 340,60 390,40 410,80 L 400,400 L 360,420"/>
+  <!-- Sleeve cuffs with gold trim -->
+  <rect x="38"  y="162" width="44" height="43" rx="3" fill="#C41E3A" stroke="#D4A017" stroke-width="1.8"/>
+  <rect x="38"  y="162" width="44" height="8"  rx="2" fill="#D4A017" opacity="0.9"/>
+  <rect x="338" y="162" width="44" height="43" rx="3" fill="#C41E3A" stroke="#D4A017" stroke-width="1.8"/>
+  <rect x="338" y="162" width="44" height="8"  rx="2" fill="#D4A017" opacity="0.9"/>
+  <!-- Shoulder seams -->
+  <line x1="124" y1="96" x2="92"  y2="49" stroke="#D4A017" stroke-width="1.2" opacity="0.6"/>
+  <line x1="296" y1="96" x2="328" y2="49" stroke="#D4A017" stroke-width="1.2" opacity="0.6"/>
+</svg>

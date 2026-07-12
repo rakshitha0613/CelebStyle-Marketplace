@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 286" width="420" height="520">
+  <rect width="100%" height="100%" fill="white"/>
+  <defs>
+    <linearGradient id="jacket" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b0bec5"/>
+      <stop offset="100%" stop-color="#607D8B"/>
+    </linearGradient>
+    <linearGradient id="trouser" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#90a4ae"/>
+      <stop offset="100%" stop-color="#78919c"/>
+    </linearGradient>
+    <linearGradient id="lapel" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#90a4ae"/>
+      <stop offset="100%" stop-color="#EFEFEF"/>
+    </linearGradient>
+  </defs>
+  <!-- Trouser (visible below jacket) -->
+  <path fill="url(#trouser)" stroke="#3e515a" stroke-width="1.2"
+    d="M 134,360 L 128,515 L 202,515 L 210,400 L 218,515 L 292,515 L 286,360 Z"/>
+  <!-- Trouser crease lines -->
+  <line x1="166" y1="365" x2="164" y2="510" stroke="#485e68" stroke-width="0.8"/>
+  <line x1="254" y1="365" x2="256" y2="510" stroke="#485e68" stroke-width="0.8"/>
+  <!-- Belt line -->
+  <rect x="134" y="350" width="152" height="16" rx="2" fill="#fafafa" stroke="#485e68" stroke-width="1"/>
+  <!-- Belt buckle -->
+  <rect x="197" y="352" rx="2" ry="2" width="26" height="12" fill="#78919c" stroke="#dfdfdf" stroke-width="1"/>
+  <!-- Suit jacket body -->
+  <path fill="url(#jacket)" stroke="#3e515a" stroke-width="1.5" stroke-linejoin="round"
+    d="M 59,31 C 76,12 140,4 210,4 C 280,4 344,12 361,31
+       L 408,77 L 408,300 L 365,300 L 362,106 L 320,98
+       L 318,370 L 102,370 L 100,98 L 58,106 L 55,300 L 12,300 L 12,77 Z"/>
+  <!-- Left lapel -->
+  <path fill="url(#lapel)" stroke="#3e515a" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,4 C 195,4 155,14 135,28 L 152,74 L 170,112 L 200,58 Z"/>
+  <!-- Right lapel -->
+  <path fill="url(#lapel)" stroke="#3e515a" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,4 C 225,4 265,14 285,28 L 268,74 L 250,112 L 220,58 Z"/>
+  <!-- Lapel notch lines -->
+  <line x1="135" y1="28" x2="152" y2="74" stroke="#3e515a" stroke-width="1.5"/>
+  <line x1="285" y1="28" x2="268" y2="74" stroke="#3e515a" stroke-width="1.5"/>
+  <!-- Center opening -->
+  <line x1="196" y1="58" x2="195" y2="370" stroke="#485e68" stroke-width="1.5"/>
+  <line x1="224" y1="58" x2="225" y2="370" stroke="#485e68" stroke-width="1.5"/>
+  <!-- Two buttons -->
+  <circle cx="196" cy="185" r="6" fill="#78919c" stroke="#dfdfdf" stroke-width="1.2"/>
+  <circle cx="196" cy="228" r="6" fill="#78919c" stroke="#dfdfdf" stroke-width="1.2"/>
+  <!-- Breast pocket welt -->
+  <rect x="136" y="138" width="56" height="9" rx="2" fill="none" stroke="#485e68" stroke-width="1.2"/>
+  <!-- Pocket square hint -->
+  <path fill="#EFEFEF" stroke="#485e68" stroke-width="0.8"
+    d="M 148,134 L 152,130 L 158,134 L 156,138 L 148,138 Z"/>
+  <!-- Lower flap pockets -->
+  <path fill="#90a4ae" stroke="#485e68" stroke-width="1.2"
+    d="M 110,270 L 110,282 L 180,282 L 180,270 L 176,262 L 114,262 Z"/>
+  <path fill="#90a4ae" stroke="#485e68" stroke-width="1.2"
+    d="M 240,270 L 240,282 L 310,282 L 310,270 L 306,262 L 244,262 Z"/>
+  <!-- Shoulder seams -->
+  <line x1="100" y1="98" x2="59" y2="31" stroke="#78858c" stroke-width="1"/>
+  <line x1="320" y1="98" x2="361" y2="31" stroke="#78858c" stroke-width="1"/>
+  <!-- Hem stitch -->
+  <line x1="102" y1="362" x2="318" y2="362" stroke="#78858c" stroke-width="1" stroke-dasharray="5,3"/>
+  <!-- Sleeve cuffs -->
+  <rect x="12" y="256" width="47" height="44" rx="3" fill="#90a4ae" stroke="#3e515a" stroke-width="1.5"/>
+  <rect x="361" y="256" width="47" height="44" rx="3" fill="#90a4ae" stroke="#3e515a" stroke-width="1.5"/>
+  <!-- Cuff buttons -->
+  <circle cx="32" cy="276" r="3" fill="#fafafa" stroke="#dfdfdf" stroke-width="1"/>
+  <circle cx="32" cy="291" r="3" fill="#fafafa" stroke="#dfdfdf" stroke-width="1"/>
+  <circle cx="389" cy="276" r="3" fill="#fafafa" stroke="#dfdfdf" stroke-width="1"/>
+  <circle cx="389" cy="291" r="3" fill="#fafafa" stroke="#dfdfdf" stroke-width="1"/>
+  <!-- Shirt collar visible above -->
+  <path fill="none" stroke="#78858c" stroke-width="1.5"
+    d="M 170,112 L 182,82 L 200,100 M 250,112 L 238,82 L 220,100"/>
+</svg>

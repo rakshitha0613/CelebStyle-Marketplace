@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { Outfit } from "@/lib/api";
+import { LocalImage } from "./local-image";
 
 type OutfitCardProps = {
   outfit: Outfit;
@@ -12,13 +13,13 @@ export function OutfitCard({ outfit, onTagClick }: OutfitCardProps) {
   return (
     <article className="group rounded-[28px] border border-black/6 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-luxe">
       <Link href={`/outfits/${outfit.id}`} className="block">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-t-[28px] bg-primary">
-          <img
+        <div className="relative aspect-[4/5] overflow-hidden rounded-t-[28px]">
+          <LocalImage
             src={outfit.imageUrl}
             alt={`${outfit.celebrityName} ${outfit.category}`}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/42 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/42 via-transparent to-transparent pointer-events-none" />
         </div>
       </Link>
       <div className="space-y-3 p-4">
@@ -34,11 +35,19 @@ export function OutfitCard({ outfit, onTagClick }: OutfitCardProps) {
         </div>
         <p className="line-clamp-2 text-sm leading-6 text-text/75">{outfit.description}</p>
 
-        <Link href={`/outfits/${outfit.id}`} className="inline-flex text-sm font-medium text-accent underline-offset-4 hover:underline">
-          View details →
-        </Link>
-        
-        {/* Tags */}
+        <div className="flex items-center gap-2">
+          <Link href={`/outfits/${outfit.id}`} className="inline-flex text-sm font-medium text-accent underline-offset-4 hover:underline">
+            View details →
+          </Link>
+          <Link
+            href={`/try-on?outfitId=${outfit.id}`}
+            className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-medium text-background transition hover:opacity-80"
+            onClick={(e) => e.stopPropagation()}
+          >
+            ◎ Try On
+          </Link>
+        </div>
+
         <div className="flex flex-wrap gap-2 pt-2">
           {outfit.colorPalette && (
             <button

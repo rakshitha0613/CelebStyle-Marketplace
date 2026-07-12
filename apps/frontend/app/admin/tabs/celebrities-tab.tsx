@@ -185,7 +185,7 @@ export function CelebritiesTab({ celebrities, setCelebrities }: Props) {
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
                     {c.profileImage && (
-                      <img src={c.profileImage} alt={c.name} className="h-9 w-9 rounded-xl object-cover" />
+                      <img src={c.profileImage} alt={c.name} className="h-9 w-9 rounded-xl object-cover" onError={(e) => { e.currentTarget.style.opacity = "0"; }} />
                     )}
                     <div>
                       <p className="font-medium text-primary">{c.name}</p>
@@ -241,3 +241,4 @@ function Field({
     </div>
   );
 }
+

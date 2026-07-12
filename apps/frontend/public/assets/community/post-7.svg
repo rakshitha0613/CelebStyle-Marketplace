@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="cpp7" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A0A1A"/>
+      <stop offset="100%" stop-color="#101028"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#cpp7)"/>
+  <!-- Fashion editorial background pattern -->
+  <line x1="0" y1="200" x2="800" y2="200" stroke="#A0A0FF" stroke-opacity="0.08" stroke-width="1"/>
+  <line x1="0" y1="600" x2="800" y2="600" stroke="#A0A0FF" stroke-opacity="0.08" stroke-width="1"/>
+  <line x1="200" y1="0" x2="200" y2="800" stroke="#A0A0FF" stroke-opacity="0.05" stroke-width="1"/>
+  <line x1="600" y1="0" x2="600" y2="800" stroke="#A0A0FF" stroke-opacity="0.05" stroke-width="1"/>
+  <!-- Central fashion figure -->
+  <ellipse cx="400" cy="280" rx="80" ry="95" fill="#A0A0FF" fill-opacity="0.15"/>
+  <path fill="#A0A0FF" fill-opacity="0.15"
+    d="M 280,800 L 280,430 C 310,370 360,345 400,340 C 440,345 490,370 520,430 L 520,800 Z"/>
+  <!-- Garment detail lines -->
+  <path fill="none" stroke="#A0A0FF" stroke-opacity="0.3" stroke-width="2"
+    d="M 355,340 C 370,330 400,325 400,325 C 400,325 430,330 445,340 L 435,380 L 400,368 L 365,380 Z"/>
+  <!-- Decorative border -->
+  <rect x="24" y="24" width="752" height="752" fill="none" stroke="#A0A0FF" stroke-opacity="0.2" stroke-width="1.5" rx="8"/>
+  <!-- Caption area -->
+  <rect x="0" y="660" width="800" height="140" fill="black" fill-opacity="0.35"/>
+  <text x="40" y="710" font-family="sans-serif" font-size="16" fill="white" fill-opacity="0.9">Sherwani try-on from couch</text>
+  <text x="40" y="735" font-family="sans-serif" font-size="14" fill="white" fill-opacity="0.65"></text>
+  <!-- Heart icon -->
+  <path fill="#A0A0FF" fill-opacity="0.8"
+    d="M 730,700 C 730,695 723,688 716,692 C 710,688 703,695 703,700 C 703,706 716,716 716,716 C 716,716 730,706 730,700Z"/>
+</svg>

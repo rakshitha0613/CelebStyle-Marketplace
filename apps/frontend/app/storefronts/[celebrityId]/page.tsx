@@ -26,7 +26,7 @@ export default async function StorefrontDetailPage({ params }: Props) {
           ← Back to storefronts
         </Link>
         <div className="mt-6 overflow-hidden rounded-[32px] border border-black/6 bg-white shadow-sm">
-          <div className="aspect-[21/8] bg-primary">
+          <div className="aspect-[21/8] bg-secondary/20">
             <img src={storefront.bannerImage || celebrity.bannerImage} alt={storefront.displayName} className="h-full w-full object-cover opacity-70" />
           </div>
           <div className="p-6">
@@ -40,8 +40,8 @@ export default async function StorefrontDetailPage({ params }: Props) {
         <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {outfits.slice(0, 6).map((outfit) => (
             <div key={outfit.id} className="rounded-[24px] border border-black/6 bg-white p-5 shadow-sm">
-              <div className="aspect-[4/5] overflow-hidden rounded-[20px] bg-primary">
-                <img src={outfit.imageUrl} alt={outfit.category} className="h-full w-full object-cover" />
+              <div className="aspect-[4/5] overflow-hidden rounded-[20px] bg-secondary/20">
+                <img src={outfit.imageUrl || undefined} alt={outfit.category} className="h-full w-full object-cover" />
               </div>
               <h2 className="mt-4 font-serif text-2xl text-primary">{outfit.category}</h2>
               <p className="text-sm text-text/60">{outfit.movieName}</p>

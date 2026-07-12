@@ -222,12 +222,12 @@ const STATIC_RECOMMENDATIONS: OptimizationRecommendation[] = [
     id: "ASSET-002",
     area: "static-assets",
     priority: "low",
-    title: "thum.io Wikipedia Screenshots",
-    description: "Celebrity images fall back to thum.io screenshots for missing images.",
-    impact: "Third-party image service adds latency and external dependency risk.",
+    title: "Local SVG Fashion Assets",
+    description: "Celebrity and outfit images use local SVG assets served from /assets/.",
+    impact: "Zero external dependency; no latency, no CORS issues.",
     effort: "high",
     implemented: true,
-    detail: "Consider pre-fetching and caching these images in a storage bucket.",
+    detail: "All images are self-hosted SVG fashion illustrations.",
   },
   // Bundle
   {

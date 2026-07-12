@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 680" width="400" height="680">
+  <defs>
+    <linearGradient id="kurtaBody" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#E8D5C0"/>
+      <stop offset="50%" stop-color="#D4B896"/>
+      <stop offset="100%" stop-color="#C9A87C"/>
+    </linearGradient>
+    <linearGradient id="kurtaSleeve" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C9A87C"/>
+      <stop offset="100%" stop-color="#D4B896"/>
+    </linearGradient>
+    <linearGradient id="kurtaBorder" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B4513"/>
+      <stop offset="100%" stop-color="#6B2E0A"/>
+    </linearGradient>
+    <pattern id="kurtaEmbroidery" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="3" fill="none" stroke="#A0522D" stroke-width="0.8" opacity="0.5"/>
+      <line x1="5" y1="10" x2="15" y2="10" stroke="#A0522D" stroke-width="0.5" opacity="0.4"/>
+      <line x1="10" y1="5" x2="10" y2="15" stroke="#A0522D" stroke-width="0.5" opacity="0.4"/>
+    </pattern>
+  </defs>
+  <!-- Main kurta body -->
+  <path fill="url(#kurtaBody)" stroke="#A0522D" stroke-width="1.5" stroke-linejoin="round"
+    d="M 80,48 C 90,20 145,8 200,8 C 255,8 310,20 320,48
+       L 390,90 L 390,380 L 350,380 L 346,108 L 302,100
+       L 302,600 L 98,600 L 98,100 L 54,108 L 50,380 L 10,380 L 10,90 Z"/>
+  <!-- Embroidery overlay -->
+  <path fill="url(#kurtaEmbroidery)" stroke="none" opacity="0.3"
+    d="M 80,48 C 90,20 145,8 200,8 C 255,8 310,20 320,48
+       L 390,90 L 390,380 L 350,380 L 346,108 L 302,100
+       L 302,600 L 98,600 L 98,100 L 54,108 L 50,380 L 10,380 L 10,90 Z"/>
+  <!-- Mandarin collar -->
+  <path fill="#C9A87C" stroke="#8B4513" stroke-width="1.8"
+    d="M 156,22 C 165,10 190,6 200,6 C 210,6 235,10 244,22
+       L 244,44 C 230,38 215,34 200,34 C 185,34 170,38 156,44 Z"/>
+  <!-- Gold collar trim -->
+  <path fill="url(#kurtaBorder)" stroke="none"
+    d="M 156,22 L 156,26 C 170,34 185,36 200,36 C 215,36 230,34 244,26 L 244,22
+       C 235,10 210,6 200,6 C 190,6 165,10 156,22 Z" opacity="0.6"/>
+  <!-- Button placket with maroon fabric -->
+  <rect x="194" y="44" width="12" height="180" fill="#8B4513" opacity="0.3" rx="1"/>
+  <!-- Kurta buttons - gold -->
+  <circle cx="200" cy="70"  r="5" fill="#D4A017" stroke="#8B4513" stroke-width="1"/>
+  <circle cx="200" cy="95"  r="5" fill="#D4A017" stroke="#8B4513" stroke-width="1"/>
+  <circle cx="200" cy="120" r="5" fill="#D4A017" stroke="#8B4513" stroke-width="1"/>
+  <circle cx="200" cy="145" r="5" fill="#D4A017" stroke="#8B4513" stroke-width="1"/>
+  <circle cx="200" cy="170" r="5" fill="#D4A017" stroke="#8B4513" stroke-width="1"/>
+  <!-- Gold border along hem and sides -->
+  <path fill="#D4A017" stroke="none"
+    d="M 88,580 L 88,600 L 312,600 L 312,580 C 295,590 210,594 200,594 C 190,594 105,590 88,580 Z" opacity="0.7"/>
+  <!-- Side slits -->
+  <line x1="98"  y1="520" x2="88"  y2="600" stroke="#8B4513" stroke-width="2"/>
+  <line x1="302" y1="520" x2="312" y2="600" stroke="#8B4513" stroke-width="2"/>
+  <!-- Sleeve cuffs with gold trim -->
+  <rect x="10" y="338" width="44" height="42" rx="4" fill="#C9A87C" stroke="#8B4513" stroke-width="1.5"/>
+  <rect x="10" y="338" width="44" height="6" rx="2" fill="#D4A017" opacity="0.8"/>
+  <rect x="346" y="338" width="44" height="42" rx="4" fill="#C9A87C" stroke="#8B4513" stroke-width="1.5"/>
+  <rect x="346" y="338" width="44" height="6" rx="2" fill="#D4A017" opacity="0.8"/>
+  <!-- Cuff buttons -->
+  <circle cx="32"  cy="359" r="4" fill="#D4A017" stroke="#8B4513" stroke-width="1"/>
+  <circle cx="368" cy="359" r="4" fill="#D4A017" stroke="#8B4513" stroke-width="1"/>
+  <!-- Embroidery accent near chest -->
+  <path fill="none" stroke="#8B4513" stroke-width="1.2" opacity="0.6"
+    d="M 140,200 Q 170,190 200,192 Q 230,190 260,200"/>
+  <path fill="none" stroke="#D4A017" stroke-width="0.8" opacity="0.5"
+    d="M 140,205 Q 170,195 200,197 Q 230,195 260,205"/>
+  <!-- Shoulder seam lines -->
+  <line x1="98"  y1="100" x2="80"  y2="48" stroke="#A0522D" stroke-width="1.2"/>
+  <line x1="302" y1="100" x2="320" y2="48" stroke="#A0522D" stroke-width="1.2"/>
+</svg>

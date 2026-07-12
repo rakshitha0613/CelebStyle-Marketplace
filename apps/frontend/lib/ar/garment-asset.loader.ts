@@ -1,4 +1,5 @@
 import type { GarmentAsset } from './garment.types.js';
+import { GARMENT_PLACEHOLDER_URL } from './outfit-to-garment.js';
 
 interface CachedEntry {
   image: HTMLImageElement;
@@ -25,7 +26,7 @@ export class GarmentAssetLoader {
     const pending = this.inflight.get(asset.id);
     if (pending) return pending;
 
-    const promise = this.fetchImage(asset.imageUrl);
+    const promise = this.fetchWithFallback(asset.imageUrl);
     this.inflight.set(asset.id, promise);
 
     let image: HTMLImageElement;
@@ -40,14 +41,42 @@ export class GarmentAssetLoader {
     return image;
   }
 
-  private fetchImage(url: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
+  /**
+   * Tries the primary URL first; on failure falls back to the placeholder.
+   * Never rejects — the page must never crash because a garment image is missing.
+   */
+  private fetchWithFallback(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
+
       img.onload = () => resolve(img);
-      img.onerror = (e) => reject(new Error(`Failed to load garment image: ${url} (${e})`));
+
+      img.onerror = () => {
+        if (url === GARMENT_PLACEHOLDER_URL) {
+          resolve(this.blankImage());
+          return;
+        }
+
+        const fallback = new Image();
+        fallback.crossOrigin = 'anonymous';
+        fallback.onload = () => resolve(fallback);
+        fallback.onerror = () => resolve(this.blankImage());
+        fallback.src = GARMENT_PLACEHOLDER_URL;
+      };
+
       img.src = url;
     });
+  }
+
+  /** Returns a 1×1 transparent image so the AR canvas renders without a garment. */
+  private blankImage(): HTMLImageElement {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const img = new Image();
+    img.src = canvas.toDataURL();
+    return img;
   }
 
   private evictIfNeeded(): void {

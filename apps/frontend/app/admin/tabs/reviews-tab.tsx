@@ -95,7 +95,7 @@ export function ReviewsTab() {
           {displayed.map((r) => (
             <div key={r.id} className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm">
               <div className="flex items-start gap-4">
-                <img src={r.product.imageUrl} alt={r.product.movieName} className="h-12 w-12 rounded-xl object-cover shrink-0" />
+                <img src={r.product.imageUrl} alt={r.product.movieName} className="h-12 w-12 rounded-xl object-cover shrink-0" onError={(e) => { e.currentTarget.style.opacity = "0"; }} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 flex-wrap">
                     <div>
@@ -149,3 +149,4 @@ export function ReviewsTab() {
     </div>
   );
 }
+

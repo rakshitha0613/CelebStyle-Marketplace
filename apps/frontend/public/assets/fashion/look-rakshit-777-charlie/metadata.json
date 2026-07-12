@@ -1,0 +1,36 @@
+{
+  "id": "look-rakshit-777-charlie",
+  "name": "Tan Casual Linen Shirt Set",
+  "category": "Casual Linen Set",
+  "gender": "male",
+  "fabric": "Linen",
+  "season": "All Season",
+  "occasion": "Festival",
+  "garmentType": "JACKET",
+  "neckStyle": "Collar",
+  "sleeveType": "Full",
+  "fit": "Regular",
+  "length": "Hip",
+  "anchorPoints": {
+    "leftShoulder": {
+      "x": 0.2,
+      "y": 0.08
+    },
+    "rightShoulder": {
+      "x": 0.8,
+      "y": 0.08
+    },
+    "leftHip": {
+      "x": 0.26,
+      "y": 0.7
+    },
+    "rightHip": {
+      "x": 0.74,
+      "y": 0.7
+    }
+  },
+  "segmentationType": "full-body",
+  "recommendedPose": "front-facing",
+  "colorPalette": "Earthy tan, olive, white",
+  "generatedAt": "2026-07-11T06:03:52.156Z"
+}

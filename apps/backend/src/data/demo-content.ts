@@ -82,14 +82,13 @@ The transformation didn't happen overnight. Each film brought a new style chapte
 The last five years have seen SRK champion Indian formalwear on global stages. His collaboration with designers like Manish Malhotra and Tarun Tahiliani has resulted in some of the most photographed looks in Bollywood history.
 
 **CelebStyle recommends:** Recreate SRK's Filmfare 2023 bandhgala look from our Pathaan collection — available in sizes S to XXL.`,
-    coverImage:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Shah_Rukh_Khan_graces_the_launch_of_the_new_Santro.jpg/330px-Shah_Rukh_Khan_graces_the_launch_of_the_new_Santro.jpg",
+    coverImage: "/assets/blog/banner-1.png",
     tags: ["SRK", "Bollywood", "Style", "Bandhgala", "Trending"],
     productIds: ["look-shah-rukh-khan-red-carpet"],
     celebrityId: "shah-rukh-khan",
     authorId: "demo-author-1",
     authorName: "Priya Mehta",
-    authorAvatar: "https://i.pravatar.cc/100?img=5",
+    authorAvatar: "/assets/avatars/avatar-01.png",
     isPublished: true,
     publishedAt: daysAgo(2),
     viewCount: 12847,
@@ -113,14 +112,13 @@ Her long-standing relationship with Sabyasachi Mukherjee has produced some of th
 Deepika's appointment as Louis Vuitton's brand ambassador marked a turning point — she became the first Indian actress in decades to hold such a prominent luxury fashion role. Her looks for LV campaigns, styled with her trademark poise, have been celebrated in Vogue, Harper's Bazaar, and WWD.
 
 **Shop her looks on CelebStyle** — including the Cannes-inspired ivory gown and her signature Sabyasachi lehenga replica.`,
-    coverImage:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Deepika_Padukone_2018.jpg/330px-Deepika_Padukone_2018.jpg",
+    coverImage: "/assets/blog/banner-2.png",
     tags: ["Deepika", "Bollywood", "Fashion", "Sabyasachi", "Cannes"],
     productIds: ["look-deepika-padukone-cannes"],
     celebrityId: "deepika-padukone",
     authorId: "demo-author-2",
     authorName: "Arjun Kapoor",
-    authorAvatar: "https://i.pravatar.cc/100?img=12",
+    authorAvatar: "/assets/avatars/avatar-02.png",
     isPublished: true,
     publishedAt: daysAgo(5),
     viewCount: 9341,
@@ -151,14 +149,13 @@ In contrast to the heavy embroidery, many brides opted for cleaner jewellery: a 
 The most talked-about trend was the revival of heirloom pieces — brides and grooms incorporating vintage sarees, dupattas, and jewellery into their wedding looks.
 
 Browse all our traditional wedding looks on CelebStyle and book a virtual try-on to see how they look on you!`,
-    coverImage:
-      "https://images.unsplash.com/photo-1609340550603-0b7e5a8e2e3c?w=600&q=80",
+    coverImage: "/assets/blog/banner-3.png",
     tags: ["Wedding", "Traditional", "Lehenga", "Sherwani", "Bridal", "2024"],
     productIds: [],
     celebrityId: null,
     authorId: "demo-author-1",
     authorName: "Priya Mehta",
-    authorAvatar: "https://i.pravatar.cc/100?img=5",
+    authorAvatar: "/assets/avatars/avatar-03.png",
     isPublished: true,
     publishedAt: daysAgo(8),
     viewCount: 22103,
@@ -194,14 +191,13 @@ Use the countdown capture (◎ button) to save a clean screenshot. Download via 
 
 **Outfit Composer**
 Build a full look by adding multiple pieces — top, bottom, jacket, shoes, accessories. The AI scores your outfit on colour harmony, occasion fit, and trending score.`,
-    coverImage:
-      "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&q=80",
+    coverImage: "/assets/blog/banner-4.png",
     tags: ["TryOn", "AR", "HowTo", "VirtualFashion", "CelebStyle"],
     productIds: [],
     celebrityId: null,
     authorId: "demo-author-3",
     authorName: "CelebStyle Team",
-    authorAvatar: "https://i.pravatar.cc/100?img=68",
+    authorAvatar: "/assets/avatars/avatar-01.png",
     isPublished: true,
     publishedAt: daysAgo(12),
     viewCount: 15672,
@@ -227,14 +223,13 @@ Sabyasachi's jewellery line — bangles, necklaces, and maang tikas in oxidised 
 
 **Verdict: 5/5**
 A collection that reinforces why Sabyasachi remains the gold standard of Indian bridal fashion.`,
-    coverImage:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Sabyasachi_at_FDCI.jpg/330px-Sabyasachi_at_FDCI.jpg",
+    coverImage: "/assets/blog/banner-5.png",
     tags: ["Sabyasachi", "Bridal", "SS24", "Lehenga", "Review"],
     productIds: [],
     celebrityId: null,
     authorId: "demo-author-2",
     authorName: "Arjun Kapoor",
-    authorAvatar: "https://i.pravatar.cc/100?img=12",
+    authorAvatar: "/assets/avatars/avatar-02.png",
     isPublished: true,
     publishedAt: daysAgo(15),
     viewCount: 8920,
@@ -260,14 +255,13 @@ Junior NTR's RRR promotional looks sparked a pan-India conversation about tradit
 
 **Get the Look**
 Browse our Tollywood collection on CelebStyle — from Pushpa-inspired casual looks to RRR premiere-ready outfits.`,
-    coverImage:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Allu_Arjun_at_Sarileru_Neekevvaru_event.jpg/330px-Allu_Arjun_at_Sarileru_Neekevvaru_event.jpg",
+    coverImage: "/assets/blog/banner-6.png",
     tags: ["Tollywood", "Prabhas", "AlluArjun", "JrNTR", "Style", "South"],
     productIds: [],
     celebrityId: "allu-arjun",
     authorId: "demo-author-1",
     authorName: "Priya Mehta",
-    authorAvatar: "https://i.pravatar.cc/100?img=5",
+    authorAvatar: "/assets/avatars/avatar-03.png",
     isPublished: true,
     publishedAt: daysAgo(20),
     viewCount: 19234,
@@ -284,7 +278,7 @@ export function getDemoReviews(productId: string): DemoReview[] {
       id: "demo-rev-1",
       userId: "demo-user-1",
       userName: "Rahul Sharma",
-      userAvatar: "https://i.pravatar.cc/100?img=33",
+      userAvatar: "/assets/avatars/avatar-08.png",
       productId,
       orderId: "demo-order-1",
       rating: 5,
@@ -302,7 +296,7 @@ export function getDemoReviews(productId: string): DemoReview[] {
       id: "demo-rev-2",
       userId: "demo-user-2",
       userName: "Priya Nair",
-      userAvatar: "https://i.pravatar.cc/100?img=44",
+      userAvatar: "/assets/avatars/avatar-09.png",
       productId,
       orderId: null,
       rating: 4,
@@ -320,7 +314,7 @@ export function getDemoReviews(productId: string): DemoReview[] {
       id: "demo-rev-3",
       userId: "demo-user-3",
       userName: "Vikram Mehta",
-      userAvatar: "https://i.pravatar.cc/100?img=55",
+      userAvatar: "/assets/avatars/avatar-10.png",
       productId,
       orderId: "demo-order-2",
       rating: 5,
@@ -338,7 +332,7 @@ export function getDemoReviews(productId: string): DemoReview[] {
       id: "demo-rev-4",
       userId: "demo-user-4",
       userName: "Ananya Krishnan",
-      userAvatar: "https://i.pravatar.cc/100?img=22",
+      userAvatar: "/assets/avatars/avatar-11.png",
       productId,
       orderId: null,
       rating: 4,
@@ -356,7 +350,7 @@ export function getDemoReviews(productId: string): DemoReview[] {
       id: "demo-rev-5",
       userId: "demo-user-5",
       userName: "Rohan Gupta",
-      userAvatar: "https://i.pravatar.cc/100?img=11",
+      userAvatar: "/assets/avatars/avatar-04.png",
       productId,
       orderId: "demo-order-3",
       rating: 5,
@@ -381,15 +375,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-1",
     userId: "demo-user-6",
     userName: "StyleQueen_Mumbai",
-    userAvatar: "https://i.pravatar.cc/100?img=9",
+    userAvatar: "/assets/avatars/avatar-05.png",
     caption:
       "Finally got my Deepika-inspired lehenga from CelebStyle and I'm OBSESSED! The virtual try-on told me to go with the dusty rose and honestly best decision ever 🌸 #CelebStyle #Lehenga #WeddingVibes",
     imageUrl:
-      "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80",
+      "/assets/community/post-1.png",
     images: [
       {
         id: "demo-img-1",
-        url: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80",
+        url: "/assets/community/post-2.png",
         sortOrder: 0,
       },
     ],
@@ -407,15 +401,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-2",
     userId: "demo-user-7",
     userName: "FashionForwardDelhi",
-    userAvatar: "https://i.pravatar.cc/100?img=15",
+    userAvatar: "/assets/avatars/avatar-06.png",
     caption:
       "My reception look inspired by SRK's Filmfare bandhgala! Used the AR try-on feature — literally couldn't have picked this without seeing it on me first. Thanks @CelebStyle! 🙌 #Bandhgala #Reception #MensFashion",
     imageUrl:
-      "https://images.unsplash.com/photo-1594938298603-c8148c4b4157?w=400&q=80",
+      "/assets/community/post-3.png",
     images: [
       {
         id: "demo-img-2",
-        url: "https://images.unsplash.com/photo-1594938298603-c8148c4b4157?w=400&q=80",
+        url: "/assets/community/post-4.png",
         sortOrder: 0,
       },
     ],
@@ -433,15 +427,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-3",
     userId: "demo-user-8",
     userName: "HyderabadFashionista",
-    userAvatar: "https://i.pravatar.cc/100?img=26",
+    userAvatar: "/assets/avatars/avatar-07.png",
     caption:
       "Prabhas inspired sherwani for my best friend's sangeet! The fabric quality from CelebStyle is unreal — you can feel it's handcrafted. Absolutely worth it! 💙 #Prabhas #Sherwani #Sangeet #Tollywood",
     imageUrl:
-      "https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&q=80",
+      "/assets/community/post-5.png",
     images: [
       {
         id: "demo-img-3",
-        url: "https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&q=80",
+        url: "/assets/community/post-6.png",
         sortOrder: 0,
       },
     ],
@@ -459,15 +453,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-4",
     userId: "demo-user-9",
     userName: "PushpaMoments",
-    userAvatar: "https://i.pravatar.cc/100?img=37",
+    userAvatar: "/assets/avatars/avatar-08.png",
     caption:
       "Channelling Allu Arjun's energy in this amazing kurta set! 🔥 The embroidery detailing is next level. Using the virtual try-on helped me visualise the full outfit. #AlluArjun #Pushpa #StylishStar #CelebStyle",
     imageUrl:
-      "https://images.unsplash.com/photo-1610664921890-b9e4f3fb5e7d?w=400&q=80",
+      "/assets/community/post-7.png",
     images: [
       {
         id: "demo-img-4",
-        url: "https://images.unsplash.com/photo-1610664921890-b9e4f3fb5e7d?w=400&q=80",
+        url: "/assets/community/post-8.png",
         sortOrder: 0,
       },
     ],
@@ -485,15 +479,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-5",
     userId: "demo-user-10",
     userName: "BridalDreamsAhmedabad",
-    userAvatar: "https://i.pravatar.cc/100?img=48",
+    userAvatar: "/assets/avatars/avatar-09.png",
     caption:
       "My bridal lehenga arrived and it's even more beautiful than the virtual try-on showed! The Benarasi silk is exquisite. Couldn't have chosen without the AR feature. Thank you CelebStyle 🧡 #Bride #BenaraSilk #WeddingSeason",
     imageUrl:
-      "https://images.unsplash.com/photo-1617793695-a64f85bdb481?w=400&q=80",
+      "/assets/community/post-1.png",
     images: [
       {
         id: "demo-img-5",
-        url: "https://images.unsplash.com/photo-1617793695-a64f85bdb481?w=400&q=80",
+        url: "/assets/community/post-2.png",
         sortOrder: 0,
       },
     ],
@@ -511,15 +505,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-6",
     userId: "demo-user-11",
     userName: "KollywoodKumar",
-    userAvatar: "https://i.pravatar.cc/100?img=59",
+    userAvatar: "/assets/avatars/avatar-10.png",
     caption:
       "Vijay inspired look for the Leo premiere! The veshti-shirt combo looked amazing on the virtual try-on and even better in person 😎 #Vijay #Leo #Kollywood #CelebStyle",
     imageUrl:
-      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=80",
+      "/assets/community/post-3.png",
     images: [
       {
         id: "demo-img-6",
-        url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=80",
+        url: "/assets/community/post-4.png",
         sortOrder: 0,
       },
     ],
@@ -537,15 +531,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-7",
     userId: "demo-user-12",
     userName: "DelhiBrideToBeRohan",
-    userAvatar: "https://i.pravatar.cc/100?img=63",
+    userAvatar: "/assets/avatars/avatar-11.png",
     caption:
       "Sherwani shopping made EASY with CelebStyle's virtual try-on 💙 Tried 8 different looks from my couch. No stepping into overpriced boutiques. Ordered this beauty and it arrived in 9 days! #Sherwani #GroomPrep #Groom",
     imageUrl:
-      "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400&q=80",
+      "/assets/community/post-5.png",
     images: [
       {
         id: "demo-img-7",
-        url: "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400&q=80",
+        url: "/assets/community/post-6.png",
         sortOrder: 0,
       },
     ],
@@ -563,15 +557,15 @@ export const DEMO_COMMUNITY_POSTS: DemoCommunityPost[] = [
     id: "demo-post-8",
     userId: "demo-user-13",
     userName: "PriyaMumbaiStylist",
-    userAvatar: "https://i.pravatar.cc/100?img=71",
+    userAvatar: "/assets/avatars/avatar-04.png",
     caption:
       "Style tip: the AR try-on feature shows you how a lehenga moves, not just how it looks static. Game changer for bridal shopping! Used it to pick this Sabyasachi-inspired silk for my client 🌟 #StylistLife #Sabyasachi #BridalShopping",
     imageUrl:
-      "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80",
+      "/assets/community/post-7.png",
     images: [
       {
         id: "demo-img-8",
-        url: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&q=80",
+        url: "/assets/community/post-8.png",
         sortOrder: 0,
       },
     ],

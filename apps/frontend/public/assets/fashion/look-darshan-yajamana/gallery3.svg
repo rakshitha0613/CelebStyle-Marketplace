@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <rect width="400" height="400" fill="white"/>
+  <rect x="80" y="80" width="240" height="240" rx="16" fill="#800000" stroke="#5a0000" stroke-width="2"/>
+  <text x="200" y="248" font-family="serif" font-size="18" fill="#400000" text-anchor="middle" font-style="italic">Colour Swatch</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="blgbl5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A1A0A"/>
+      <stop offset="100%" stop-color="#103010"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#blgbl5)"/>
+  <!-- Geometric fashion editorial elements -->
+  <rect x="0" y="0" width="4" height="630" fill="#88D48A" fill-opacity="0.6"/>
+  <rect x="80" y="80" width="600" height="2" fill="#88D48A" fill-opacity="0.3"/>
+  <rect x="80" y="530" width="400" height="2" fill="#88D48A" fill-opacity="0.2"/>
+  <!-- Fashion illustration silhouette -->
+  <ellipse cx="950" cy="200" rx="80" ry="90" fill="#88D48A" fill-opacity="0.08"/>
+  <path fill="#88D48A" fill-opacity="0.08"
+    d="M 840,630 L 840,360 C 860,300 900,275 950,270 C 1000,275 1040,300 1060,360 L 1060,630 Z"/>
+  <path fill="none" stroke="#88D48A" stroke-opacity="0.12" stroke-width="1.5"
+    d="M 950,200 C 940,210 930,230 930,240 C 930,250 940,260 950,262 C 960,260 970,250 970,240 C 970,230 960,210 950,200"/>
+  <!-- Title area -->
+  <text x="120" y="260" font-family="serif" font-size="54" fill="white" fill-opacity="0.95" font-style="italic">Designer Review</text>
+  <text x="120" y="310" font-family="sans-serif" font-size="16" fill="white" fill-opacity="0.55" letter-spacing="3">SABYASACHI SS24</text>
+  <!-- Decorative corner elements -->
+  <path fill="none" stroke="#88D48A" stroke-opacity="0.2" stroke-width="1"
+    d="M 1100,80 L 1140,80 L 1140,120"/>
+  <path fill="none" stroke="#88D48A" stroke-opacity="0.2" stroke-width="1"
+    d="M 60,510 L 20,510 L 20,550"/>
+</svg>

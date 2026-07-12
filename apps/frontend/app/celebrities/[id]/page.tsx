@@ -6,6 +6,17 @@ import Link from "next/link";
 import { FallbackImage } from "./fallback-image";
 import { RecommendationCarousel } from "@/components/recommendation-carousel";
 
+function TryOnLink({ outfitId }: { outfitId: string }) {
+  return (
+    <Link
+      href={`/try-on?outfitId=${outfitId}`}
+      className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-80"
+    >
+      ◎ Try On
+    </Link>
+  );
+}
+
 type CelebrityDetailPageProps = {
   params: Promise<{ id: string }>;
 };
@@ -45,8 +56,8 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
 
       {/* Hero banner */}
       <section className="relative overflow-hidden">
-        <div className="relative aspect-[21/8] w-full bg-primary">
-          <img
+        <div className="relative aspect-[21/8] w-full bg-secondary/30">
+          <FallbackImage
             src={celebrity.bannerImage}
             alt={celebrity.name}
             className="h-full w-full object-cover opacity-60"
@@ -90,15 +101,16 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
                     const linkedMfrs = (outfit.manufacturerIds || []).map((mid) => mfrMap.get(mid)).filter(Boolean);
                     const galleryImages = (outfit as any).images?.length > 0 ? (outfit as any).images : [outfit.imageUrl];
                     return (
-                      <Link key={outfit.id} href={`/outfits/${outfit.id}`}>
-                        <div className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <div key={outfit.id} className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <Link href={`/outfits/${outfit.id}`} className="block">
                           {/* Primary image */}
                           {outfit.imageUrl && (
-                            <div className="mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-primary relative">
+                            <div className="mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-secondary/20 relative">
                               <FallbackImage
                                 src={outfit.imageUrl}
                                 alt={`${outfit.characterName || outfit.category} from ${outfit.movieName}`}
                                 className="h-full w-full object-cover"
+                                fallbackSrc={outfit.imageUrl}
                               />
                               {/* Film badge */}
                               <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
@@ -140,8 +152,14 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
                               </div>
                             </div>
                           )}
+                        </Link>
+                        <div className="mt-3 flex items-center gap-2 border-t border-black/5 pt-3">
+                          <TryOnLink outfitId={outfit.id} />
+                          <Link href={`/outfits/${outfit.id}`} className="text-xs text-text/50 hover:text-accent transition">
+                            View details →
+                          </Link>
                         </div>
-                      </Link>
+                      </div>
                     );
                   })}
                 </div>
@@ -160,14 +178,15 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
                     const linkedMfrs = (outfit.manufacturerIds || []).map((mid) => mfrMap.get(mid)).filter(Boolean);
                     const galleryImages = (outfit as any).images?.length > 0 ? (outfit as any).images : [outfit.imageUrl];
                     return (
-                      <Link key={outfit.id} href={`/outfits/${outfit.id}`}>
-                        <div className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <div key={outfit.id} className="rounded-[20px] border border-black/6 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <Link href={`/outfits/${outfit.id}`} className="block">
                           {outfit.imageUrl && (
-                            <div className="mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-primary relative">
+                            <div className="mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-secondary/20 relative">
                               <FallbackImage
                                 src={outfit.imageUrl}
                                 alt={`${outfit.category} - ${outfit.occasion}`}
                                 className="h-full w-full object-cover"
+                                fallbackSrc={outfit.imageUrl}
                               />
                               <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
                                 <span className="text-white text-xs">✨ {outfit.occasion}</span>
@@ -204,8 +223,14 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
                               </div>
                             </div>
                           )}
+                        </Link>
+                        <div className="mt-3 flex items-center gap-2 border-t border-black/5 pt-3">
+                          <TryOnLink outfitId={outfit.id} />
+                          <Link href={`/outfits/${outfit.id}`} className="text-xs text-text/50 hover:text-accent transition">
+                            View details →
+                          </Link>
                         </div>
-                      </Link>
+                      </div>
                     );
                   })}
                 </div>
@@ -226,9 +251,9 @@ export default async function CelebrityDetailPage({ params }: CelebrityDetailPag
           {/* Right — profile card */}
           <div className="space-y-6">
             <div className="rounded-[28px] border border-black/6 bg-white p-6 shadow-sm">
-              <div className="aspect-[3/4] overflow-hidden rounded-[20px] bg-primary">
-                <img
-                  src={celebrity.profileImage}
+              <div className="aspect-[3/4] overflow-hidden rounded-[20px] bg-secondary/20">
+                <FallbackImage
+                  src={celebrity.profileImage || ""}
                   alt={celebrity.name}
                   className="h-full w-full object-cover"
                 />

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 720" width="420" height="720">
+  <rect width="100%" height="100%" fill="white"/>
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fcfaf4"/>
+      <stop offset="100%" stop-color="#faf7ef"/>
+    </linearGradient>
+  </defs>
+  <!-- Sherwani body with long sleeves -->
+  <path fill="url(#fg)" stroke="#a19f97" stroke-width="1.5" stroke-linejoin="round"
+    d="M 67,50 C 80,20 145,8 210,8 C 275,8 340,20 353,50
+       L 408,92 L 408,395 L 366,395 L 360,110 L 314,102
+       L 314,616 L 106,616 L 106,102 L 60,110 L 54,395 L 12,395 L 12,92 Z"/>
+  <!-- Mandarin collar (band collar) -->
+  <path fill="#EFEFEF" stroke="#a19f97" stroke-width="1.5"
+    d="M 160,22 C 172,8 192,4 210,4 C 228,4 248,8 260,22
+       L 260,46 C 244,36 228,32 210,32 C 192,32 176,36 160,46 Z"/>
+  <!-- Collar band lines -->
+  <line x1="160" y1="22" x2="160" y2="46" stroke="#bab7ae" stroke-width="1"/>
+  <line x1="260" y1="22" x2="260" y2="46" stroke="#bab7ae" stroke-width="1"/>
+  <!-- Front button placket -->
+  <line x1="204" y1="46" x2="204" y2="280" stroke="#bdbcb6" stroke-width="1.5"/>
+  <line x1="216" y1="46" x2="216" y2="280" stroke="#bdbcb6" stroke-width="1.5"/>
+  <!-- Buttons (formal, close together) -->
+  <circle cx="210" cy="65" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="85" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="105" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="125" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="145" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="165" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="185" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="210" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="240" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="210" cy="268" r="4" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <!-- Side slits at bottom of sherwani -->
+  <line x1="106" y1="530" x2="94" y2="616" stroke="#bab7ae" stroke-width="2"/>
+  <line x1="314" y1="530" x2="326" y2="616" stroke="#bab7ae" stroke-width="2"/>
+  <!-- Hem line -->
+  <line x1="94" y1="608" x2="326" y2="608" stroke="#bab7ae" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <!-- Decorative side panels -->
+  <line x1="116" y1="340" x2="116" y2="530" stroke="#bdbcb6" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="304" y1="340" x2="304" y2="530" stroke="#bdbcb6" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Waist detail -->
+  <path fill="none" stroke="#bab7ae" stroke-width="1"
+    d="M 106,330 C 150,342 270,342 314,330"/>
+  <!-- Cuffs -->
+  <rect x="12" y="350" width="48" height="45" rx="4" fill="#faf7ef" stroke="#a19f97" stroke-width="1.5"/>
+  <rect x="360" y="350" width="48" height="45" rx="4" fill="#faf7ef" stroke="#a19f97" stroke-width="1.5"/>
+  <!-- Cuff buttons -->
+  <circle cx="36" cy="372" r="3.5" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <circle cx="384" cy="372" r="3.5" fill="#a64d4d" stroke="#a19f97" stroke-width="1"/>
+  <!-- Shoulder seams -->
+  <line x1="106" y1="102" x2="67" y2="50" stroke="#bdbcb6" stroke-width="1"/>
+  <line x1="314" y1="102" x2="353" y2="50" stroke="#bdbcb6" stroke-width="1"/>
+</svg>

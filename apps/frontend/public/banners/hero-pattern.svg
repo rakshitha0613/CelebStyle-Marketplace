@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="hbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1A0A2E"/>
+      <stop offset="100%" stop-color="#0D1B2A"/>
+    </linearGradient>
+    <radialGradient id="hglow" cx="30%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#hbg)"/>
+  <rect width="1920" height="1080" fill="url(#hglow)"/>
+  <!-- Fashion editorial grid pattern -->
+  <line x1="0" y1="0" x2="1920" y2="0" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="58" x2="1920" y2="58" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="116" x2="1920" y2="116" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="174" x2="1920" y2="174" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="232" x2="1920" y2="232" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="290" x2="1920" y2="290" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="348" x2="1920" y2="348" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="406" x2="1920" y2="406" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="464" x2="1920" y2="464" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="522" x2="1920" y2="522" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="580" x2="1920" y2="580" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="638" x2="1920" y2="638" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="696" x2="1920" y2="696" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="754" x2="1920" y2="754" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="812" x2="1920" y2="812" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="870" x2="1920" y2="870" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="928" x2="1920" y2="928" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="986" x2="1920" y2="986" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="1044" x2="1920" y2="1044" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="1102" x2="1920" y2="1102" stroke="#C9A84C" stroke-opacity="0.04" stroke-width="1"/>
+  <line x1="0" y1="0" x2="0" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="58" y1="0" x2="58" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="116" y1="0" x2="116" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="174" y1="0" x2="174" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="232" y1="0" x2="232" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="290" y1="0" x2="290" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="348" y1="0" x2="348" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="406" y1="0" x2="406" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="464" y1="0" x2="464" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="522" y1="0" x2="522" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="580" y1="0" x2="580" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="638" y1="0" x2="638" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="696" y1="0" x2="696" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="754" y1="0" x2="754" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="812" y1="0" x2="812" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="870" y1="0" x2="870" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="928" y1="0" x2="928" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="986" y1="0" x2="986" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1044" y1="0" x2="1044" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1102" y1="0" x2="1102" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1160" y1="0" x2="1160" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1218" y1="0" x2="1218" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1276" y1="0" x2="1276" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1334" y1="0" x2="1334" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1392" y1="0" x2="1392" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1450" y1="0" x2="1450" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1508" y1="0" x2="1508" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1566" y1="0" x2="1566" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1624" y1="0" x2="1624" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1682" y1="0" x2="1682" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1740" y1="0" x2="1740" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1798" y1="0" x2="1798" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1856" y1="0" x2="1856" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="1914" y1="0" x2="1914" y2="1080" stroke="#C9A84C" stroke-opacity="0.03" stroke-width="1"/>
+  <!-- Diagonal accent lines -->
+  <line x1="1200" y1="0" x2="1920" y2="1080" stroke="#C9A84C" stroke-opacity="0.08" stroke-width="2"/>
+  <line x1="1350" y1="0" x2="1920" y2="720" stroke="#C9A84C" stroke-opacity="0.05" stroke-width="1"/>
+  <!-- Abstract fashion figure silhouette (right side) -->
+  <ellipse cx="1550" cy="340" rx="110" ry="130" fill="#C9A84C" fill-opacity="0.06"/>
+  <path fill="#C9A84C" fill-opacity="0.06"
+    d="M 1380,1080 L 1380,550 C 1420,460 1490,420 1550,415 C 1610,420 1680,460 1720,550 L 1720,1080 Z"/>
+  <!-- Garment detail -->
+  <path fill="none" stroke="#C9A84C" stroke-opacity="0.15" stroke-width="2"
+    d="M 1510,415 C 1525,400 1550,395 1550,395 C 1550,395 1575,400 1590,415 L 1575,470 L 1550,455 L 1525,470 Z"/>
+  <!-- Corner decoration -->
+  <rect x="60" y="60" width="300" height="2" fill="#C9A84C" fill-opacity="0.2"/>
+  <rect x="60" y="60" width="2" height="200" fill="#C9A84C" fill-opacity="0.2"/>
+  <!-- CelebStyle watermark text -->
+  <text x="960" y="1040" font-family="serif" font-size="12" fill="white" fill-opacity="0.1" text-anchor="middle" letter-spacing="8">CELEBSTYLE FASHION</text>
+</svg>

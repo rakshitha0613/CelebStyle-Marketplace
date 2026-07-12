@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 500" width="420" height="500">
+  <defs>
+    <linearGradient id="blazerBody" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#1A237E"/>
+      <stop offset="100%" stop-color="#0D1660"/>
+    </linearGradient>
+    <linearGradient id="blazerLapel" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1A237E"/>
+      <stop offset="100%" stop-color="#283593"/>
+    </linearGradient>
+    <linearGradient id="blazerWhite" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F5F5F5"/>
+    </linearGradient>
+  </defs>
+  <!-- Blazer body -->
+  <path fill="url(#blazerBody)" stroke="#0D1660" stroke-width="1.5" stroke-linejoin="round"
+    d="M 59,30 C 76,12 140,4 210,4 C 280,4 344,12 361,30
+       L 408,76 L 408,380 L 365,380 L 362,106 L 320,98
+       L 318,390 L 102,390 L 100,98 L 58,106 L 55,380 L 12,380 L 12,76 Z"/>
+  <!-- Left lapel (notched) - navy -->
+  <path fill="url(#blazerLapel)" stroke="#0D1660" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,4 C 195,4 155,14 135,28 L 150,72 L 170,110 L 200,56 Z"/>
+  <!-- Right lapel -->
+  <path fill="url(#blazerLapel)" stroke="#0D1660" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,4 C 225,4 265,14 285,28 L 270,72 L 250,110 L 220,56 Z"/>
+  <!-- White shirt visible between lapels -->
+  <path fill="url(#blazerWhite)" stroke="#E0E0E0" stroke-width="0.8"
+    d="M 200,56 L 170,110 L 174,390 L 210,390 L 246,390 L 250,110 L 220,56 Z"/>
+  <!-- Shirt collar points -->
+  <path fill="url(#blazerWhite)" stroke="#D0D0D0" stroke-width="1"
+    d="M 170,110 L 183,80 L 200,98 Z"/>
+  <path fill="url(#blazerWhite)" stroke="#D0D0D0" stroke-width="1"
+    d="M 250,110 L 237,80 L 220,98 Z"/>
+  <!-- Lapel notch -->
+  <line x1="135" y1="28" x2="150" y2="72" stroke="#0D1660" stroke-width="1.5"/>
+  <line x1="285" y1="28" x2="270" y2="72" stroke="#0D1660" stroke-width="1.5"/>
+  <!-- Center opening -->
+  <line x1="196" y1="56" x2="195" y2="390" stroke="#283593" stroke-width="1" opacity="0.5"/>
+  <line x1="224" y1="56" x2="225" y2="390" stroke="#283593" stroke-width="1" opacity="0.5"/>
+  <!-- Gold jacket buttons -->
+  <circle cx="196" cy="180" r="7" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="196" cy="225" r="7" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <!-- Gold lapel pin -->
+  <circle cx="155" cy="125" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <!-- Breast pocket -->
+  <rect x="134" y="134" width="56" height="10" rx="2" fill="none" stroke="#283593" stroke-width="1.5"/>
+  <!-- White pocket square -->
+  <path fill="white" stroke="#D0D0D0" stroke-width="0.8"
+    d="M 148,130 L 153,124 L 158,128 L 156,134 L 148,134 Z"/>
+  <!-- Lower welt pockets -->
+  <rect x="110" y="272" width="72" height="11" rx="2" fill="none" stroke="#283593" stroke-width="1.5"/>
+  <rect x="238" y="272" width="72" height="11" rx="2" fill="none" stroke="#283593" stroke-width="1.5"/>
+  <!-- Shoulder seams -->
+  <line x1="100" y1="98" x2="59"  y2="30" stroke="#283593" stroke-width="1.2"/>
+  <line x1="320" y1="98" x2="361" y2="30" stroke="#283593" stroke-width="1.2"/>
+  <!-- Hem stitch -->
+  <line x1="102" y1="382" x2="318" y2="382" stroke="#283593" stroke-width="1" stroke-dasharray="5,3" opacity="0.5"/>
+  <!-- Sleeve cuffs -->
+  <rect x="12"  y="334" width="47" height="46" rx="3" fill="#1A237E" stroke="#283593" stroke-width="1.5"/>
+  <rect x="361" y="334" width="47" height="46" rx="3" fill="#1A237E" stroke="#283593" stroke-width="1.5"/>
+  <!-- White cuff showing -->
+  <rect x="12"  y="334" width="47" height="8" rx="2" fill="white" opacity="0.9"/>
+  <rect x="361" y="334" width="47" height="8" rx="2" fill="white" opacity="0.9"/>
+  <!-- Gold cuff buttons -->
+  <circle cx="32"  cy="356" r="3.5" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="32"  cy="370" r="3.5" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="389" cy="356" r="3.5" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="389" cy="370" r="3.5" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+</svg>

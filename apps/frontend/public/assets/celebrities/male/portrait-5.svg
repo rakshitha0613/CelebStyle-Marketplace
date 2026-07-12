@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <defs>
+    <linearGradient id="bgm5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A1A1A"/>
+      <stop offset="100%" stop-color="#2D2D2D"/>
+    </linearGradient>
+    <radialGradient id="glowm5" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#1A1A1A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="600" height="800" fill="url(#bgm5)"/>
+  <rect width="600" height="800" fill="url(#glowm5)"/>
+  <!-- Geometric accent lines (editorial style) -->
+  <line x1="0" y1="680" x2="600" y2="620" stroke="#1A1A1A" stroke-opacity="0.15" stroke-width="1.5"/>
+  <line x1="0" y1="720" x2="600" y2="660" stroke="#1A1A1A" stroke-opacity="0.10" stroke-width="1"/>
+  <!-- Shoulder / outfit area -->
+  <path fill="#1A1A1A" fill-opacity="0.9" d="M 60,800 L 60,560 C 100,500 180,475 300,470 C 420,475 500,500 540,560 L 540,800 Z"/>
+  <!-- Collar detail -->
+  <path fill="#1A1A1A" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"
+    d="M 250,470 C 270,445 295,438 300,435 C 305,438 330,445 350,470 L 335,520 L 300,505 L 265,520 Z"/>
+  <!-- Neck -->
+  <ellipse cx="300" cy="440" rx="38" ry="42" fill="#E8C9A0"/>
+  <!-- Head oval -->
+  <ellipse cx="300" cy="290" rx="105" ry="130" fill="#E8C9A0"/>
+  <!-- Hair -->
+  <path fill="#2D1B00" d="M 195,270 C 192,170 225,150 300,148 C 375,150 408,170 405,270 C 395,220 370,200 300,198 C 230,200 205,220 195,270 Z"/>
+  <!-- Eyes -->
+  <ellipse cx="268" cy="275" rx="16" ry="10" fill="white"/>
+  <ellipse cx="332" cy="275" rx="16" ry="10" fill="white"/>
+  <circle cx="271" cy="275" r="8" fill="#1A0A00"/>
+  <circle cx="335" cy="275" r="8" fill="#1A0A00"/>
+  <circle cx="274" cy="272" r="3" fill="white"/>
+  <circle cx="338" cy="272" r="3" fill="white"/>
+  <!-- Eyebrows -->
+  <path fill="#2D1B00" d="M 252,260 Q 268,253 284,258 Q 270,252 252,260Z"/>
+  <path fill="#2D1B00" d="M 316,258 Q 332,253 348,260 Q 332,252 316,258Z"/>
+  <!-- Nose bridge -->
+  <path fill="none" stroke="#5A3520" stroke-width="1.5"
+    d="M 300,280 L 296,308 C 292,315 295,320 300,322 C 305,320 308,315 304,308 Z"/>
+  <!-- Lips -->
+  <path fill="#2D2D2D" fill-opacity="0.7" d="M 278,338 C 286,332 314,332 322,338 C 314,342 286,342 278,338 Z"/>
+  <path fill="#2D2D2D" fill-opacity="0.5" d="M 278,338 C 286,344 314,344 322,338 C 314,348 286,348 278,338 Z"/>
+  <!-- Label -->
+  <text x="300" y="770" font-family="serif" font-size="14" fill="white" fill-opacity="0.7" text-anchor="middle" letter-spacing="3">SANDALWOOD</text>
+</svg>

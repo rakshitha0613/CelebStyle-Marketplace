@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { Celebrity, Outfit, Manufacturer, Coupon } from "@/lib/api";
-import { adminLogin, adminLogout, getStoredToken, getCoupons } from "@/lib/api";
+import { adminLogout, getStoredToken, getCurrentUser, getCoupons } from "@/lib/api";
 
 // Legacy tabs
 import { CelebritiesTab }  from "./tabs/celebrities-tab";
@@ -104,6 +105,7 @@ type AdminClientProps = {
 };
 
 export function AdminClient({ initialCelebrities, initialOutfits, initialManufacturers }: AdminClientProps) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("dashboard");
   const [celebrities, setCelebrities] = useState(initialCelebrities);
   const [outfits, setOutfits]         = useState(initialOutfits);
@@ -111,75 +113,53 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
   const [coupons, setCoupons]         = useState<Coupon[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [isLoggedIn, setIsLoggedIn]     = useState(false);
-  const [loginEmail, setLoginEmail]     = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginError, setLoginError]     = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole]     = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
+    const user = getCurrentUser();
     setIsLoggedIn(!!token);
+    setUserRole(user?.role ?? null);
+    setAuthChecked(true);
     if (token) getCoupons().then(setCoupons).catch(() => {});
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginLoading(true);
-    setLoginError("");
-    try {
-      await adminLogin(loginEmail, loginPassword);
-      setIsLoggedIn(true);
-    } catch (err) {
-      setLoginError(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setLoginLoading(false);
+  useEffect(() => {
+    if (!authChecked) return;
+    if (!isLoggedIn) {
+      router.push("/admin/login");
     }
-  };
+  }, [authChecked, isLoggedIn, router]);
 
   const handleLogout = () => {
     adminLogout();
     setIsLoggedIn(false);
+    setUserRole(null);
+    router.push("/admin/login");
   };
 
-  if (!isLoggedIn) {
+  if (!authChecked || !isLoggedIn) {
+    return null;
+  }
+
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+  if (!isAdmin) {
     return (
       <div className="mt-16 flex justify-center">
-        <div className="w-full max-w-sm rounded-[28px] border border-black/6 bg-white p-8 shadow-sm">
-          <h2 className="font-serif text-3xl text-primary">Admin Login</h2>
-          <p className="mt-2 text-sm text-text/70">Sign in with your administrator credentials to manage the platform.</p>
-          <form onSubmit={handleLogin} className="mt-6 space-y-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Email</label>
-              <input
-                type="email"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                required
-                placeholder="admin@example.com"
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-primary placeholder:text-text/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-[0.24em] text-text/60">Password</label>
-              <input
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-primary placeholder:text-text/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-              />
-            </div>
-            {loginError && <p className="text-sm text-red-600">{loginError}</p>}
-            <button
-              type="submit"
-              disabled={loginLoading}
-              className="w-full rounded-full bg-primary py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
-            >
-              {loginLoading ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
+        <div className="w-full max-w-sm rounded-[28px] border border-red-100 bg-white p-8 shadow-sm text-center">
+          <p className="text-4xl">🚫</p>
+          <h2 className="mt-4 font-serif text-2xl text-primary">Access Denied</h2>
+          <p className="mt-2 text-sm text-text/70">
+            Your account does not have administrator privileges. Please log in with an admin account.
+          </p>
+          <button
+            onClick={handleLogout}
+            className="mt-6 w-full rounded-full border border-black/10 py-2.5 text-sm text-text/70 hover:bg-secondary transition"
+          >
+            Sign out and log in as admin
+          </button>
         </div>
       </div>
     );

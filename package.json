@@ -14,7 +14,10 @@
     "start:backend": "npm run start --workspace apps/backend",
     "typecheck": "npm run typecheck --workspace apps/frontend && npm run typecheck --workspace apps/backend",
     "test": "npm run test --workspace apps/backend",
-    "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\""
+    "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "generate-assets": "node scripts/generate-assets.mjs",
+    "generate-placeholders": "node scripts/generate-local-placeholders.mjs",
+    "migrate-assets": "node scripts/migrate-assets.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -153,7 +153,7 @@ export function BlogTab() {
             <div key={post.id} className="rounded-[20px] border border-black/6 bg-white overflow-hidden shadow-sm">
               {post.coverImage && (
                 <div className="aspect-[16/7] overflow-hidden bg-secondary">
-                  <img src={post.coverImage} alt={post.title} className="h-full w-full object-cover" />
+                  <img src={post.coverImage} alt={post.title} className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.opacity = "0"; }} />
                 </div>
               )}
               <div className="p-5">
@@ -241,3 +241,4 @@ export function BlogTab() {
     </div>
   );
 }
+

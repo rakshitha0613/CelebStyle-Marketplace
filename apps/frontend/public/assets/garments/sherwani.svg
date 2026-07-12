@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 720" width="420" height="720">
+  <defs>
+    <linearGradient id="sherwaniBody" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#1A1A2E"/>
+      <stop offset="50%" stop-color="#16213E"/>
+      <stop offset="100%" stop-color="#0F3460"/>
+    </linearGradient>
+    <linearGradient id="sherwaniGold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B8860B"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <pattern id="sherwaniEmb" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z"
+            fill="none" stroke="#D4A017" stroke-width="0.7" opacity="0.35"/>
+    </pattern>
+  </defs>
+  <!-- Sherwani body with long sleeves -->
+  <path fill="url(#sherwaniBody)" stroke="#0A2040" stroke-width="1.5" stroke-linejoin="round"
+    d="M 67,50 C 80,20 145,8 210,8 C 275,8 340,20 353,50
+       L 408,92 L 408,395 L 366,395 L 360,110 L 314,102
+       L 314,616 L 106,616 L 106,102 L 60,110 L 54,395 L 12,395 L 12,92 Z"/>
+  <!-- Embroidery overlay on body -->
+  <path fill="url(#sherwaniEmb)" stroke="none"
+    d="M 67,50 C 80,20 145,8 210,8 C 275,8 340,20 353,50
+       L 408,92 L 408,395 L 366,395 L 360,110 L 314,102
+       L 314,616 L 106,616 L 106,102 L 60,110 L 54,395 L 12,395 L 12,92 Z" opacity="0.6"/>
+  <!-- Mandarin collar (band collar) with gold trim -->
+  <path fill="#1A1A2E" stroke="#D4A017" stroke-width="2"
+    d="M 160,22 C 172,8 192,4 210,4 C 228,4 248,8 260,22
+       L 260,46 C 244,36 228,32 210,32 C 192,32 176,36 160,46 Z"/>
+  <!-- Gold collar trim inner line -->
+  <path fill="url(#sherwaniGold)" stroke="none"
+    d="M 162,24 C 174,10 192,6 210,6 C 228,6 246,10 258,24
+       L 258,28 C 246,14 228,10 210,10 C 192,10 174,14 162,28 Z" opacity="0.8"/>
+  <!-- Front button placket with gold piping -->
+  <rect x="206" y="46" width="8" height="270" fill="#D4A017" opacity="0.3" rx="1"/>
+  <!-- Gold trim on front placket edges -->
+  <line x1="206" y1="46" x2="206" y2="316" stroke="#D4A017" stroke-width="1.5" opacity="0.7"/>
+  <line x1="214" y1="46" x2="214" y2="316" stroke="#D4A017" stroke-width="1.5" opacity="0.7"/>
+  <!-- Gold buttons -->
+  <circle cx="210" cy="65"  r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="85"  r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="105" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="125" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="145" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="165" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="185" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="210" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="240" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <circle cx="210" cy="268" r="5" fill="#D4A017" stroke="#B8860B" stroke-width="1.2"/>
+  <!-- Gold border along hem -->
+  <path fill="url(#sherwaniGold)" stroke="none"
+    d="M 94,596 L 94,616 L 326,616 L 326,596 Q 270,610 210,610 Q 150,610 94,596 Z"/>
+  <!-- Side slits with gold trim -->
+  <line x1="106" y1="530" x2="94"  y2="616" stroke="#D4A017" stroke-width="2.5"/>
+  <line x1="314" y1="530" x2="326" y2="616" stroke="#D4A017" stroke-width="2.5"/>
+  <!-- Gold embroidery panels on chest -->
+  <path fill="none" stroke="#D4A017" stroke-width="1.2" opacity="0.6"
+    d="M 130,180 Q 170,170 210,172 Q 250,170 290,180"/>
+  <path fill="none" stroke="#FFD700" stroke-width="0.8" opacity="0.4"
+    d="M 130,185 Q 170,175 210,177 Q 250,175 290,185"/>
+  <!-- Waist shaping with gold line -->
+  <path fill="none" stroke="#D4A017" stroke-width="1.5" opacity="0.5"
+    d="M 106,320 C 155,335 265,335 314,320"/>
+  <!-- Decorative side panels -->
+  <line x1="120" y1="340" x2="120" y2="530" stroke="#D4A017" stroke-width="1.5" opacity="0.4" stroke-dasharray="4,3"/>
+  <line x1="300" y1="340" x2="300" y2="530" stroke="#D4A017" stroke-width="1.5" opacity="0.4" stroke-dasharray="4,3"/>
+  <!-- Cuffs with gold trim -->
+  <rect x="12"  y="350" width="48" height="45" rx="4" fill="#1A1A2E" stroke="#D4A017" stroke-width="2"/>
+  <rect x="12"  y="350" width="48" height="8" rx="2" fill="#D4A017" opacity="0.8"/>
+  <rect x="360" y="350" width="48" height="45" rx="4" fill="#1A1A2E" stroke="#D4A017" stroke-width="2"/>
+  <rect x="360" y="350" width="48" height="8" rx="2" fill="#D4A017" opacity="0.8"/>
+  <!-- Cuff buttons -->
+  <circle cx="36"  cy="375" r="4" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="384" cy="375" r="4" fill="#D4A017" stroke="#B8860B" stroke-width="1"/>
+  <!-- Shoulder seams -->
+  <line x1="106" y1="102" x2="67"  y2="50" stroke="#D4A017" stroke-width="1" opacity="0.5"/>
+  <line x1="314" y1="102" x2="353" y2="50" stroke="#D4A017" stroke-width="1" opacity="0.5"/>
+</svg>

@@ -31,7 +31,7 @@ export class BackgroundService {
       await img.decode();
       this.replacementImage = img;
     } catch {
-      console.warn('[BackgroundService] Failed to load replacement image');
+      // replacement image failed; AR continues without background swap
     }
   }
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Navbar } from "@/components/navbar";
+import { LocalImage } from "@/components/local-image";
 
 type CartItem = {
   outfitId: string;
@@ -83,8 +84,12 @@ export default function CartPage() {
             <div className="space-y-4">
               {items.map((item, index) => (
                 <div key={`${item.outfitId}-${item.size}-${index}`} className="flex gap-4 rounded-[24px] border border-black/6 bg-white p-4 shadow-sm">
-                  <div className="h-28 w-24 shrink-0 overflow-hidden rounded-2xl bg-primary">
-                    <img src={item.imageUrl} alt={item.outfitName} className="h-full w-full object-cover" />
+                  <div className="h-28 w-24 shrink-0 overflow-hidden rounded-2xl">
+                    <LocalImage
+                      src={item.imageUrl}
+                      alt={item.outfitName}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-4">

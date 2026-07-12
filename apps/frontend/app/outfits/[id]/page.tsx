@@ -36,7 +36,12 @@ export default async function OutfitDetailPage({ params }: OutfitDetailPageProps
   return (
     <main>
       <Navbar />
-      <OutfitGallery outfit={outfit} manufacturers={manufacturers} />
+      <OutfitGallery
+        outfit={outfit}
+        manufacturers={manufacturers}
+        avgRating={reviewData.average ?? undefined}
+        reviewCount={reviewData.total}
+      />
       <ReviewsSection
         outfitId={id}
         initialReviews={reviewData.reviews}

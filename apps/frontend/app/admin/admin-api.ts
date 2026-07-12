@@ -264,7 +264,125 @@ export async function getAdminUserAddresses(id: string): Promise<Array<{
   return res.data;
 }
 
-// ─── Orders (admin) ───────────────────────────────────────────────────────────
+// ─── Orders (admin v2 — uses /api/admin/orders) ───────────────────────────────
+
+export type AdminOrderListItem = {
+  id: string;
+  orderNumber: string;
+  customerEmail: string;
+  shippingName: string;
+  total: number;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+  _count: { items: number };
+};
+
+export type AdminOrderDetail = {
+  id: string;
+  orderNumber: string;
+  customerEmail: string;
+  shippingName: string;
+  shippingAddress: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingPincode: string;
+  subtotal: number;
+  shippingAmount: number;
+  discountAmount: number;
+  total: number;
+  status: string;
+  paymentStatus: string;
+  notes: string | null;
+  deliveredAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: Array<{
+    id: string;
+    productSlug: string;
+    productName: string;
+    category: string;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    imageUrl: string;
+  }>;
+  payments: Array<{
+    id: string;
+    amount: number;
+    status: string;
+    method: string;
+    provider: string;
+    capturedAt: string | null;
+  }>;
+  routing: Array<{
+    id: string;
+    manufacturerName: string;
+    manufacturerSlug: string | null;
+    trackingCode: string | null;
+    status: string;
+  }>;
+  commission: {
+    platformFee: number;
+    celebrityCommission: number;
+    manufacturerShare: number;
+  } | null;
+};
+
+export async function getAdminOrdersList(params?: {
+  page?: number; limit?: number; search?: string; status?: string;
+}): Promise<{ orders: AdminOrderListItem[]; total: number; page: number; limit: number }> {
+  const qs = new URLSearchParams();
+  if (params?.page)   qs.set("page",   String(params.page));
+  if (params?.limit)  qs.set("limit",  String(params.limit));
+  if (params?.search) qs.set("search", params.search);
+  if (params?.status) qs.set("status", params.status);
+  const query = qs.toString() ? `?${qs}` : "";
+  const res = await apiFetchAdmin<{ data: { orders: AdminOrderListItem[]; total: number; page: number; limit: number } }>(
+    `/api/admin/orders${query}`
+  );
+  return res.data;
+}
+
+export async function getAdminOrderDetail(id: string): Promise<AdminOrderDetail> {
+  const res = await apiFetchAdmin<{ data: AdminOrderDetail }>(`/api/admin/orders/${id}`);
+  return res.data;
+}
+
+export async function updateAdminOrderStatus(id: string, status: string): Promise<AdminOrderDetail> {
+  const res = await apiFetchAdmin<{ data: AdminOrderDetail }>(`/api/admin/orders/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+  return res.data;
+}
+
+export async function updateAdminOrderTracking(id: string, trackingCode: string, routingId?: string): Promise<AdminOrderDetail> {
+  const res = await apiFetchAdmin<{ data: AdminOrderDetail }>(`/api/admin/orders/${id}/tracking`, {
+    method: "PATCH",
+    body: JSON.stringify({ trackingCode, ...(routingId && { routingId }) }),
+  });
+  return res.data;
+}
+
+export async function cancelAdminOrder(id: string, reason?: string): Promise<AdminOrderListItem> {
+  const res = await apiFetchAdmin<{ data: AdminOrderListItem }>(`/api/admin/orders/${id}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+  return res.data;
+}
+
+export async function refundAdminOrder(id: string, amount?: number, notes?: string): Promise<AdminOrderListItem> {
+  const res = await apiFetchAdmin<{ data: AdminOrderListItem }>(`/api/admin/orders/${id}/refund`, {
+    method: "POST",
+    body: JSON.stringify({ amount, notes }),
+  });
+  return res.data;
+}
+
+// ─── Orders (legacy — keeps customer-facing orders route working) ──────────────
 
 export async function getAdminOrders(params?: {
   page?: number; limit?: number; search?: string; status?: string;
@@ -302,8 +420,9 @@ export async function getAdminReturns(params?: { status?: string; limit?: number
   if (params?.limit)  qs.set("limit",  String(params.limit));
   if (params?.offset) qs.set("offset", String(params.offset));
   const query = qs.toString() ? `?${qs}` : "";
-  const res = await apiFetchAdmin<{ data: AdminReturn[] }>(`/api/returns${query}`);
-  return res.data;
+  const res = await apiFetchAdmin<{ data: AdminReturn[] | { returns: AdminReturn[]; total: number } }>(`/api/returns${query}`);
+  const d = res.data;
+  return Array.isArray(d) ? d : (d as { returns: AdminReturn[] }).returns ?? [];
 }
 
 export async function approveAdminReturn(id: string): Promise<void> {
@@ -331,8 +450,9 @@ export async function getAdminSettlements(params?: { status?: string; limit?: nu
   if (params?.status) qs.set("status", params.status);
   if (params?.limit)  qs.set("limit",  String(params.limit));
   const query = qs.toString() ? `?${qs}` : "";
-  const res = await apiFetchAdmin<{ data: AdminSettlement[] }>(`/api/settlements${query}`);
-  return res.data;
+  const res = await apiFetchAdmin<{ data: AdminSettlement[] | { settlements: AdminSettlement[]; total: number } }>(`/api/settlements${query}`);
+  const d = res.data;
+  return Array.isArray(d) ? d : (d as { settlements: AdminSettlement[] }).settlements ?? [];
 }
 
 export async function payAdminSettlement(id: string): Promise<void> {

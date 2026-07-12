@@ -1741,3 +1741,66 @@ export async function updateCoupon(id: string, body: Partial<Coupon>): Promise<C
 export async function deactivateCoupon(id: string): Promise<void> {
   await apiFetch(`/api/coupons/${id}`, { method: "DELETE" });
 }
+
+// ── AI Virtual Try-On ─────────────────────────────────────────────────────────
+
+export interface AITryOnResult {
+  resultUrl: string;
+  modelUsed: string;
+}
+
+/** Thrown by generateAITryOn when the backend requires GPU deployment setup. */
+export class AITryOnDeploymentError extends Error {
+  readonly deploymentRequired = true;
+  constructor(
+    message: string,
+    public readonly instructions: string[],
+  ) {
+    super(message);
+    this.name = "AITryOnDeploymentError";
+  }
+}
+
+/**
+ * Calls POST /api/ar/tryon to generate a photorealistic try-on image using
+ * IDM-VTON (diffusion model) hosted on Replicate.
+ *
+ * @param userImageBase64  - data:image/jpeg;base64,… captured from canvas
+ * @param garmentImageUrl  - public CDN URL of the garment image
+ * @param category         - IDM-VTON garment category
+ * @param garmentDescription - human-readable label sent to the model
+ */
+export async function generateAITryOn(params: {
+  userImageBase64: string;
+  garmentImageUrl: string;
+  category: "upper_body" | "lower_body" | "dresses";
+  garmentDescription: string;
+}): Promise<AITryOnResult> {
+  const res = await fetch(`${BASE}/api/ar/tryon`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+    // 5-minute client-side timeout — generation can take up to ~90 s on cold GPU
+    signal: AbortSignal.timeout(300_000),
+  });
+
+  const body = await res.json() as {
+    data?: AITryOnResult;
+    error?: string;
+    deploymentRequired?: boolean;
+    instructions?: string[];
+  };
+
+  if (!res.ok) {
+    if (body.deploymentRequired) {
+      throw new AITryOnDeploymentError(
+        body.error ?? "AI Try-On requires GPU deployment",
+        body.instructions ?? [],
+      );
+    }
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+
+  if (!body.data) throw new Error("Unexpected empty response from AI try-on endpoint");
+  return body.data;
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <circle cx="60" cy="60" r="60" fill="#4A1A1A"/>
+  <!-- Torso -->
+  <path fill="#4A1A1A" fill-opacity="0.7" d="M 10,120 L 10,95 C 20,80 40,72 60,70 C 80,72 100,80 110,95 L 110,120 Z"/>
+  <!-- Neck -->
+  <ellipse cx="60" cy="67" rx="12" ry="12" fill="#B87348"/>
+  <!-- Head -->
+  <ellipse cx="60" cy="44" rx="26" ry="30" fill="#B87348"/>
+  <!-- Hair -->
+  <path fill="#0A0500" d="M 34,40 C 33,18 44,12 60,12 C 76,12 87,18 86,40 C 82,24 72,18 60,18 C 48,18 38,24 34,40Z"/>
+  <!-- Eyes -->
+  <circle cx="52" cy="42" r="4" fill="#1A0A00"/>
+  <circle cx="68" cy="42" r="4" fill="#1A0A00"/>
+  <circle cx="53" cy="41" r="1.5" fill="white"/>
+  <circle cx="69" cy="41" r="1.5" fill="white"/>
+</svg>

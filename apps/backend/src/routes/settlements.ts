@@ -15,17 +15,28 @@ function handleError(err: unknown, res: Response, next: NextFunction): void {
   next(err);
 }
 
-// GET /api/settlements — ADMIN: list all settlements
+// GET /api/settlements — ADMIN: list all settlements (with order join)
 settlementsRouter.get("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { status, limit, offset } = req.query as Record<string, string>;
-      const data = await settlementService.list({
-        status,
-        limit:  Number(limit)  || 50,
-        offset: Number(offset) || 0,
-      });
-      return res.status(200).json({ data });
+      const { prisma } = await import("../lib/prisma.js");
+      const where = status ? { status: status as never } : {};
+      const [settlements, total] = await prisma.$transaction([
+        prisma.settlement.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          take: Number(limit) || 50,
+          skip: Number(offset) || 0,
+          include: {
+            order: {
+              select: { orderNumber: true, customerEmail: true, total: true },
+            },
+          },
+        }),
+        prisma.settlement.count({ where }),
+      ]);
+      return res.status(200).json({ data: { settlements, total } });
     } catch (err) { handleError(err, res, next); }
   }
 );

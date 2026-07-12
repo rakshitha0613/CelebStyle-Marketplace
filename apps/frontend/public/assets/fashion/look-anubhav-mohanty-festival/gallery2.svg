@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 275" width="420" height="500">
+  <rect width="100%" height="100%" fill="white"/>
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#aebd9f"/>
+      <stop offset="100%" stop-color="#5C7A3E"/>
+    </linearGradient>
+    <linearGradient id="lapel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8da278"/>
+      <stop offset="100%" stop-color="#E2E2E2"/>
+    </linearGradient>
+  </defs>
+  <!-- Blazer body with long sleeves -->
+  <path fill="url(#fg)" stroke="#3c4f28" stroke-width="1.5" stroke-linejoin="round"
+    d="M 59,30 C 76,12 140,4 210,4 C 280,4 344,12 361,30
+       L 408,76 L 408,380 L 365,380 L 362,106 L 320,98
+       L 318,390 L 102,390 L 100,98 L 58,106 L 55,380 L 12,380 L 12,76 Z"/>
+  <!-- Left lapel (notched) -->
+  <path fill="url(#lapel)" stroke="#3c4f28" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,4 C 195,4 155,14 135,28 L 150,72 L 170,110 L 200,56 Z"/>
+  <!-- Right lapel (notched) -->
+  <path fill="url(#lapel)" stroke="#3c4f28" stroke-width="1.5" stroke-linejoin="round"
+    d="M 210,4 C 225,4 265,14 285,28 L 270,72 L 250,110 L 220,56 Z"/>
+  <!-- Lapel notch (inner cutout suggestion) -->
+  <line x1="135" y1="28" x2="150" y2="72" stroke="#3c4f28" stroke-width="1.5"/>
+  <line x1="285" y1="28" x2="270" y2="72" stroke="#3c4f28" stroke-width="1.5"/>
+  <!-- Center opening lines -->
+  <line x1="196" y1="56" x2="195" y2="390" stroke="#455c2f" stroke-width="1.5"/>
+  <line x1="224" y1="56" x2="225" y2="390" stroke="#455c2f" stroke-width="1.5"/>
+  <!-- Two buttons (single-breasted) -->
+  <circle cx="196" cy="180" r="6" fill="#748e5b" stroke="#ac4622" stroke-width="1.2"/>
+  <circle cx="196" cy="220" r="6" fill="#748e5b" stroke="#ac4622" stroke-width="1.2"/>
+  <!-- Button holes -->
+  <line x1="222" y1="178" x2="226" y2="182" stroke="#455c2f" stroke-width="1"/>
+  <line x1="222" y1="218" x2="226" y2="222" stroke="#455c2f" stroke-width="1"/>
+  <!-- Breast pocket (welt) -->
+  <rect x="134" y="134" width="56" height="10" rx="2" fill="none" stroke="#455c2f" stroke-width="1.2"/>
+  <!-- Lower pockets (welt) -->
+  <rect x="110" y="270" width="72" height="10" rx="2" fill="none" stroke="#455c2f" stroke-width="1.2"/>
+  <rect x="238" y="270" width="72" height="10" rx="2" fill="none" stroke="#455c2f" stroke-width="1.2"/>
+  <!-- Shoulder seams -->
+  <line x1="100" y1="98" x2="59" y2="30" stroke="#778469" stroke-width="1"/>
+  <line x1="320" y1="98" x2="361" y2="30" stroke="#778469" stroke-width="1"/>
+  <!-- Hem stitch -->
+  <line x1="102" y1="382" x2="318" y2="382" stroke="#778469" stroke-width="1" stroke-dasharray="5,3"/>
+  <!-- Sleeve cuffs (with buttons) -->
+  <rect x="12" y="334" width="47" height="46" rx="3" fill="#8da278" stroke="#3c4f28" stroke-width="1.5"/>
+  <rect x="361" y="334" width="47" height="46" rx="3" fill="#8da278" stroke="#3c4f28" stroke-width="1.5"/>
+  <!-- Sleeve cuff buttons (3 buttons = typical blazer) -->
+  <circle cx="32" cy="354" r="3" fill="#d28367" stroke="#ac4622" stroke-width="1"/>
+  <circle cx="32" cy="368" r="3" fill="#d28367" stroke="#ac4622" stroke-width="1"/>
+  <circle cx="389" cy="354" r="3" fill="#d28367" stroke="#ac4622" stroke-width="1"/>
+  <circle cx="389" cy="368" r="3" fill="#d28367" stroke="#ac4622" stroke-width="1"/>
+</svg>

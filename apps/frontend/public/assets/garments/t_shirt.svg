@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420">
+  <defs>
+    <linearGradient id="tshirtBody" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#1A1A1A"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <linearGradient id="tshirtSleeve" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#111111"/>
+      <stop offset="100%" stop-color="#1A1A1A"/>
+    </linearGradient>
+  </defs>
+  <!-- T-Shirt body + short sleeves, neck hole cut with evenodd -->
+  <path fill-rule="evenodd"
+    fill="url(#tshirtBody)" stroke="#0A0A0A" stroke-width="1.5" stroke-linejoin="round"
+    d="M 80,38 C 90,14 150,4 200,4 C 250,4 310,14 320,38
+       L 388,64 L 388,118 L 350,130 L 346,108 L 302,102
+       L 302,340 L 98,340 L 98,102 L 54,108 L 50,130 L 12,118 L 12,64 Z
+       M 154,26 A 46,14 0 1,0 246,26 A 46,14 0 1,0 154,26 Z"/>
+  <!-- Neckline finish -->
+  <ellipse cx="200" cy="26" rx="47" ry="15" fill="none" stroke="#2A2A2A" stroke-width="2.5"/>
+  <!-- Left sleeve highlight -->
+  <line x1="22"  y1="82" x2="50"  y2="124" stroke="#2A2A2A" stroke-width="1.2" opacity="0.8"/>
+  <!-- Right sleeve highlight -->
+  <line x1="378" y1="82" x2="350" y2="124" stroke="#2A2A2A" stroke-width="1.2" opacity="0.8"/>
+  <!-- Hem stitch line -->
+  <line x1="98" y1="332" x2="302" y2="332" stroke="#222222" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <!-- Sleeve cuffs (rib band) -->
+  <rect x="10" y="112" width="42" height="20" rx="3" fill="#222222" stroke="#2A2A2A" stroke-width="1.2"/>
+  <rect x="348" y="112" width="42" height="20" rx="3" fill="#222222" stroke="#2A2A2A" stroke-width="1.2"/>
+  <!-- Shoulder seam lines -->
+  <line x1="98"  y1="102" x2="80"  y2="38" stroke="#2A2A2A" stroke-width="1.2"/>
+  <line x1="302" y1="102" x2="320" y2="38" stroke="#2A2A2A" stroke-width="1.2"/>
+  <!-- Subtle chest graphic - stylized graphic tee look -->
+  <path fill="none" stroke="#3A3A3A" stroke-width="1.5" opacity="0.5"
+    d="M 140,160 Q 200,140 260,160 Q 260,200 200,210 Q 140,200 140,160 Z"/>
+  <text x="160" y="190" font-size="22" fill="#333333" opacity="0.4" font-family="sans-serif" font-weight="bold">STYLE</text>
+  <!-- Side seams -->
+  <line x1="98"  y1="102" x2="98"  y2="340" stroke="#2A2A2A" stroke-width="1" opacity="0.4"/>
+  <line x1="302" y1="102" x2="302" y2="340" stroke="#2A2A2A" stroke-width="1" opacity="0.4"/>
+</svg>

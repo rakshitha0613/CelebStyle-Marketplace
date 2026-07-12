@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 253" width="400" height="460">
+  <rect width="100%" height="100%" fill="white"/>
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F6F6F6"/>
+      <stop offset="100%" stop-color="#EAEAEA"/>
+    </linearGradient>
+  </defs>
+  <!-- Shirt body with long sleeves (folded/cuffed) -->
+  <path fill="url(#fg)" stroke="#99591a" stroke-width="1.5" stroke-linejoin="round"
+    d="M 72,37 C 90,18 145,8 200,8 C 255,8 310,18 328,37
+       L 390,75 L 390,340 L 352,340 L 350,108 L 308,102
+       L 308,370 L 92,370 L 92,102 L 50,108 L 48,340 L 10,340 L 10,75 Z"/>
+  <!-- Collar left side -->
+  <path fill="#EFEFEF" stroke="#99591a" stroke-width="1.5" stroke-linejoin="round"
+    d="M 200,8 C 195,8 165,14 150,24 L 170,54 L 200,42 Z"/>
+  <!-- Collar right side -->
+  <path fill="#EFEFEF" stroke="#99591a" stroke-width="1.5" stroke-linejoin="round"
+    d="M 200,8 C 205,8 235,14 250,24 L 230,54 L 200,42 Z"/>
+  <!-- Collar line connecting -->
+  <line x1="150" y1="24" x2="200" y2="8" stroke="#99591a" stroke-width="1.5"/>
+  <line x1="250" y1="24" x2="200" y2="8" stroke="#99591a" stroke-width="1.5"/>
+  <!-- Button placket -->
+  <line x1="200" y1="42" x2="200" y2="365" stroke="#aa825c" stroke-width="1.5"/>
+  <!-- Buttons -->
+  <circle cx="200" cy="80" r="4" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <circle cx="200" cy="110" r="4" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <circle cx="200" cy="140" r="4" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <circle cx="200" cy="170" r="4" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <circle cx="200" cy="200" r="4" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <circle cx="200" cy="230" r="4" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <circle cx="200" cy="260" r="4" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <!-- Cuffs -->
+  <rect x="10" y="298" width="40" height="42" rx="3" fill="#EFEFEF" stroke="#99591a" stroke-width="1.5"/>
+  <rect x="350" y="298" width="40" height="42" rx="3" fill="#EFEFEF" stroke="#99591a" stroke-width="1.5"/>
+  <!-- Cuff buttons -->
+  <circle cx="30" cy="319" r="3.5" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <circle cx="370" cy="319" r="3.5" fill="#faf7ef" stroke="#99591a" stroke-width="1"/>
+  <!-- Shoulder seams -->
+  <line x1="92" y1="102" x2="72" y2="37" stroke="#aa825c" stroke-width="1"/>
+  <line x1="308" y1="102" x2="328" y2="37" stroke="#aa825c" stroke-width="1"/>
+  <!-- Hem stitch -->
+  <line x1="92" y1="362" x2="308" y2="362" stroke="#aa825c" stroke-width="1" stroke-dasharray="5,3"/>
+</svg>

@@ -102,8 +102,7 @@ export class SegmentationService {
 
       void start; // latency tracked by pipeline
       return maskData;
-    } catch (err) {
-      console.error('[SegmentationService]', err);
+    } catch {
       return this.lastMask;
     }
   }

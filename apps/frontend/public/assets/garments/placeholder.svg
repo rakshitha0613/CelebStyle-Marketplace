@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420">
+  <defs>
+    <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EAEAEA"/>
+      <stop offset="100%" stop-color="#D8D8D8"/>
+    </linearGradient>
+  </defs>
+  <!-- Generic garment silhouette (placeholder) -->
+  <path fill-rule="evenodd"
+    fill="url(#pg)" stroke="#BEBEBE" stroke-width="2" stroke-linejoin="round"
+    d="M 80,40 C 90,15 150,4 200,4 C 250,4 310,15 320,40
+       L 388,65 L 388,118 L 350,130 L 346,108 L 302,102
+       L 302,340 L 98,340 L 98,102 L 54,108 L 50,130 L 12,118 L 12,65 Z
+       M 154,26 A 46,14 0 1,0 246,26 A 46,14 0 1,0 154,26 Z"/>
+  <!-- Cross-hatch fill to show placeholder -->
+  <line x1="98" y1="102" x2="302" y2="340" stroke="#CECECE" stroke-width="1"/>
+  <line x1="302" y1="102" x2="98" y2="340" stroke="#CECECE" stroke-width="1"/>
+  <!-- "?" text -->
+  <text x="200" y="250" font-size="64" text-anchor="middle" fill="#C8C8C8" font-family="sans-serif" font-weight="bold">?</text>
+  <!-- Label -->
+  <text x="200" y="300" font-size="14" text-anchor="middle" fill="#BEBEBE" font-family="sans-serif">Garment Preview</text>
+  <text x="200" y="318" font-size="11" text-anchor="middle" fill="#CACACA" font-family="sans-serif">Not Available</text>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 680" width="400" height="680">
+  <rect width="100%" height="100%" fill="white"/>
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fcfcfc"/>
+      <stop offset="100%" stop-color="#fbfbfb"/>
+    </linearGradient>
+  </defs>
+  <!-- Kurta body with long sleeves -->
+  <path fill="url(#fg)" stroke="#bbbbbb" stroke-width="1.5" stroke-linejoin="round"
+    d="M 80,48 C 90,20 145,8 200,8 C 255,8 310,20 320,48
+       L 390,90 L 390,380 L 350,380 L 346,108 L 302,100
+       L 302,600 L 98,600 L 98,100 L 54,108 L 50,380 L 10,380 L 10,90 Z"/>
+  <!-- Mandarin collar -->
+  <path fill="#EFEFEF" stroke="#bbbbbb" stroke-width="1.5"
+    d="M 156,22 C 165,10 190,6 200,6 C 210,6 235,10 244,22
+       L 244,44 C 230,38 215,34 200,34 C 185,34 170,38 156,44 Z"/>
+  <!-- Collar band outline -->
+  <path fill="none" stroke="#BEBEBE" stroke-width="1"
+    d="M 156,22 L 156,44 M 244,22 L 244,44"/>
+  <!-- Button placket -->
+  <line x1="200" y1="44" x2="200" y2="200" stroke="#bebebe" stroke-width="1.5"/>
+  <!-- Kurta buttons -->
+  <circle cx="200" cy="70" r="4" fill="#E2E2E2" stroke="#BEBEBE" stroke-width="1"/>
+  <circle cx="200" cy="95" r="4" fill="#E2E2E2" stroke="#BEBEBE" stroke-width="1"/>
+  <circle cx="200" cy="120" r="4" fill="#E2E2E2" stroke="#BEBEBE" stroke-width="1"/>
+  <circle cx="200" cy="145" r="4" fill="#E2E2E2" stroke="#BEBEBE" stroke-width="1"/>
+  <circle cx="200" cy="170" r="4" fill="#E2E2E2" stroke="#BEBEBE" stroke-width="1"/>
+  <!-- Side slits at hem -->
+  <line x1="98" y1="520" x2="88" y2="600" stroke="#bbbbbb" stroke-width="2"/>
+  <line x1="302" y1="520" x2="312" y2="600" stroke="#bbbbbb" stroke-width="2"/>
+  <!-- Hem line -->
+  <line x1="88" y1="592" x2="312" y2="592" stroke="#CACACA" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <!-- Shoulder seams -->
+  <line x1="98" y1="100" x2="80" y2="48" stroke="#bebebe" stroke-width="1"/>
+  <line x1="302" y1="100" x2="320" y2="48" stroke="#bebebe" stroke-width="1"/>
+  <!-- Sleeve cuffs -->
+  <rect x="10" y="338" width="44" height="42" rx="4" fill="#EEEEE" stroke="#bbbbbb" stroke-width="1.5"/>
+  <rect x="346" y="338" width="44" height="42" rx="4" fill="#fbfbfb" stroke="#bbbbbb" stroke-width="1.5"/>
+  <!-- Cuff buttons -->
+  <circle cx="32" cy="359" r="3" fill="#d9c282" stroke="#BEBEBE" stroke-width="1"/>
+  <circle cx="368" cy="359" r="3" fill="#d9c282" stroke="#BEBEBE" stroke-width="1"/>
+  <!-- Kameez waist shaping lines -->
+  <line x1="98" y1="300" x2="98" y2="520" stroke="#D4D4D4" stroke-width="0.8"/>
+  <line x1="302" y1="300" x2="302" y2="520" stroke="#D4D4D4" stroke-width="0.8"/>
+  <!-- Side embellishment bands -->
+  <line x1="108" y1="350" x2="108" y2="520" stroke="#bebebe" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="292" y1="350" x2="292" y2="520" stroke="#bebebe" stroke-width="1" stroke-dasharray="4,3"/>
+</svg>

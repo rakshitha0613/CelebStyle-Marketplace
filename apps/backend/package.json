@@ -55,6 +55,8 @@
     "test:db": "npm run test:registration && npm run test:login && npm run test:email-verification && npm run test:password-reset && npm run test:me-rbac && npm run test:api-authorization && npm run test:cart && npm run test:address && npm run test:checkout && npm run test:payment && npm run test:inventory && npm run test:returns && npm run test:settlement && npm run test:ai-foundation && npm run test:feature-store && npm run test:collaborative && npm run test:ranking && npm run test:recommendation && npm run test:feedback && npm run test:mlops && npm run test:recommendation-ranking"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.4",
+    "@prisma/adapter-pg": "^6.19.3",
     "@prisma/client": "^6.1.0",
     "@types/nodemailer": "^8.0.1",
     "bcryptjs": "^3.0.3",
@@ -68,6 +70,7 @@
     "ioredis": "^5.11.1",
     "jose": "^6.2.3",
     "nodemailer": "^9.0.3",
+    "pg": "^8.22.0",
     "pino": "^9.14.0",
     "pino-http": "^10.5.0",
     "pino-pretty": "^13.1.3",

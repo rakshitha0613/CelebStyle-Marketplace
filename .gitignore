@@ -10,3 +10,6 @@ coverage
 *.log
 *.db
 uploads
+*.tsbuildinfo
+.pglite-data
+**/.pglite-data

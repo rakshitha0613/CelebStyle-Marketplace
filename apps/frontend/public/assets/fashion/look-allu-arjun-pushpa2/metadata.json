@@ -1,0 +1,36 @@
+{
+  "id": "look-allu-arjun-pushpa2",
+  "name": "Royal Dhoti Sherwani Set",
+  "category": "Premium Dhoti Set",
+  "gender": "male",
+  "fabric": "Silk Brocade",
+  "season": "All Season",
+  "occasion": "Party",
+  "garmentType": "KURTA",
+  "neckStyle": "Mandarin",
+  "sleeveType": "Full",
+  "fit": "Fitted",
+  "length": "Ankle",
+  "anchorPoints": {
+    "leftShoulder": {
+      "x": 0.2,
+      "y": 0.08
+    },
+    "rightShoulder": {
+      "x": 0.8,
+      "y": 0.08
+    },
+    "leftHip": {
+      "x": 0.26,
+      "y": 0.7
+    },
+    "rightHip": {
+      "x": 0.74,
+      "y": 0.7
+    }
+  },
+  "segmentationType": "full-body",
+  "recommendedPose": "front-facing",
+  "colorPalette": "Gold, black, deep red",
+  "generatedAt": "2026-07-11T06:03:52.105Z"
+}

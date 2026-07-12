@@ -86,69 +86,85 @@ export class ImagePoseService {
 }
 
 /**
- * Heuristic body landmarks for a front-facing full-body portrait.
- * Used as fallback when pose detection fails or returns low-confidence results.
- * Proportions based on standard anatomical ratios for a standing adult figure.
+ * Builds anatomically-proportioned heuristic landmarks for a front-facing
+ * full-body portrait.  Used as fallback when MediaPipe pose detection fails.
+ *
+ * Proportions assume the subject occupies most of the frame vertically
+ * (head near top, feet near bottom).  All values are normalised 0–1.
+ *
+ * The function accepts image dimensions but the landmarks are expressed in
+ * normalised space — the caller must scale by canvas W/H when needed.
  */
 export function buildHeuristicLandmarks(
-  imageWidth: number,
-  imageHeight: number,
+  _imageWidth: number,
+  _imageHeight: number,
 ): PoseLandmark[] {
-  void imageWidth; void imageHeight; // proportions are normalized 0-1
-
   const blank: PoseLandmark = { x: 0.5, y: 0.5, z: 0, visibility: 0 };
   const arr = new Array(33).fill(null).map(() => ({ ...blank }));
 
-  // Head / neck
-  arr[0]  = { x: 0.500, y: 0.090, z: 0, visibility: 0.90 }; // nose
-  arr[1]  = { x: 0.470, y: 0.075, z: 0, visibility: 0.85 }; // left eye inner
-  arr[2]  = { x: 0.460, y: 0.072, z: 0, visibility: 0.85 }; // left eye
-  arr[3]  = { x: 0.445, y: 0.075, z: 0, visibility: 0.80 }; // left eye outer
-  arr[4]  = { x: 0.530, y: 0.075, z: 0, visibility: 0.85 }; // right eye inner
-  arr[5]  = { x: 0.540, y: 0.072, z: 0, visibility: 0.85 }; // right eye
-  arr[6]  = { x: 0.555, y: 0.075, z: 0, visibility: 0.80 }; // right eye outer
-  arr[7]  = { x: 0.430, y: 0.095, z: 0, visibility: 0.80 }; // left ear
-  arr[8]  = { x: 0.570, y: 0.095, z: 0, visibility: 0.80 }; // right ear
-  arr[9]  = { x: 0.490, y: 0.115, z: 0, visibility: 0.90 }; // mouth left
-  arr[10] = { x: 0.510, y: 0.115, z: 0, visibility: 0.90 }; // mouth right
+  // ── Head ─────────────────────────────────────────────────────────────────
+  arr[0]  = { x: 0.500, y: 0.085, z: 0, visibility: 0.90 }; // nose
+  arr[1]  = { x: 0.474, y: 0.072, z: 0, visibility: 0.85 }; // left eye inner
+  arr[2]  = { x: 0.462, y: 0.068, z: 0, visibility: 0.85 }; // left eye
+  arr[3]  = { x: 0.446, y: 0.072, z: 0, visibility: 0.80 }; // left eye outer
+  arr[4]  = { x: 0.526, y: 0.072, z: 0, visibility: 0.85 }; // right eye inner
+  arr[5]  = { x: 0.538, y: 0.068, z: 0, visibility: 0.85 }; // right eye
+  arr[6]  = { x: 0.554, y: 0.072, z: 0, visibility: 0.80 }; // right eye outer
+  arr[7]  = { x: 0.432, y: 0.092, z: 0, visibility: 0.80 }; // left ear
+  arr[8]  = { x: 0.568, y: 0.092, z: 0, visibility: 0.80 }; // right ear
+  arr[9]  = { x: 0.488, y: 0.112, z: 0, visibility: 0.88 }; // mouth left
+  arr[10] = { x: 0.512, y: 0.112, z: 0, visibility: 0.88 }; // mouth right
 
-  // Shoulders
-  arr[POSE_LANDMARKS.LEFT_SHOULDER]  = { x: 0.340, y: 0.270, z: 0, visibility: 0.92 };
-  arr[POSE_LANDMARKS.RIGHT_SHOULDER] = { x: 0.660, y: 0.270, z: 0, visibility: 0.92 };
+  // ── Shoulders (normalised y ≈ 0.26 for full-body frame) ──────────────────
+  arr[POSE_LANDMARKS.LEFT_SHOULDER]  = { x: 0.338, y: 0.260, z: 0, visibility: 0.93 };
+  arr[POSE_LANDMARKS.RIGHT_SHOULDER] = { x: 0.662, y: 0.260, z: 0, visibility: 0.93 };
 
-  // Elbows
-  arr[POSE_LANDMARKS.LEFT_ELBOW]  = { x: 0.285, y: 0.430, z: 0, visibility: 0.80 };
-  arr[POSE_LANDMARKS.RIGHT_ELBOW] = { x: 0.715, y: 0.430, z: 0, visibility: 0.80 };
+  // ── Elbows ────────────────────────────────────────────────────────────────
+  arr[POSE_LANDMARKS.LEFT_ELBOW]  = { x: 0.280, y: 0.420, z: 0, visibility: 0.82 };
+  arr[POSE_LANDMARKS.RIGHT_ELBOW] = { x: 0.720, y: 0.420, z: 0, visibility: 0.82 };
 
-  // Wrists
-  arr[POSE_LANDMARKS.LEFT_WRIST]  = { x: 0.265, y: 0.580, z: 0, visibility: 0.70 };
-  arr[POSE_LANDMARKS.RIGHT_WRIST] = { x: 0.735, y: 0.580, z: 0, visibility: 0.70 };
+  // ── Wrists ────────────────────────────────────────────────────────────────
+  arr[POSE_LANDMARKS.LEFT_WRIST]  = { x: 0.262, y: 0.570, z: 0, visibility: 0.72 };
+  arr[POSE_LANDMARKS.RIGHT_WRIST] = { x: 0.738, y: 0.570, z: 0, visibility: 0.72 };
 
-  // Hips
-  arr[POSE_LANDMARKS.LEFT_HIP]  = { x: 0.380, y: 0.560, z: 0, visibility: 0.88 };
-  arr[POSE_LANDMARKS.RIGHT_HIP] = { x: 0.620, y: 0.560, z: 0, visibility: 0.88 };
+  // ── Hips (≈ 53% down for standing full-body) ─────────────────────────────
+  arr[POSE_LANDMARKS.LEFT_HIP]  = { x: 0.375, y: 0.550, z: 0, visibility: 0.90 };
+  arr[POSE_LANDMARKS.RIGHT_HIP] = { x: 0.625, y: 0.550, z: 0, visibility: 0.90 };
 
-  // Knees
-  arr[POSE_LANDMARKS.LEFT_KNEE]  = { x: 0.380, y: 0.760, z: 0, visibility: 0.75 };
-  arr[POSE_LANDMARKS.RIGHT_KNEE] = { x: 0.620, y: 0.760, z: 0, visibility: 0.75 };
+  // ── Knees ─────────────────────────────────────────────────────────────────
+  arr[POSE_LANDMARKS.LEFT_KNEE]  = { x: 0.375, y: 0.755, z: 0, visibility: 0.78 };
+  arr[POSE_LANDMARKS.RIGHT_KNEE] = { x: 0.625, y: 0.755, z: 0, visibility: 0.78 };
 
-  // Ankles
-  arr[27] = { x: 0.375, y: 0.940, z: 0, visibility: 0.65 };
-  arr[28] = { x: 0.625, y: 0.940, z: 0, visibility: 0.65 };
+  // ── Ankles ────────────────────────────────────────────────────────────────
+  arr[27] = { x: 0.372, y: 0.935, z: 0, visibility: 0.68 };
+  arr[28] = { x: 0.628, y: 0.935, z: 0, visibility: 0.68 };
 
   return arr;
 }
 
-/** Returns true when key upper-body landmarks have sufficient confidence */
+/**
+ * Returns true when both shoulders AND at least one hip are confidently
+ * detected.  Hip visibility is required for body-proportional garment sizing.
+ */
 export function hasGoodUpperBodyLandmarks(
   landmarks: PoseLandmark[],
   threshold = 0.4,
 ): boolean {
   const ls = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
   const rs = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
-  return !!(
+  const lh = landmarks[POSE_LANDMARKS.LEFT_HIP];
+  const rh = landmarks[POSE_LANDMARKS.RIGHT_HIP];
+
+  const shouldersOk = !!(
     ls && rs &&
     ls.visibility >= threshold &&
     rs.visibility >= threshold
   );
+
+  const hipsOk = !!(
+    (lh && lh.visibility >= threshold * 0.8) ||
+    (rh && rh.visibility >= threshold * 0.8)
+  );
+
+  return shouldersOk && hipsOk;
 }

@@ -302,6 +302,18 @@ export default function ProfilePage() {
                 Size Profile
               </Link>
               <Link
+                href="/wardrobe"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                My Wardrobe
+              </Link>
+              <Link
+                href="/style-profile"
+                className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
+              >
+                Style Profile
+              </Link>
+              <Link
                 href="/invoices"
                 className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-black/5"
               >

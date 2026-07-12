@@ -65,8 +65,11 @@ export function createApp() {
   app.use(cors({ origin: corsOriginValidator, credentials: true }));
 
   // ── Body parsing ─────────────────────────────────────────────────────────────
+  // Limit raised to 5 mb to accommodate base64-encoded images sent by the
+  // AI Virtual Try-On endpoint (JPEG canvas data URI, typically 150–300 KB).
   app.use(
     express.json({
+      limit: "5mb",
       verify: (_req, _res, buf) => {
         (_req as express.Request).rawBody = buf.toString("utf8");
       },

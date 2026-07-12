@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 480" width="420" height="480">
+  <defs>
+    <linearGradient id="hoodieBody" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#1A1A1A"/>
+      <stop offset="100%" stop-color="#0D0D0D"/>
+    </linearGradient>
+    <linearGradient id="hoodieHood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#222222"/>
+      <stop offset="100%" stop-color="#1A1A1A"/>
+    </linearGradient>
+    <linearGradient id="hoodieRib" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1F1F1F"/>
+      <stop offset="100%" stop-color="#141414"/>
+    </linearGradient>
+    <pattern id="hoodieNeon" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+      <text x="5" y="40" font-size="28" fill="#CCFF00" opacity="0.08" font-family="sans-serif" font-weight="bold">G</text>
+    </pattern>
+  </defs>
+  <!-- Hoodie body + sleeves -->
+  <path fill="url(#hoodieBody)" stroke="#0D0D0D" stroke-width="1.5" stroke-linejoin="round"
+    d="M 84,48 C 88,20 148,10 210,10 C 272,10 332,20 336,48
+       L 408,85 L 408,370 L 366,370 L 362,108 L 318,102
+       L 318,394 L 102,394 L 102,102 L 58,108 L 54,370 L 12,370 L 12,85 Z"/>
+  <!-- Subtle neon graphic overlay -->
+  <path fill="url(#hoodieNeon)" stroke="none"
+    d="M 84,48 C 88,20 148,10 210,10 C 272,10 332,20 336,48
+       L 408,85 L 408,370 L 366,370 L 362,108 L 318,102
+       L 318,394 L 102,394 L 102,102 L 58,108 L 54,370 L 12,370 L 12,85 Z" opacity="0.5"/>
+  <!-- Hood (draped) -->
+  <path fill="url(#hoodieHood)" stroke="#0D0D0D" stroke-width="1.5" stroke-linejoin="round"
+    d="M 84,48 C 100,10 148,2 210,2 C 272,2 320,10 336,48
+       C 316,40 282,34 260,38 L 250,60 C 234,56 220,54 210,54 C 200,54 186,56 170,60
+       L 160,38 C 138,34 104,40 84,48 Z"/>
+  <!-- Hood interior shadow -->
+  <path fill="#CCFF00" stroke="none" opacity="0.06"
+    d="M 160,38 C 175,30 200,28 210,28 C 220,28 245,30 260,38 L 250,60 C 234,54 220,52 210,52 C 200,52 186,54 170,60 Z"/>
+  <!-- Drawstring cords - neon yellow -->
+  <line x1="160" y1="60" x2="172" y2="130" stroke="#CCFF00" stroke-width="2.5"/>
+  <line x1="260" y1="60" x2="248" y2="130" stroke="#CCFF00" stroke-width="2.5"/>
+  <!-- Drawstring tips -->
+  <ellipse cx="172" cy="134" rx="5" ry="7" fill="#CCFF00" stroke="#99CC00" stroke-width="1.2"/>
+  <ellipse cx="248" cy="134" rx="5" ry="7" fill="#CCFF00" stroke="#99CC00" stroke-width="1.2"/>
+  <!-- Neon graphic print on chest (abstract) -->
+  <text x="130" y="240" font-size="52" fill="none" stroke="#CCFF00" stroke-width="2" opacity="0.15" font-family="sans-serif" font-weight="bold">GB</text>
+  <!-- Kangaroo pocket -->
+  <path fill="#141414" stroke="#2A2A2A" stroke-width="1.5"
+    d="M 130,280 L 118,340 L 302,340 L 290,280 Z"/>
+  <!-- Pocket ribbing -->
+  <line x1="118" y1="340" x2="302" y2="340" stroke="#2A2A2A" stroke-width="2"/>
+  <!-- Ribbed sleeve cuffs -->
+  <rect x="12"  y="326" width="46" height="44" rx="4" fill="url(#hoodieRib)" stroke="#2A2A2A" stroke-width="1.5"/>
+  <rect x="362" y="326" width="46" height="44" rx="4" fill="url(#hoodieRib)" stroke="#2A2A2A" stroke-width="1.5"/>
+  <!-- Cuff neon trim -->
+  <rect x="12"  y="326" width="46" height="4" rx="2" fill="#CCFF00" opacity="0.5"/>
+  <rect x="362" y="326" width="46" height="4" rx="2" fill="#CCFF00" opacity="0.5"/>
+  <!-- Cuff rib lines -->
+  <line x1="20" y1="340" x2="50" y2="340" stroke="#2A2A2A" stroke-width="1.2"/>
+  <line x1="20" y1="348" x2="50" y2="348" stroke="#2A2A2A" stroke-width="1.2"/>
+  <line x1="20" y1="356" x2="50" y2="356" stroke="#2A2A2A" stroke-width="1.2"/>
+  <line x1="370" y1="340" x2="400" y2="340" stroke="#2A2A2A" stroke-width="1.2"/>
+  <line x1="370" y1="348" x2="400" y2="348" stroke="#2A2A2A" stroke-width="1.2"/>
+  <line x1="370" y1="356" x2="400" y2="356" stroke="#2A2A2A" stroke-width="1.2"/>
+  <!-- Ribbed hem band -->
+  <rect x="102" y="382" width="216" height="12" rx="2" fill="url(#hoodieRib)" stroke="#2A2A2A" stroke-width="1"/>
+  <rect x="102" y="382" width="216" height="3"  rx="1" fill="#CCFF00" opacity="0.4"/>
+  <!-- Shoulder seams -->
+  <line x1="102" y1="102" x2="84"  y2="48" stroke="#2A2A2A" stroke-width="1.2"/>
+  <line x1="318" y1="102" x2="336" y2="48" stroke="#2A2A2A" stroke-width="1.2"/>
+</svg>

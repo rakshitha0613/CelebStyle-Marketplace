@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 760" width="380" height="760">
+  <defs>
+    <linearGradient id="dressBodice" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#1A1A1A"/>
+      <stop offset="100%" stop-color="#2C2C2C"/>
+    </linearGradient>
+    <linearGradient id="dressSkirt" x1="0" y1="0" x2="0.05" y2="1">
+      <stop offset="0%" stop-color="#1F1F1F"/>
+      <stop offset="50%" stop-color="#2A2A2A"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <linearGradient id="dressSilver" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8C8C8C"/>
+      <stop offset="50%" stop-color="#C0C0C0"/>
+      <stop offset="100%" stop-color="#8C8C8C"/>
+    </linearGradient>
+    <pattern id="dressShimmer" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="1.5" fill="#C0C0C0" opacity="0.15"/>
+      <line x1="5" y1="5" x2="15" y2="15" stroke="#C0C0C0" stroke-width="0.3" opacity="0.1"/>
+      <line x1="15" y1="5" x2="5" y2="15" stroke="#C0C0C0" stroke-width="0.3" opacity="0.1"/>
+    </pattern>
+  </defs>
+  <!-- Dress bodice (sleeveless fitted) -->
+  <path fill="url(#dressBodice)" stroke="#0A0A0A" stroke-width="1.5" stroke-linejoin="round"
+    d="M 84,46 C 96,20 140,10 190,10 C 240,10 284,20 296,46
+       L 296,46 C 270,38 252,36 248,38 L 240,58
+       C 228,54 214,52 190,52 C 166,52 152,54 140,58
+       L 132,38 C 128,36 110,38 84,46 Z"/>
+  <!-- Bodice main -->
+  <path fill="url(#dressBodice)" stroke="#0A0A0A" stroke-width="1.5"
+    d="M 132,38 L 140,58 C 120,70 110,90 108,110
+       L 108,290 C 108,302 116,310 130,312
+       L 250,312 C 264,310 272,302 272,290
+       L 272,110 C 270,90 260,70 240,58
+       L 248,38"/>
+  <!-- Shimmer overlay on bodice -->
+  <path fill="url(#dressShimmer)" stroke="none"
+    d="M 132,38 L 140,58 C 120,70 110,90 108,110
+       L 108,290 L 272,290 L 272,110 C 270,90 260,70 240,58 L 248,38 Z" opacity="0.8"/>
+  <!-- Connect bodice sides -->
+  <line x1="84"  y1="46" x2="108" y2="110" stroke="#0A0A0A" stroke-width="1.5"/>
+  <line x1="296" y1="46" x2="272" y2="110" stroke="#0A0A0A" stroke-width="1.5"/>
+  <!-- Silver waist seam accent -->
+  <path fill="url(#dressSilver)" stroke="none"
+    d="M 108,286 L 108,295 L 272,295 L 272,286 Z" opacity="0.7"/>
+  <!-- Skirt (A-line, floor-length) -->
+  <path fill="url(#dressSkirt)" stroke="#0A0A0A" stroke-width="1.5"
+    d="M 108,290 L 130,312 L 250,312 L 272,290
+       L 316,740 L 64,740 Z"/>
+  <!-- Shimmer on skirt -->
+  <path fill="url(#dressShimmer)" stroke="none"
+    d="M 108,290 L 130,312 L 250,312 L 272,290 L 316,740 L 64,740 Z" opacity="0.6"/>
+  <!-- Skirt fabric folds -->
+  <line x1="120" y1="320" x2="72"  y2="730" stroke="#3A3A3A" stroke-width="1" opacity="0.6"/>
+  <line x1="160" y1="320" x2="130" y2="730" stroke="#3A3A3A" stroke-width="1" opacity="0.6"/>
+  <line x1="190" y1="320" x2="190" y2="730" stroke="#3A3A3A" stroke-width="1" opacity="0.6"/>
+  <line x1="220" y1="320" x2="250" y2="730" stroke="#3A3A3A" stroke-width="1" opacity="0.6"/>
+  <line x1="260" y1="320" x2="308" y2="730" stroke="#3A3A3A" stroke-width="1" opacity="0.6"/>
+  <!-- Silver hem accent -->
+  <path fill="url(#dressSilver)" stroke="none"
+    d="M 64,726 L 64,740 L 316,740 L 316,726 Z" opacity="0.6"/>
+  <!-- Neckline - sweetheart -->
+  <path fill="none" stroke="#3A3A3A" stroke-width="1.5"
+    d="M 132,38 C 145,55 160,64 190,64 C 220,64 235,55 248,38"/>
+  <!-- Silver neckline accent -->
+  <path fill="none" stroke="#C0C0C0" stroke-width="1" opacity="0.5"
+    d="M 134,40 C 147,57 162,66 190,66 C 218,66 233,57 246,40"/>
+  <!-- Bodice center back -->
+  <line x1="190" y1="64" x2="190" y2="290" stroke="#2C2C2C" stroke-width="1" stroke-dasharray="5,4" opacity="0.5"/>
+  <!-- Side seam accents -->
+  <line x1="108" y1="110" x2="108" y2="290" stroke="#3A3A3A" stroke-width="1" opacity="0.4"/>
+  <line x1="272" y1="110" x2="272" y2="290" stroke="#3A3A3A" stroke-width="1" opacity="0.4"/>
+</svg>

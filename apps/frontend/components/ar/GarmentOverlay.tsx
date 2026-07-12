@@ -67,8 +67,8 @@ export function GarmentOverlay({ video, garment, config, onLandmarks, className 
         if (garmentRef.current) await service.setGarment(garmentRef.current);
         if (cancelled) return;
         rafRef.current = requestAnimationFrame(tick);
-      } catch (err) {
-        console.error('[GarmentOverlay] init error:', err);
+      } catch {
+        // initialization errors are surfaced through the parent error boundary
       }
     }
 
@@ -88,6 +88,9 @@ export function GarmentOverlay({ video, garment, config, onLandmarks, className 
     <canvas
       ref={canvasRef}
       className={`w-full h-full ${className ?? ''}`}
+      // Mirror the canvas when in selfie mode so garment coordinates (raw MediaPipe
+      // space) map correctly onto the CSS-mirrored video canvas beneath.
+      style={config.mirrored ? { transform: 'scaleX(-1)' } : undefined}
       aria-label="Garment overlay"
       role="img"
     />

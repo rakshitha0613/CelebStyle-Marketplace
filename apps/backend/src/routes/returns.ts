@@ -14,14 +14,28 @@ function handleError(err: unknown, res: Response, next: NextFunction): void {
   next(err);
 }
 
-// GET /api/returns — customer's own returns
+// GET /api/returns — customer's own returns; ADMIN gets all with joins
 returnsRouter.get("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const isAdmin = req.user!.role === "ADMIN" || req.user!.role === "SUPER_ADMIN";
     if (isAdmin) {
       const { status, limit, offset } = req.query as Record<string, string>;
-      const data = await returnService.list({ status, limit: Number(limit) || 50, offset: Number(offset) || 0 });
-      return res.status(200).json({ data });
+      const { prisma } = await import("../lib/prisma.js");
+      const where = status ? { status: status as never } : {};
+      const [returns, total] = await prisma.$transaction([
+        prisma.return.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          take: Number(limit) || 50,
+          skip: Number(offset) || 0,
+          include: {
+            user:  { select: { id: true, name: true, email: true } },
+            order: { select: { orderNumber: true, total: true } },
+          },
+        }),
+        prisma.return.count({ where }),
+      ]);
+      return res.status(200).json({ data: { returns, total } });
     }
     const data = await returnService.getForUser(req.user!.id);
     return res.status(200).json({ data });

@@ -7,6 +7,7 @@ import { Navbar } from "@/components/navbar";
 import { getOrder, getManufacturers, getStoredToken } from "@/lib/api";
 import type { Order } from "@/lib/api";
 import { OrderStatusTracker } from "./order-status-tracker";
+import { LocalImage } from "@/components/local-image";
 
 function PaymentSuccessBanner() {
   const params = useSearchParams();
@@ -111,8 +112,12 @@ export default function OrderPage() {
                 return (
                   <div key={`${item.outfitId}-${item.size}`} className="rounded-[24px] border border-black/6 p-4">
                     <div className="flex gap-4">
-                      <div className="h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-primary">
-                        <img src={item.imageUrl} alt={item.outfitName} className="h-full w-full object-cover" />
+                      <div className="h-24 w-20 shrink-0 overflow-hidden rounded-2xl">
+                        <LocalImage
+                          src={item.imageUrl}
+                          alt={item.outfitName}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                       <div className="flex-1">
                         <p className="text-xs uppercase tracking-[0.24em] text-accent">{item.category}</p>

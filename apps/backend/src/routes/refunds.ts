@@ -7,6 +7,30 @@ import { CommerceNotFoundError, CommerceValidationError, CommerceForbiddenError 
 
 export const refundsRouter = Router();
 
+// GET /api/refunds — list user's own refunds (admin sees all)
+refundsRouter.get("/", authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { prisma } = await import("../lib/prisma.js");
+    const isAdmin = req.user!.role === "ADMIN" || req.user!.role === "SUPER_ADMIN";
+    const limit  = Math.min(Number(req.query.limit)  || 20, 100);
+    const offset = Number(req.query.offset) || 0;
+    const where = isAdmin ? {} : {
+      order: { userId: req.user!.id },
+    };
+    const refunds = await prisma.refund.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: offset,
+      take: limit,
+      include: {
+        order: { select: { orderNumber: true, total: true } },
+        payment: { select: { provider: true, method: true } },
+      },
+    });
+    return res.status(200).json({ data: refunds });
+  } catch (err) { next(err); }
+});
+
 function handleError(err: unknown, res: Response, next: NextFunction): void {
   if (err instanceof CommerceNotFoundError)   { res.status(404).json({ error: err.message }); return; }
   if (err instanceof CommerceValidationError) { res.status(400).json({ error: err.message }); return; }

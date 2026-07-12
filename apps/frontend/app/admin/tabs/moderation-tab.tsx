@@ -88,7 +88,7 @@ export function ModerationTab() {
                     {post.status}
                   </span>
                   <span className="text-xs text-red-600 font-medium">
-                    {post.reports.length} report{post.reports.length !== 1 ? "s" : ""}
+                    {(post.reports ?? []).length} report{(post.reports ?? []).length !== 1 ? "s" : ""}
                   </span>
                 </div>
                 <p className="text-sm font-medium text-primary mb-1">by {post.userName}</p>
@@ -101,10 +101,10 @@ export function ModerationTab() {
                     onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                   />
                 )}
-                {post.reports.length > 0 && (
+                {(post.reports ?? []).length > 0 && (
                   <div className="mt-3 space-y-1">
                     <p className="text-xs font-medium text-text/60 uppercase tracking-wide">Reports</p>
-                    {post.reports.slice(0, 3).map((r) => (
+                    {(post.reports ?? []).slice(0, 3).map((r) => (
                       <p key={r.id} className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-1.5">
                         {r.reason}
                       </p>
