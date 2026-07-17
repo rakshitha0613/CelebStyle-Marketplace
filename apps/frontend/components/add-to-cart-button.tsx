@@ -14,6 +14,7 @@ type CartItem = {
   imageUrl: string;
   category: string;
   size: string;
+  quantity: number;
   manufacturerIds: string[];
 };
 
@@ -41,23 +42,25 @@ export function AddToCartButton({ outfit }: Props) {
     const cart = readCart();
     const exists = cart.find((item) => item.outfitId === outfit.id && item.size === selectedSize);
     if (exists) {
-      setMessage("Already in cart");
-      return;
+      exists.quantity = (exists.quantity ?? 1) + 1;
+      setMessage(`Quantity updated (${exists.quantity}) ✓`);
+    } else {
+      cart.push({
+        outfitId: outfit.id,
+        outfitName: outfit.movieName,
+        celebrityId: outfit.celebrityId,
+        celebrityName: outfit.celebrityName,
+        price: outfit.price,
+        imageUrl: outfit.imageUrl,
+        category: outfit.category,
+        size: selectedSize,
+        quantity: 1,
+        manufacturerIds: outfit.manufacturerIds ?? [],
+      });
+      setMessage("Added to cart ✓");
     }
-    cart.push({
-      outfitId: outfit.id,
-      outfitName: outfit.movieName,
-      celebrityId: outfit.celebrityId,
-      celebrityName: outfit.celebrityName,
-      price: outfit.price,
-      imageUrl: outfit.imageUrl,
-      category: outfit.category,
-      size: selectedSize,
-      manufacturerIds: outfit.manufacturerIds ?? [],
-    });
     window.localStorage.setItem(CART_KEY, JSON.stringify(cart));
     window.dispatchEvent(new Event("storage"));
-    setMessage("Added to cart ✓");
     setTimeout(() => setMessage(""), 2000);
   };
 

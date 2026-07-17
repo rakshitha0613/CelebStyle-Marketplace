@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { CartBadge } from "@/components/cart-badge";
 import { NavAuth } from "@/components/nav-auth";
+import { BrandMark } from "@/components/logo";
 
 const NAV_LINKS = [
   { href: "/",           label: "Home" },
   { href: "/celebrities",label: "Celebrities" },
+  { href: "/collections",label: "Collections" },
   { href: "/search",     label: "Search" },
   { href: "/trending",   label: "Trending" },
   { href: "/try-on",     label: "Try-On",    accent: true, icon: "◎" },
@@ -23,8 +25,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="font-serif text-2xl tracking-[0.22em] text-primary uppercase">
-          CelebStyle
+        <Link href="/" aria-label="CelebStyle — Home">
+          <BrandMark />
         </Link>
 
         {/* Desktop nav */}

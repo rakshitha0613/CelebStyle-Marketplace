@@ -74,7 +74,7 @@ async function optionalUserId(req: Request): Promise<string | undefined> {
   if (!auth?.startsWith("Bearer ")) return undefined;
   try {
     const { verifyAccessToken } = await import("../auth/token.service.js");
-    const p = verifyAccessToken(auth.slice(7));
+    const p = await verifyAccessToken(auth.slice(7));
     return (p as { sub?: string }).sub;
   } catch {
     return undefined;

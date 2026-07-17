@@ -1,0 +1,528 @@
+{
+  "generatedAt": "2026-07-15T03:56:16.685Z",
+  "scope": "TRYON_PILOT_OUTFITS only (first 10 outfits rendered on /try-on) — no other outfit audited or modified",
+  "pilotOutfitCount": 10,
+  "readyCount": 0,
+  "outfits": [
+    {
+      "index": 1,
+      "outfitId": "look-shah-rukh-khan-red-carpet",
+      "celebrity": "Shah Rukh Khan",
+      "outfitName": "Pathaan — Bandhgala",
+      "category": "Bandhgala",
+      "colorPalette": "Black, charcoal, silver",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-shah-rukh-khan-red-carpet/garment.webp",
+        "publicUrl": "/assets/outfits/look-shah-rukh-khan-red-carpet/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-shah-rukh-khan-red-carpet/hero.webp",
+        "publicUrl": "/assets/outfits/look-shah-rukh-khan-red-carpet/hero.webp",
+        "fileExists": true,
+        "width": 686,
+        "height": 858
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 142838,
+        "md5": "72f478675cfc548d1478b3f82616c320",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 53.81,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "sherwani",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/sherwani.png category template — this outfit's category is \"Bandhgala\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 2,
+      "outfitId": "look-shah-rukh-khan-jawan",
+      "celebrity": "Shah Rukh Khan",
+      "outfitName": "Jawan — Military Kurta",
+      "category": "Military Kurta",
+      "colorPalette": "Olive green, khaki, black",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-shah-rukh-khan-jawan/garment.webp",
+        "publicUrl": "/assets/outfits/look-shah-rukh-khan-jawan/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-shah-rukh-khan-jawan/hero.webp",
+        "publicUrl": "/assets/outfits/look-shah-rukh-khan-jawan/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 41938,
+        "md5": "4f7f2bd99eebb5b52f2032ab8d1b580d",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 45.19,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "jacket",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/jacket.png category template — this outfit's category is \"Military Kurta\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 3,
+      "outfitId": "look-ranveer-singh-gully-boy",
+      "celebrity": "Ranveer Singh",
+      "outfitName": "Gully Boy — Streetwear Set",
+      "category": "Streetwear Set",
+      "colorPalette": "Black, white, neon yellow",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-ranveer-singh-gully-boy/garment.webp",
+        "publicUrl": "/assets/outfits/look-ranveer-singh-gully-boy/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-ranveer-singh-gully-boy/hero.webp",
+        "publicUrl": "/assets/outfits/look-ranveer-singh-gully-boy/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 142838,
+        "md5": "72f478675cfc548d1478b3f82616c320",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 53.81,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "sherwani",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/sherwani.png category template — this outfit's category is \"Streetwear Set\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 4,
+      "outfitId": "look-hrithik-roshan-war",
+      "celebrity": "Hrithik Roshan",
+      "outfitName": "War — Blazer Set",
+      "category": "Blazer Set",
+      "colorPalette": "Navy, white, gold",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-hrithik-roshan-war/garment.webp",
+        "publicUrl": "/assets/outfits/look-hrithik-roshan-war/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-hrithik-roshan-war/hero.webp",
+        "publicUrl": "/assets/outfits/look-hrithik-roshan-war/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 48915,
+        "md5": "fec671748cad8edab1a0af54ad529583",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 83.68,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "suit",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/suit.png category template — this outfit's category is \"Blazer Set\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 5,
+      "outfitId": "look-akshay-kumar-kesari",
+      "celebrity": "Akshay Kumar",
+      "outfitName": "Kesari — Sikh Warrior Sherwani",
+      "category": "Sikh Warrior Sherwani",
+      "colorPalette": "Saffron, gold, dark blue",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-akshay-kumar-kesari/garment.webp",
+        "publicUrl": "/assets/outfits/look-akshay-kumar-kesari/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-akshay-kumar-kesari/hero.webp",
+        "publicUrl": "/assets/outfits/look-akshay-kumar-kesari/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 109936,
+        "md5": "6f60afd3cc2adf4713a2e17e5b357f17",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 97.87,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "kurta",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/kurta.png category template — this outfit's category is \"Sikh Warrior Sherwani\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 6,
+      "outfitId": "look-salman-khan-bajrangi",
+      "celebrity": "Salman Khan",
+      "outfitName": "Bajrangi Bhaijaan — Casual Kurta",
+      "category": "Casual Kurta",
+      "colorPalette": "White, sky blue, beige",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-salman-khan-bajrangi/garment.webp",
+        "publicUrl": "/assets/outfits/look-salman-khan-bajrangi/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-salman-khan-bajrangi/hero.webp",
+        "publicUrl": "/assets/outfits/look-salman-khan-bajrangi/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 109936,
+        "md5": "6f60afd3cc2adf4713a2e17e5b357f17",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 97.87,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "kurta",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/kurta.png category template — this outfit's category is \"Casual Kurta\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 7,
+      "outfitId": "look-ranbir-kapoor-animal",
+      "celebrity": "Ranbir Kapoor",
+      "outfitName": "Animal — Leather Jacket",
+      "category": "Leather Jacket",
+      "colorPalette": "Black, dark brown, cream",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-ranbir-kapoor-animal/garment.webp",
+        "publicUrl": "/assets/outfits/look-ranbir-kapoor-animal/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-ranbir-kapoor-animal/hero.webp",
+        "publicUrl": "/assets/outfits/look-ranbir-kapoor-animal/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 142838,
+        "md5": "72f478675cfc548d1478b3f82616c320",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 53.81,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "sherwani",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/sherwani.png category template — this outfit's category is \"Leather Jacket\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 8,
+      "outfitId": "look-vicky-kaushal-uri",
+      "celebrity": "Vicky Kaushal",
+      "outfitName": "Uri: The Surgical Strike — Military Jacket",
+      "category": "Military Jacket",
+      "colorPalette": "Olive, khaki, camouflage brown",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-vicky-kaushal-uri/garment.webp",
+        "publicUrl": "/assets/outfits/look-vicky-kaushal-uri/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-vicky-kaushal-uri/hero.webp",
+        "publicUrl": "/assets/outfits/look-vicky-kaushal-uri/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 41938,
+        "md5": "4f7f2bd99eebb5b52f2032ab8d1b580d",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 45.19,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "jacket",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/jacket.png category template — this outfit's category is \"Military Jacket\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 9,
+      "outfitId": "look-amitabh-bachchan-pink",
+      "celebrity": "Amitabh Bachchan",
+      "outfitName": "Pink — Classic Suit",
+      "category": "Classic Suit",
+      "colorPalette": "Charcoal, white, silver",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-amitabh-bachchan-pink/garment.webp",
+        "publicUrl": "/assets/outfits/look-amitabh-bachchan-pink/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-amitabh-bachchan-pink/hero.webp",
+        "publicUrl": "/assets/outfits/look-amitabh-bachchan-pink/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 48915,
+        "md5": "fec671748cad8edab1a0af54ad529583",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 83.68,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "suit",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/suit.png category template — this outfit's category is \"Classic Suit\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    },
+    {
+      "index": 10,
+      "outfitId": "look-deepika-padukone-wedding",
+      "celebrity": "Deepika Padukone",
+      "outfitName": "Gehraiyaan Press Tour — Saree",
+      "category": "Saree",
+      "colorPalette": "Gold, crimson, ivory",
+      "resolvedGarmentPath": {
+        "localPath": "apps/frontend/public/assets/outfits/look-deepika-padukone-wedding/garment.webp",
+        "publicUrl": "/assets/outfits/look-deepika-padukone-wedding/garment.webp",
+        "fileExists": false
+      },
+      "currentDisplayImage": {
+        "localPath": "apps/frontend/public/assets/outfits/look-deepika-padukone-wedding/hero.webp",
+        "publicUrl": "/assets/outfits/look-deepika-padukone-wedding/hero.webp",
+        "fileExists": false,
+        "width": null,
+        "height": null
+      },
+      "garmentWebpAudit": {
+        "exists": false,
+        "note": "404 — outfitToGarment() resolves this path but no file has ever been generated here (not in asset-manifest.json)."
+      },
+      "legacyGarmentPngAudit": {
+        "exists": true,
+        "bytes": 109936,
+        "md5": "6f60afd3cc2adf4713a2e17e5b357f17",
+        "ok": true,
+        "format": "png",
+        "width": 600,
+        "height": 800,
+        "hasAlpha": true,
+        "avgStddev": 97.87,
+        "looksFlatOrGradient": false,
+        "isPlaceholder": true,
+        "isRasterizedVectorIllustration": true,
+        "duplicatedAcrossPilotOutfits": true,
+        "matchesGenericTemplate": "kurta",
+        "containsPerson": false,
+        "isCelebrityPortrait": false,
+        "isBanner": false,
+        "isHeroEditorialImage": false,
+        "isCleanGarmentPhoto": false,
+        "note": "Flat cartoon/vector-style clip-art silhouette (visually confirmed), not garment photography. Byte-identical (MD5) to the generic /assets/garments/kurta.png category template — this outfit's category is \"Saree\", so the template shown is not even a correct category match in most cases."
+      },
+      "garmentManifestStatus": {
+        "tracked": false,
+        "status": "never-attempted"
+      },
+      "tryOnReady": false,
+      "tryOnReadyReason": "garment.webp (the path the AR pipeline actually requests) does not exist on disk — 404. The only asset present at this outfit's folder (garment.png) is a shared generic vector illustration, not a photorealistic, garment-only, front-facing product photo suitable as IDM-VTON input."
+    }
+  ]
+}

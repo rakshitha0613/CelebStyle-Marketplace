@@ -9,6 +9,7 @@ import { healthRouter } from "./routes/health.js";
 import { metricsRouter } from "./routes/metrics.js";
 import { manufacturersRouter } from "./routes/manufacturers.js";
 import { storefrontsRouter } from "./routes/storefronts.js";
+import { collectionsRouter } from "./routes/collections.js";
 import { cartRouter } from "./routes/cart.js";
 import { addressesRouter } from "./routes/addresses.js";
 import { checkoutRouter } from "./routes/checkout.js";
@@ -38,6 +39,7 @@ import { specialOrdersRouter } from "./routes/special-orders.js";
 import { uploadRouter } from "./routes/upload.js";
 import { couponsRouter } from "./routes/coupons.js";
 import { adminRouter } from "./routes/admin.js";
+import { adminAssetsRouter } from "./routes/admin-assets.js";
 import { correlationIdMiddleware } from "./lib/correlation.js";
 import { logger } from "./lib/logger.js";
 import {
@@ -103,6 +105,7 @@ export function createApp() {
   app.use("/api/manufacturers", manufacturersRouter);
   app.use("/api/orders", ordersRouter);
   app.use("/api/storefronts", storefrontsRouter);
+  app.use("/api/collections", collectionsRouter);
   app.use("/api/profile", profileRouter);
   app.use("/api/wishlist", wishlistRouter);
   app.use("/api/cart", cartRouter);
@@ -135,6 +138,7 @@ export function createApp() {
   app.use("/api/upload", uploadRouter);
   app.use("/api/coupons", couponsRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/admin/assets", adminAssetsRouter);
 
   // ── Global error handler ──────────────────────────────────────────────────────
   app.use((error: unknown, request: express.Request, response: express.Response, _next: express.NextFunction) => {

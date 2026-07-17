@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { authenticate } from "../auth/middleware/authenticate.js";
 import { authorize } from "../auth/middleware/authorize.js";
 import { prisma } from "../lib/prisma.js";
-import { DEMO_COMMUNITY_POSTS } from "../data/demo-content.js";
+import { DEMO_COMMUNITY_POSTS, toPublicDemoPost } from "../data/demo-content.js";
 
 export const communityRouter = Router();
 
@@ -45,6 +45,7 @@ function toPublicPost(
     commentCount: post.commentCount,
     liked: liked ?? false,
     bookmarked: bookmarked ?? false,
+    contestEntry: post.tags.includes("contest"),
     status: post.isApproved ? "ACTIVE" : "PENDING",
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
@@ -75,7 +76,7 @@ async function optionalUserId(req: Request): Promise<string | undefined> {
   if (!authHeader?.startsWith("Bearer ")) return undefined;
   try {
     const { verifyAccessToken } = await import("../auth/token.service.js");
-    const payload = verifyAccessToken(authHeader.slice(7));
+    const payload = await verifyAccessToken(authHeader.slice(7));
     return (payload as { sub?: string }).sub;
   } catch {
     return undefined;
@@ -87,15 +88,19 @@ async function optionalUserId(req: Request): Promise<string | undefined> {
 communityRouter.post("/posts", authenticate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { caption, imageUrl, productId: productIdField, outfitId, tags } = req.body as {
+      const { caption, imageUrl, productId: productIdField, outfitId, tags, contestEntry } = req.body as {
         caption?: string;
         imageUrl?: string;
         productId?: string;
         outfitId?: string;
         tags?: string[];
+        contestEntry?: boolean;
       };
       const productId = productIdField ?? outfitId;
       if (!caption?.trim()) return res.status(400).json({ error: "caption is required" });
+
+      const resolvedTags = Array.isArray(tags) ? tags.slice(0, 10) : [];
+      if (contestEntry && !resolvedTags.includes("contest")) resolvedTags.push("contest");
 
       // Resolve slug → cuid if productId provided (frontend sends slugs, DB FK needs cuids)
       let resolvedProductId: string | null = null;
@@ -112,7 +117,7 @@ communityRouter.post("/posts", authenticate,
           userId: req.user!.id,
           caption: caption.trim(),
           productId: resolvedProductId,
-          tags: Array.isArray(tags) ? tags.slice(0, 10) : [],
+          tags: resolvedTags,
           isApproved: true,
           images: imageUrl ? { create: [{ url: imageUrl, sortOrder: 0 }] } : undefined,
         },
@@ -159,7 +164,7 @@ communityRouter.get("/posts",
         });
         total = filtered.length;
         filtered = filtered.slice(offset, offset + limit);
-        enriched = filtered;
+        enriched = filtered.map(toPublicDemoPost);
       }
 
       return res.status(200).json({ data: { posts: enriched, total, offset, limit } });
@@ -185,7 +190,33 @@ communityRouter.get("/posts/trending",
       if (enriched.length === 0) {
         enriched = [...DEMO_COMMUNITY_POSTS]
           .sort((a, b) => b.likeCount - a.likeCount)
-          .slice(0, limit);
+          .slice(0, limit)
+          .map(toPublicDemoPost);
+      }
+      return res.status(200).json({ data: enriched });
+    } catch (err) { next(err); }
+  }
+);
+
+communityRouter.get("/posts/contest",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const limit = Math.min(Number(req.query.limit) || 20, 50);
+      let enriched: unknown[] = [];
+      try {
+        const posts = await prisma.communityPost.findMany({
+          where: { isApproved: true, deletedAt: null, tags: { has: "contest" } },
+          include: POST_INCLUDE,
+          orderBy: [{ likeCount: "desc" }, { commentCount: "desc" }],
+          take: limit,
+        });
+        enriched = await enrichWithInteractions(posts as PostWithRelations[]);
+      } catch { /* DB unavailable */ }
+      if (enriched.length === 0) {
+        enriched = DEMO_COMMUNITY_POSTS
+          .filter((p) => p.tags.includes("contest"))
+          .slice(0, limit)
+          .map(toPublicDemoPost);
       }
       return res.status(200).json({ data: enriched });
     } catch (err) { next(err); }

@@ -136,32 +136,63 @@ export function categoryToGarmentType(category: string): GarmentType {
 }
 
 /**
- * Maps a GarmentType to a generic transparent PNG in /public/assets/garments/.
- * Used as fallback when an outfit-specific garment.png is not available.
+ * Maps a GarmentType to a generic transparent WebP cutout in /public/assets/garments/,
+ * produced by scripts/asset-manager.mjs. Currently unused by outfitToGarment (which
+ * always resolves to the outfit-specific cutout) — kept for future use as a fallback.
  */
 const GARMENT_TYPE_FALLBACK: Record<GarmentType, string> = {
-  T_SHIRT:      '/assets/garments/t_shirt.png',
-  SHIRT:        '/assets/garments/shirt.png',
-  JACKET:       '/assets/garments/jacket.png',
-  HOODIE:       '/assets/garments/hoodie.png',
-  DRESS:        '/assets/garments/dress.png',
-  KURTA:        '/assets/garments/kurta.png',
-  SAREE:        '/assets/garments/saree.png',
-  LEHENGA:      '/assets/garments/lehenga.png',
-  SHERWANI:     '/assets/garments/sherwani.png',
-  BLAZER:       '/assets/garments/blazer.png',
-  SUIT:         '/assets/garments/suit.png',
-  INDO_WESTERN: '/assets/garments/indo_western.png',
+  T_SHIRT:      '/assets/garments/t_shirt.webp',
+  SHIRT:        '/assets/garments/shirt.webp',
+  JACKET:       '/assets/garments/jacket.webp',
+  HOODIE:       '/assets/garments/hoodie.webp',
+  DRESS:        '/assets/garments/dress.webp',
+  KURTA:        '/assets/garments/kurta.webp',
+  SAREE:        '/assets/garments/saree.webp',
+  LEHENGA:      '/assets/garments/lehenga.webp',
+  SHERWANI:     '/assets/garments/sherwani.webp',
+  BLAZER:       '/assets/garments/blazer.webp',
+  SUIT:         '/assets/garments/suit.webp',
+  INDO_WESTERN: '/assets/garments/indo_western.webp',
 };
 
 export const GARMENT_PLACEHOLDER_URL = '/assets/garments/placeholder.png';
 
+// ── Garment-image repair (Phase 1.5 → Phase 2) ──────────────────────────────────
+// Phase 1.5 fixed this for the 10 TRYON_PILOT_OUTFIT_IDS pilot outfits; Phase 2
+// extends the exact same resolver to the full catalog.
+//
+// Root cause: `garment.webp` was assumed for every outfit, but the garment
+// cutout pipeline only ever exported `garment.png` (confirmed: 0/100 outfit
+// folders have a .webp cutout, all 100 have a .png). Since this module runs
+// in the browser (no filesystem access, unlike catalogue.ts's Node-side
+// resolver), existence is checked the browser-safe way: attempt to load each
+// candidate extension via an Image probe and take the first that succeeds.
+const GARMENT_EXT_PRIORITY = ['webp', 'png', 'jpg'] as const;
+
+function probeImageLoads(url: string): Promise<boolean> {
+  if (typeof Image === 'undefined') return Promise.resolve(false); // SSR guard
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
+async function resolveGarmentImageUrl(outfitId: string): Promise<string> {
+  for (const ext of GARMENT_EXT_PRIORITY) {
+    const url = `/assets/outfits/${outfitId}/garment.${ext}`;
+    if (await probeImageLoads(url)) return url;
+  }
+  return `/assets/outfits/${outfitId}/garment.webp`; // nothing found — legacy path, caller shows placeholder
+}
+
 /** Converts a single Outfit to a GarmentAsset for the AR rendering pipeline. */
-export function outfitToGarment(outfit: Outfit): GarmentAsset {
+export async function outfitToGarment(outfit: Outfit): Promise<GarmentAsset> {
   const type = categoryToGarmentType(outfit.category);
   const dims = NATURAL_DIMS[type];
-  // Prefer outfit-specific garment PNG; fall back to generic type silhouette
-  const imageUrl = `/assets/outfits/${outfit.id}/garment.png`;
+  // Prefer outfit-specific garment cutout; fall back to generic type silhouette
+  const imageUrl = await resolveGarmentImageUrl(outfit.id);
   return {
     id:             outfit.id,
     name:           `${outfit.celebrityName} — ${outfit.category}`,
@@ -175,6 +206,6 @@ export function outfitToGarment(outfit: Outfit): GarmentAsset {
 }
 
 /** Converts a list of Outfits to GarmentAssets, preserving order. */
-export function outfitsToGarments(outfits: Outfit[]): GarmentAsset[] {
-  return outfits.map(outfitToGarment);
+export async function outfitsToGarments(outfits: Outfit[]): Promise<GarmentAsset[]> {
+  return Promise.all(outfits.map(outfitToGarment));
 }

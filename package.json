@@ -15,14 +15,17 @@
     "typecheck": "npm run typecheck --workspace apps/frontend && npm run typecheck --workspace apps/backend",
     "test": "npm run test --workspace apps/backend",
     "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "generate-assets": "node scripts/generate-assets.mjs",
-    "generate-placeholders": "node scripts/generate-local-placeholders.mjs",
-    "migrate-assets": "node scripts/migrate-assets.mjs"
+    "assets:status": "node scripts/asset-manager.mjs status",
+    "assets:generate": "node --use-system-ca scripts/asset-manager.mjs generate",
+    "assets:retry": "node --use-system-ca scripts/asset-manager.mjs retry-failed",
+    "assets:report": "node scripts/asset-manager.mjs report",
+    "assets:wikimedia": "node --use-system-ca scripts/asset-manager.mjs wikimedia-import"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3"
+    "concurrently": "^10.0.3",
+    "sharp": "^0.33.5"
   }
 }

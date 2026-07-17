@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
-import { getOutfits } from "@/lib/api";
+import { getOutfits, getStoredToken, addToWishlist, isUnauthorizedError } from "@/lib/api";
 import type { Outfit } from "@/lib/api";
 import { LocalImage } from "@/components/local-image";
 
@@ -150,6 +151,39 @@ function getBudgetAlternatives(budget: string, outfits: Outfit[]): Outfit[] {
   return outfits.filter((o) => o.price >= min && o.price <= max).slice(0, 6);
 }
 
+// The catalogue only tags outfits with occasion "Party" | "Festival" | "Wedding" —
+// the other occasion options in the UI have no direct match. Rather than silently
+// falling back to an occasion-blind slice of the pool (which made the "Celebrity
+// Alternatives" section identical for 5 of the 8 occasion choices), match on the
+// closest real category cluster first, then the closest real occasion.
+const OCCASION_CATEGORY_HINT: Record<string, RegExp> = {
+  Casual:        /casual/i,
+  Office:        /suit|blazer/i,
+  "Red Carpet":  /gown/i,
+};
+const OCCASION_NEAREST: Record<string, string> = {
+  "Date Night": "Party",
+  Vacation:     "Festival",
+};
+
+function getOccasionMatches(occasion: string, outfits: Outfit[]): Outfit[] {
+  const direct = outfits.filter(
+    (o) => o.occasion === occasion || o.occasion.toLowerCase().includes(occasion.toLowerCase())
+  );
+  if (direct.length > 0) return direct;
+
+  const hint = OCCASION_CATEGORY_HINT[occasion];
+  if (hint) {
+    const byCategory = outfits.filter((o) => hint.test(o.category));
+    if (byCategory.length > 0) return byCategory;
+  }
+
+  const nearest = OCCASION_NEAREST[occasion];
+  if (nearest) return outfits.filter((o) => o.occasion === nearest);
+
+  return [];
+}
+
 function SelectChip({
   label,
   options,
@@ -183,6 +217,50 @@ function SelectChip({
   );
 }
 
+/** Mirrors the WishlistButton pattern on the product detail page. */
+function SaveToWishlistButton({ outfitId }: { outfitId: string }) {
+  const router = useRouter();
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const handleClick = async () => {
+    if (!getStoredToken()) {
+      router.push("/login?redirect=/ai-stylist");
+      return;
+    }
+    setState("saving");
+    try {
+      await addToWishlist(outfitId);
+      setState("saved");
+    } catch (err) {
+      if (isUnauthorizedError(err)) {
+        router.push("/login?redirect=/ai-stylist");
+        return;
+      }
+      setState("error");
+      setTimeout(() => setState("idle"), 2000);
+    }
+  };
+
+  if (state === "saved") {
+    return (
+      <span className="flex w-full items-center justify-center gap-1 rounded-full border border-accent/40 bg-accent/5 py-1.5 text-xs font-medium text-accent">
+        ♥ Saved
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={state === "saving"}
+      className="flex w-full items-center justify-center gap-1 rounded-full border border-black/10 py-1.5 text-xs font-medium text-primary transition hover:bg-black/5 disabled:opacity-50"
+    >
+      {state === "saving" ? "Saving…" : state === "error" ? "Try again" : "♡ Save"}
+    </button>
+  );
+}
+
 export default function AIStylistPage() {
   const [profile, setProfile] = useState<StyleProfile>({
     occasion: "Wedding",
@@ -191,27 +269,40 @@ export default function AIStylistPage() {
     bodyType: "Hourglass",
   });
   const [allOutfits, setAllOutfits] = useState<Outfit[]>([]);
-  const [outfitCategory, setOutfitCategory] = useState("Lehenga");
+  const [outfitsLoading, setOutfitsLoading] = useState(true);
+  const [outfitCategory, setOutfitCategory] = useState("");
   const [generated, setGenerated] = useState(false);
   const [styleCards, setStyleCards] = useState<StyleCard[]>([]);
   const [budgetPicks, setBudgetPicks] = useState<Outfit[]>([]);
   const [celebAlts, setCelebAlts] = useState<Outfit[]>([]);
 
   useEffect(() => {
-    getOutfits().then((outfits) => {
-      setAllOutfits(outfits);
-    }).catch(() => {});
+    getOutfits()
+      .then((outfits) => {
+        setAllOutfits(outfits);
+      })
+      .catch(() => {})
+      .finally(() => setOutfitsLoading(false));
   }, []);
 
   const handleGenerate = () => {
     const cards = getStyleSuggestions(profile, outfitCategory);
-    const budget = getBudgetAlternatives(profile.budget, allOutfits);
-    const celebs = allOutfits
-      .filter((o) => o.occasion === profile.occasion || o.occasion.toLowerCase().includes(profile.occasion.toLowerCase()))
-      .slice(0, 6);
+
+    // "Garment Category" narrows which outfits are shown below — but only
+    // when the typed text actually matches something, so a typo or an
+    // unrecognised category falls back to the full catalogue instead of
+    // showing an empty result.
+    const categoryFilter = outfitCategory.trim().toLowerCase();
+    const categoryMatches = categoryFilter
+      ? allOutfits.filter((o) => o.category.toLowerCase().includes(categoryFilter))
+      : [];
+    const pool = categoryMatches.length > 0 ? categoryMatches : allOutfits;
+
+    const budget = getBudgetAlternatives(profile.budget, pool);
+    const celebs = getOccasionMatches(profile.occasion, pool).slice(0, 6);
     setStyleCards(cards);
     setBudgetPicks(budget);
-    setCelebAlts(celebs.length > 0 ? celebs : allOutfits.slice(0, 6));
+    setCelebAlts(celebs.length > 0 ? celebs : pool.slice(0, 6));
     setGenerated(true);
   };
 
@@ -220,12 +311,21 @@ export default function AIStylistPage() {
       <Navbar />
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-10">
-          <p className="text-xs uppercase tracking-[0.36em] text-accent">Personalised Fashion AI</p>
-          <h1 className="mt-3 font-serif text-5xl text-primary">AI Stylist</h1>
-          <p className="mt-2 text-lg text-text/60">
-            Get complete styling advice — shoes, jewellery, makeup, hair, and more — tailored to your occasion and body type.
-          </p>
+        <div className="mb-10 grid gap-8 md:grid-cols-[1fr_320px] md:items-center">
+          <div>
+            <p className="text-xs uppercase tracking-[0.36em] text-accent">Personalised Fashion AI</p>
+            <h1 className="mt-3 font-serif text-5xl text-primary">AI Stylist</h1>
+            <p className="mt-2 text-lg text-text/60">
+              Get complete styling advice — shoes, jewellery, makeup, hair, and more — tailored to your occasion and body type.
+            </p>
+          </div>
+          <div className="hidden aspect-[4/5] overflow-hidden rounded-[28px] md:block">
+            <LocalImage
+              src="/assets/collections/luxury-atelier/cover.webp"
+              alt="Personal fashion stylist"
+              className="h-full w-full object-cover"
+            />
+          </div>
         </div>
 
         {/* Profile builder */}
@@ -271,9 +371,10 @@ export default function AIStylistPage() {
 
           <button
             onClick={handleGenerate}
-            className="mt-8 rounded-full bg-primary px-8 py-3 text-sm font-medium text-background transition hover:opacity-90"
+            disabled={outfitsLoading}
+            className="mt-8 rounded-full bg-primary px-8 py-3 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
           >
-            Generate Style Guide →
+            {outfitsLoading ? "Loading catalogue…" : "Generate Style Guide →"}
           </button>
         </div>
 
@@ -358,13 +459,14 @@ export default function AIStylistPage() {
                           <p className="text-sm font-medium text-primary mt-1">₹{outfit.price.toLocaleString("en-IN")}</p>
                         </div>
                       </Link>
-                      <div className="px-3 pb-3">
+                      <div className="px-3 pb-3 space-y-1.5">
                         <Link
                           href={`/try-on?outfitId=${outfit.id}`}
                           className="flex w-full items-center justify-center gap-1 rounded-full bg-primary py-1.5 text-xs font-medium text-background transition hover:opacity-80"
                         >
                           ◎ Try On
                         </Link>
+                        <SaveToWishlistButton outfitId={outfit.id} />
                       </div>
                     </div>
                   ))}
@@ -399,13 +501,14 @@ export default function AIStylistPage() {
                           <p className="text-sm font-medium text-primary mt-1">₹{outfit.price.toLocaleString("en-IN")}</p>
                         </div>
                       </Link>
-                      <div className="px-3 pb-3">
+                      <div className="px-3 pb-3 space-y-1.5">
                         <Link
                           href={`/try-on?outfitId=${outfit.id}`}
                           className="flex w-full items-center justify-center gap-1 rounded-full bg-primary py-1.5 text-xs font-medium text-background transition hover:opacity-80"
                         >
                           ◎ Try On
                         </Link>
+                        <SaveToWishlistButton outfitId={outfit.id} />
                       </div>
                     </div>
                   ))}

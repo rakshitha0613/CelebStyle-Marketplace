@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
@@ -41,6 +42,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         )}
 
+        {/* Category */}
+        {post.category && (
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.28em] text-primary/60">
+            {post.category}
+          </p>
+        )}
+
         {/* Tags */}
         {post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
@@ -71,11 +79,47 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
 
-        {/* Body */}
+        {/* Body — inline images come from either an explicit [[img:url]] marker
+            line in the body text (how admin/seeded posts embed them, since
+            BlogPost has no images column) or, as a fallback, post.images
+            dropped in at roughly the 1/3 and 2/3 marks of the article. */}
         <div className="mt-8 prose prose-neutral max-w-none text-text/90 leading-relaxed">
-          {post.body.split("\n").map((para, i) =>
-            para.trim() ? <p key={i}>{para}</p> : <br key={i} />
-          )}
+          {(() => {
+            const INLINE_IMAGE = /^\[\[img:(.+)\]\]$/;
+            const paragraphs = post.body.split("\n");
+            const hasInlineMarkers = paragraphs.some((p) => INLINE_IMAGE.test(p.trim()));
+
+            const imageSlots = new Map<number, string>();
+            if (!hasInlineMarkers) {
+              const textParaIndexes = paragraphs
+                .map((p, i) => (p.trim() ? i : -1))
+                .filter((i) => i !== -1);
+              post.images.slice(0, 2).forEach((url, imgIdx) => {
+                const targetPos = Math.floor(
+                  textParaIndexes.length * ((imgIdx + 1) / (post.images.length + 1))
+                );
+                const paraIndex = textParaIndexes[Math.min(targetPos, textParaIndexes.length - 1)];
+                if (paraIndex !== undefined) imageSlots.set(paraIndex, url);
+              });
+            }
+
+            const renderImage = (url: string, key: string) => (
+              <span key={key} className="my-6 block overflow-hidden rounded-[16px] bg-black/5 not-prose">
+                <img src={url} alt={`${post.title} — inline`} className="h-full w-full object-cover" />
+              </span>
+            );
+
+            return paragraphs.map((para, i) => {
+              const marker = INLINE_IMAGE.exec(para.trim());
+              if (marker) return renderImage(marker[1], `img-${i}`);
+              return (
+                <React.Fragment key={i}>
+                  {para.trim() ? <p>{para}</p> : <br />}
+                  {imageSlots.has(i) && renderImage(imageSlots.get(i)!, `img-slot-${i}`)}
+                </React.Fragment>
+              );
+            });
+          })()}
         </div>
 
         {/* Share CTA */}

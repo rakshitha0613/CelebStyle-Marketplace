@@ -14,6 +14,7 @@ type CartItem = {
   imageUrl: string;
   category: string;
   size: string;
+  quantity?: number;
   manufacturerIds: string[];
 };
 
@@ -38,12 +39,24 @@ export default function CartPage() {
     return () => window.removeEventListener("storage", sync);
   }, []);
 
-  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price, 0), [items]);
+  const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + (item.quantity ?? 1), 0), [items]);
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0), [items]);
   const shipping = subtotal > 0 && subtotal >= 25000 ? 0 : 499;
   const total = subtotal + (subtotal > 0 ? shipping : 0);
 
   const removeItem = (index: number) => {
     const next = items.filter((_, i) => i !== index);
+    setItems(next);
+    window.localStorage.setItem(CART_KEY, JSON.stringify(next));
+    window.dispatchEvent(new Event("storage"));
+  };
+
+  const updateQuantity = (index: number, delta: number) => {
+    const next = items.map((item, i) => {
+      if (i !== index) return item;
+      const nextQty = (item.quantity ?? 1) + delta;
+      return { ...item, quantity: Math.max(1, nextQty) };
+    });
     setItems(next);
     window.localStorage.setItem(CART_KEY, JSON.stringify(next));
     window.dispatchEvent(new Event("storage"));
@@ -99,11 +112,36 @@ export default function CartPage() {
                         <p className="text-sm text-text/60">{item.celebrityName}</p>
                         <p className="mt-2 text-sm text-text/60">Size: {item.size}</p>
                       </div>
-                      <p className="font-medium text-primary">₹{item.price.toLocaleString("en-IN")}</p>
+                      <div className="text-right">
+                        <p className="font-medium text-primary">₹{(item.price * (item.quantity ?? 1)).toLocaleString("en-IN")}</p>
+                        <p className="text-xs text-text/40">₹{item.price.toLocaleString("en-IN")} each</p>
+                      </div>
                     </div>
-                    <button onClick={() => removeItem(index)} className="mt-4 text-sm font-medium text-red-600 underline-offset-4 hover:underline">
-                      Remove
-                    </button>
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(index, -1)}
+                          disabled={(item.quantity ?? 1) <= 1}
+                          aria-label="Decrease quantity"
+                          className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-primary transition hover:bg-secondary disabled:opacity-30"
+                        >
+                          −
+                        </button>
+                        <span className="w-6 text-center text-sm font-medium text-primary">{item.quantity ?? 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(index, 1)}
+                          aria-label="Increase quantity"
+                          className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-primary transition hover:bg-secondary"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button onClick={() => removeItem(index)} className="text-sm font-medium text-red-600 underline-offset-4 hover:underline">
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -114,7 +152,7 @@ export default function CartPage() {
               <div className="mt-4 space-y-3 text-sm text-text/70">
                 <div className="flex justify-between">
                   <span>Items</span>
-                  <span>{items.length}</span>
+                  <span>{totalQuantity}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Subtotal</span>

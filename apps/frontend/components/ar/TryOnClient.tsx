@@ -8,6 +8,7 @@ import type { ClothingSize, PhysicalMeasurements, SizeRecommendation, OutfitItem
 import { DEFAULT_SCENE_CONFIG } from '@/lib/ar/three.types';
 import { getOutfits, logARSession } from '@/lib/api';
 import { outfitsToGarments } from '@/lib/ar/outfit-to-garment';
+import { TRYON_PILOT_OUTFIT_IDS, isTryOnPilotModeEnabled } from '@/lib/ar/tryon-pilot';
 import { BodyMeasurementService } from '@/lib/ar/body-measurement.service';
 import { SizeRecommendationService } from '@/lib/ar/size-recommendation.service';
 import { OutfitComposerService } from '@/lib/ar/outfit-composer.service';
@@ -157,7 +158,13 @@ export default function TryOnClient({ preloadOutfitId }: TryOnClientProps) {
       try {
         const outfits = await getOutfits();
         if (cancelled) return;
-        const converted = outfitsToGarments(outfits);
+        // Reversible dev flag (TRYON_PILOT_MODE=true) — restricts /try-on to
+        // the 10 TRYON_PILOT_OUTFITS while the pilot is under review. Does
+        // not delete or otherwise touch any other outfit's data.
+        const scoped = isTryOnPilotModeEnabled()
+          ? outfits.filter((o) => TRYON_PILOT_OUTFIT_IDS.includes(o.id))
+          : outfits;
+        const converted = await outfitsToGarments(scoped);
         setGarments(converted);
         const preload = preloadOutfitId
           ? converted.find((g) => g.id === preloadOutfitId) ?? converted[0]

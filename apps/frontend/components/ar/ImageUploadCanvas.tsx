@@ -177,6 +177,10 @@ export function ImageUploadCanvas({
   const [garmentImg, setGarmentImg] = useState<HTMLImageElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [poseInitError, setPoseInitError] = useState(false);
+  // Outfit IDs whose garment.webp failed to load (404 / decode failure) —
+  // tracked per-outfit so the switcher strip and AI Generate gating never
+  // fall back to a fake "?" placeholder, a source photo, or a celebrity image.
+  const [notReadyIds, setNotReadyIds] = useState<Set<string>>(new Set());
 
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -196,11 +200,29 @@ export function ImageUploadCanvas({
   }, []);
 
   // ── Load garment image ─────────────────────────────────────────────────────
+  // assetLoader never rejects — on a real failure it resolves with the shared
+  // "?" placeholder or a 1×1 blank image instead. Detect that here so this
+  // component can show its own explicit not-ready state rather than silently
+  // compositing a fake garment onto the canvas.
 
   useEffect(() => {
     if (!garment) { setGarmentImg(null); return; }
-    assetLoader.loadImage(garment).then(setGarmentImg).catch(() => setGarmentImg(null));
+    let cancelled = false;
+    assetLoader.loadImage(garment).then((img) => {
+      if (cancelled) return;
+      const failed = img.naturalWidth <= 1 || img.src.includes('/assets/garments/placeholder.png');
+      setGarmentImg(failed ? null : img);
+      setNotReadyIds((prev) => {
+        if (failed === prev.has(garment.id)) return prev;
+        const next = new Set(prev);
+        if (failed) next.add(garment.id); else next.delete(garment.id);
+        return next;
+      });
+    }).catch(() => setGarmentImg(null));
+    return () => { cancelled = true; };
   }, [garment]);
+
+  const garmentReady = garment !== null && !notReadyIds.has(garment.id);
 
   // ── Redraw overlay when garment / config changes ───────────────────────────
 
@@ -344,6 +366,7 @@ export function ImageUploadCanvas({
   const handleAIGenerate = useCallback(async () => {
     if (uploadState.phase !== 'READY') return;
     if (!garment) return;
+    if (!garmentReady) return;
     if (!bitmapRef.current) return;
 
     setAiPhase({ phase: 'generating' });
@@ -355,10 +378,15 @@ export function ImageUploadCanvas({
       return;
     }
 
+    // The backend fetches this server-side and must be able to reach it —
+    // garment.imageUrl is a path on THIS frontend origin (Next.js public/),
+    // not the API origin, so it must be resolved to an absolute URL here.
+    const absoluteGarmentUrl = new URL(garment.imageUrl, window.location.origin).toString();
+
     try {
       const result = await generateAITryOn({
         userImageBase64,
-        garmentImageUrl: garment.imageUrl,
+        garmentImageUrl: absoluteGarmentUrl,
         category: garmentTypeToVtonCategory(garment.type),
         garmentDescription: garment.name,
       });
@@ -376,7 +404,7 @@ export function ImageUploadCanvas({
         setAiPhase({ phase: 'error', message: msg });
       }
     }
-  }, [uploadState, garment]);
+  }, [uploadState, garment, garmentReady]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -460,6 +488,14 @@ export function ImageUploadCanvas({
         {uploadState.phase === 'READY' && uploadState.isHeuristic && showCanvas && !compareMode && (
           <div className="absolute top-3 left-3 bg-yellow-500/90 text-black text-xs font-medium px-2 py-1 rounded-lg">
             Auto-fitted (no pose detected)
+          </div>
+        )}
+
+        {/* Garment not Try-On ready — never fall back to the "?" placeholder,
+            a source photo, or a celebrity/banner image. */}
+        {uploadState.phase === 'READY' && garment && !garmentReady && showCanvas && !compareMode && (
+          <div className="absolute inset-x-3 bottom-3 bg-black/80 backdrop-blur-sm text-white/90 text-xs font-medium px-3 py-2 rounded-lg text-center">
+            This outfit does not yet have a Virtual Try-On ready garment image.
           </div>
         )}
 
@@ -601,7 +637,7 @@ export function ImageUploadCanvas({
           {!isAIResult && (
             <button
               onClick={() => { void handleAIGenerate(); }}
-              disabled={isGenerating || !garment}
+              disabled={isGenerating || !garment || !garmentReady}
               className={`w-full py-2.5 text-sm font-semibold rounded-xl transition-all border
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400
                 disabled:opacity-40 disabled:cursor-not-allowed
@@ -609,10 +645,19 @@ export function ImageUploadCanvas({
                   ? 'bg-purple-600/20 border-purple-500/30 text-purple-300 cursor-wait'
                   : 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 hover:from-purple-600/50 hover:to-pink-600/50 border-purple-500/40 text-purple-200 hover:text-white'
                 }`}
-              aria-label={isGenerating ? 'Generating…' : 'Generate AI Virtual Try-On'}
+              aria-label={
+                isGenerating
+                  ? 'Generating…'
+                  : !garmentReady
+                  ? 'AI Generate unavailable — no Try-On ready garment image for this outfit'
+                  : 'Generate AI Virtual Try-On'
+              }
+              title={!garmentReady ? 'This outfit does not yet have a Virtual Try-On ready garment image.' : undefined}
             >
               {isGenerating
                 ? '⏳ Generating AI Try-On… (30–90 s)'
+                : !garmentReady
+                ? '✨ AI Generate — Unavailable'
                 : '✨ AI Generate — IDM-VTON'}
             </button>
           )}
@@ -674,33 +719,41 @@ export function ImageUploadCanvas({
       {/* ── Outfit switcher strip ──────────────────────────────────────────── */}
       {uploadState.phase === 'READY' && garments.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {garments.slice(0, 12).map((g) => (
-            <button
-              key={g.id}
-              onClick={() => {
-                onGarmentChange?.(g);
-                // Switching outfits resets the AI result so the user can
-                // generate a fresh try-on with the newly selected garment.
-                if (isAIResult) setAiPhase({ phase: 'idle' });
-              }}
-              title={g.name}
-              className={`shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
-                garment?.id === g.id
-                  ? 'border-white scale-110'
-                  : 'border-white/20 hover:border-white/50'
-              }`}
-            >
-              <img
-                src={g.imageUrl}
-                alt={g.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src =
-                    '/assets/garments/placeholder.png';
+          {garments.slice(0, 12).map((g) => {
+            const thumbNotReady = notReadyIds.has(g.id);
+            return (
+              <button
+                key={g.id}
+                onClick={() => {
+                  onGarmentChange?.(g);
+                  // Switching outfits resets the AI result so the user can
+                  // generate a fresh try-on with the newly selected garment.
+                  if (isAIResult) setAiPhase({ phase: 'idle' });
                 }}
-              />
-            </button>
-          ))}
+                title={thumbNotReady ? `${g.name} — Try-On preview not yet available` : g.name}
+                className={`relative shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${
+                  garment?.id === g.id
+                    ? 'border-white scale-110'
+                    : 'border-white/20 hover:border-white/50'
+                }`}
+              >
+                {thumbNotReady ? (
+                  <div className="w-full h-full flex items-center justify-center bg-white/5 text-white/30 text-[9px] font-medium text-center leading-tight px-1">
+                    Not ready
+                  </div>
+                ) : (
+                  <img
+                    src={g.imageUrl}
+                    alt={g.name}
+                    className="w-full h-full object-cover"
+                    onError={() => {
+                      setNotReadyIds((prev) => (prev.has(g.id) ? prev : new Set(prev).add(g.id)));
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

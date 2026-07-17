@@ -11,6 +11,7 @@ import {
   clearWishlist,
   getWishlistPrivacy,
   setWishlistPrivacy,
+  isUnauthorizedError,
 } from "@/lib/api";
 import type { WishlistItem } from "@/lib/api";
 
@@ -25,14 +26,17 @@ type CartItem = {
   imageUrl: string;
   category: string;
   size: string;
+  quantity?: number;
   manufacturerIds: string[];
 };
 
 function addToLocalCart(item: WishlistItem): void {
   const raw = window.localStorage.getItem(CART_KEY);
   const cart: CartItem[] = raw ? (JSON.parse(raw) as CartItem[]) : [];
-  const exists = cart.some((c) => c.outfitId === item.productSlug);
-  if (!exists) {
+  const existing = cart.find((c) => c.outfitId === item.productSlug);
+  if (existing) {
+    existing.quantity = (existing.quantity ?? 1) + 1;
+  } else {
     cart.push({
       outfitId: item.productSlug,
       outfitName: item.productName,
@@ -42,11 +46,12 @@ function addToLocalCart(item: WishlistItem): void {
       imageUrl: item.imageUrl,
       category: item.category,
       size: "M",
+      quantity: 1,
       manufacturerIds: item.manufacturerIds,
     });
-    window.localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    window.dispatchEvent(new Event("storage"));
   }
+  window.localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  window.dispatchEvent(new Event("storage"));
 }
 
 export default function WishlistPage() {
@@ -60,10 +65,17 @@ export default function WishlistPage() {
   const [privacyLoading, setPrivacyLoading] = useState(false);
 
   const load = useCallback(async () => {
-    const data = await getWishlist();
-    setItems(data);
+    try {
+      const data = await getWishlist();
+      setItems(data);
+    } catch (err) {
+      if (isUnauthorizedError(err)) {
+        router.replace("/login?redirect=/wishlist");
+        return;
+      }
+    }
     setLoading(false);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!getStoredToken()) {
@@ -89,6 +101,10 @@ export default function WishlistPage() {
       await removeFromWishlist(itemId);
       setItems((prev) => prev.filter((i) => i.id !== itemId));
     } catch (err) {
+      if (isUnauthorizedError(err)) {
+        router.replace("/login?redirect=/wishlist");
+        return;
+      }
       alert(err instanceof Error ? err.message : "Failed to remove item.");
     } finally {
       setRemovingId(null);
@@ -115,6 +131,10 @@ export default function WishlistPage() {
       await clearWishlist();
       setItems([]);
     } catch (err) {
+      if (isUnauthorizedError(err)) {
+        router.replace("/login?redirect=/wishlist");
+        return;
+      }
       alert(err instanceof Error ? err.message : "Failed to clear wishlist.");
     } finally {
       setClearing(false);

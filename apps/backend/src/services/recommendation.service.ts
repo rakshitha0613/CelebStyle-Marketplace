@@ -390,8 +390,15 @@ export async function getCelebrityRecommendations(
   limit = 20,
   userId?: string
 ): Promise<RecommendationItem[] | null> {
-  const celeb = await prisma.celebrity.findUnique({ where: { id: celebrityId }, select: { id: true } });
+  // The public Celebrity contract exposes `slug` as the id everywhere else in
+  // the app (see celebrities.ts toApi()), so callers — e.g. the celebrity
+  // detail page — always pass a slug here, not the internal cuid.
+  const celeb = await prisma.celebrity.findFirst({
+    where:  { OR: [{ id: celebrityId }, { slug: celebrityId }] },
+    select: { id: true },
+  });
   if (!celeb) return null;
+  celebrityId = celeb.id;
 
   // Personalized path: use multi-signal ranker when a logged-in user is present
   if (userId) {
@@ -639,11 +646,16 @@ export async function getProductRecommendations(
   limit = 8,
   userId?: string
 ): Promise<{ sections: RecommendationSection<ProductSectionType>[] } | null> {
-  const product = await prisma.product.findUnique({
-    where:  { id: productId },
+  const product = await prisma.product.findFirst({
+    where:  { OR: [{ id: productId }, { slug: productId }] },
     select: { id: true, category: true, brandId: true, celebrityId: true, basePrice: true, isPublished: true, deletedAt: true },
   });
   if (!product || !product.isPublished || product.deletedAt) return null;
+
+  // The caller (e.g. the frontend, which uses slugs) may have passed either
+  // the slug or the cuid above — resolve to the canonical cuid so every
+  // downstream query/cache-key in this function uses the real product id.
+  productId = product.id;
 
   const cacheKey = KEY.product(productId);
   const cached   = cacheService.get<{ sections: RecommendationSection<ProductSectionType>[] }>(cacheKey);
@@ -651,15 +663,22 @@ export async function getProductRecommendations(
 
   // Fetch all sections in parallel
   const [similarEdges, fbtPairs, celebEdges, brandEdges] = await Promise.all([
-    // Similar Products: embedding neighbors
+    // Similar Products: embedding neighbors. Requires the pgvector extension
+    // on the underlying Postgres — not available in every environment (e.g.
+    // local PGlite), so this section degrades to empty rather than failing
+    // the whole recommendations response.
     (async () => {
-      const { findSimilarToProduct } = await import("../lib/vector.db.js");
-      const rows = await findSimilarToProduct(productId, limit * 2);
-      return rows.map((r) => ({
-        targetId: r.productId,
-        weight:   r.similarity,
-        edgeType: "EMBEDDING_SIMILARITY",
-      } satisfies GraphEdge));
+      try {
+        const { findSimilarToProduct } = await import("../lib/vector.db.js");
+        const rows = await findSimilarToProduct(productId, limit * 2);
+        return rows.map((r) => ({
+          targetId: r.productId,
+          weight:   r.similarity,
+          edgeType: "EMBEDDING_SIMILARITY",
+        } satisfies GraphEdge));
+      } catch {
+        return [] as GraphEdge[];
+      }
     })(),
 
     // Frequently Bought Together: CoPurchasedPair

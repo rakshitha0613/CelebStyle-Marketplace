@@ -5,8 +5,6 @@
       "name": "Shah Rukh Khan",
       "industry": "Bollywood",
       "bio": "Shah Rukh Khan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-7.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -18,8 +16,6 @@
       "name": "Deepika Padukone",
       "industry": "Bollywood",
       "bio": "Deepika Padukone style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -31,8 +27,6 @@
       "name": "Priyanka Chopra",
       "industry": "Bollywood",
       "bio": "Priyanka Chopra style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -44,8 +38,6 @@
       "name": "Amitabh Bachchan",
       "industry": "Bollywood",
       "bio": "Amitabh Bachchan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -57,8 +49,6 @@
       "name": "Ranveer Singh",
       "industry": "Bollywood",
       "bio": "Ranveer Singh style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -70,8 +60,6 @@
       "name": "Hrithik Roshan",
       "industry": "Bollywood",
       "bio": "Hrithik Roshan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -83,8 +71,6 @@
       "name": "Alia Bhatt",
       "industry": "Bollywood",
       "bio": "Alia Bhatt style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -96,8 +82,6 @@
       "name": "Katrina Kaif",
       "industry": "Bollywood",
       "bio": "Katrina Kaif style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -109,8 +93,6 @@
       "name": "Ranbir Kapoor",
       "industry": "Bollywood",
       "bio": "Ranbir Kapoor style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -122,8 +104,6 @@
       "name": "Aishwarya Rai",
       "industry": "Bollywood",
       "bio": "Aishwarya Rai style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -135,8 +115,6 @@
       "name": "Kareena Kapoor",
       "industry": "Bollywood",
       "bio": "Kareena Kapoor style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -148,8 +126,6 @@
       "name": "Anushka Sharma",
       "industry": "Bollywood",
       "bio": "Anushka Sharma style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -161,8 +137,6 @@
       "name": "Varun Dhawan",
       "industry": "Bollywood",
       "bio": "Varun Dhawan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -174,8 +148,6 @@
       "name": "Sidharth Malhotra",
       "industry": "Bollywood",
       "bio": "Sidharth Malhotra style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -187,8 +159,6 @@
       "name": "Kiara Advani",
       "industry": "Bollywood",
       "bio": "Kiara Advani style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -200,8 +170,6 @@
       "name": "Ayushmann Khurrana",
       "industry": "Bollywood",
       "bio": "Ayushmann Khurrana style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -213,8 +181,6 @@
       "name": "Rajkummar Rao",
       "industry": "Bollywood",
       "bio": "Rajkummar Rao style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -226,8 +192,6 @@
       "name": "Vicky Kaushal",
       "industry": "Bollywood",
       "bio": "Vicky Kaushal style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -239,8 +203,6 @@
       "name": "Kriti Sanon",
       "industry": "Bollywood",
       "bio": "Kriti Sanon style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -252,8 +214,6 @@
       "name": "Taapsee Pannu",
       "industry": "Bollywood",
       "bio": "Taapsee Pannu style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -265,8 +225,6 @@
       "name": "Pankaj Tripathi",
       "industry": "Bollywood",
       "bio": "Pankaj Tripathi style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -278,8 +236,6 @@
       "name": "Nawazuddin Siddiqui",
       "industry": "Bollywood",
       "bio": "Nawazuddin Siddiqui style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -291,8 +247,6 @@
       "name": "Radhika Apte",
       "industry": "Bollywood",
       "bio": "Radhika Apte style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -304,8 +258,6 @@
       "name": "Manoj Bajpayee",
       "industry": "Bollywood",
       "bio": "Manoj Bajpayee style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -317,8 +269,6 @@
       "name": "Kangana Ranaut",
       "industry": "Bollywood",
       "bio": "Kangana Ranaut style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -330,8 +280,6 @@
       "name": "Madhuri Dixit",
       "industry": "Bollywood",
       "bio": "Madhuri Dixit style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -343,8 +291,6 @@
       "name": "Kajol",
       "industry": "Bollywood",
       "bio": "Kajol style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -356,8 +302,6 @@
       "name": "Rani Mukerji",
       "industry": "Bollywood",
       "bio": "Rani Mukerji style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -369,8 +313,6 @@
       "name": "Sonam Kapoor",
       "industry": "Bollywood",
       "bio": "Sonam Kapoor style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -382,8 +324,6 @@
       "name": "Shraddha Kapoor",
       "industry": "Bollywood",
       "bio": "Shraddha Kapoor style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -395,8 +335,6 @@
       "name": "Akshay Kumar",
       "industry": "Bollywood",
       "bio": "Akshay Kumar style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-7.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -408,8 +346,6 @@
       "name": "Salman Khan",
       "industry": "Bollywood",
       "bio": "Salman Khan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Red Carpet",
         "Wedding",
@@ -421,8 +357,6 @@
       "name": "Prabhas",
       "industry": "Tollywood",
       "bio": "Prabhas style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -434,8 +368,6 @@
       "name": "Allu Arjun",
       "industry": "Tollywood",
       "bio": "Allu Arjun style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -447,8 +379,6 @@
       "name": "Naga Chaitanya",
       "industry": "Tollywood",
       "bio": "Naga Chaitanya style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -460,8 +390,6 @@
       "name": "Rashmika Mandanna",
       "industry": "Tollywood",
       "bio": "Rashmika Mandanna style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -473,8 +401,6 @@
       "name": "Vijay Deverakonda",
       "industry": "Tollywood",
       "bio": "Vijay Deverakonda style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -486,8 +412,6 @@
       "name": "Pawan Kalyan",
       "industry": "Tollywood",
       "bio": "Pawan Kalyan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -499,8 +423,6 @@
       "name": "Chiranjeevi",
       "industry": "Tollywood",
       "bio": "Chiranjeevi style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -512,8 +434,6 @@
       "name": "Nagarjuna",
       "industry": "Tollywood",
       "bio": "Nagarjuna style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -525,8 +445,6 @@
       "name": "Anushka Shetty",
       "industry": "Tollywood",
       "bio": "Anushka Shetty style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -538,8 +456,6 @@
       "name": "Kajal Aggarwal",
       "industry": "Tollywood",
       "bio": "Kajal Aggarwal style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -551,8 +467,6 @@
       "name": "Tamannaah Bhatia",
       "industry": "Tollywood",
       "bio": "Tamannaah Bhatia style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -564,8 +478,6 @@
       "name": "Nithiin",
       "industry": "Tollywood",
       "bio": "Nithiin style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Festive",
         "Traditional",
@@ -577,8 +489,6 @@
       "name": "Rajinikanth",
       "industry": "Kollywood",
       "bio": "Rajinikanth style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -590,8 +500,6 @@
       "name": "Nayanthara",
       "industry": "Kollywood",
       "bio": "Nayanthara style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -603,8 +511,6 @@
       "name": "Aishwarya Lekshmi",
       "industry": "Kollywood",
       "bio": "Aishwarya Lekshmi style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -616,8 +522,6 @@
       "name": "Vikram",
       "industry": "Kollywood",
       "bio": "Vikram style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-7.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -629,8 +533,6 @@
       "name": "S. J. Suryah",
       "industry": "Kollywood",
       "bio": "S. J. Suryah style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -642,8 +544,6 @@
       "name": "R. Madhavan",
       "industry": "Kollywood",
       "bio": "R. Madhavan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -655,8 +555,6 @@
       "name": "Vijay Sethupathi",
       "industry": "Kollywood",
       "bio": "Vijay Sethupathi style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -668,8 +566,6 @@
       "name": "Samantha",
       "industry": "Kollywood",
       "bio": "Samantha style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -681,8 +577,6 @@
       "name": "Silambarasan",
       "industry": "Kollywood",
       "bio": "Silambarasan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Minimal",
         "Formal",
@@ -694,8 +588,6 @@
       "name": "Mammootty",
       "industry": "Mollywood",
       "bio": "Mammootty style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Classic",
         "Ethnic",
@@ -707,8 +599,6 @@
       "name": "Mohanlal",
       "industry": "Mollywood",
       "bio": "Mohanlal style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Classic",
         "Ethnic",
@@ -720,8 +610,6 @@
       "name": "Fahadh Faasil",
       "industry": "Mollywood",
       "bio": "Fahadh Faasil style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Classic",
         "Ethnic",
@@ -733,8 +621,6 @@
       "name": "Tovino Thomas",
       "industry": "Mollywood",
       "bio": "Tovino Thomas style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Classic",
         "Ethnic",
@@ -746,8 +632,6 @@
       "name": "Prithviraj Sukumaran",
       "industry": "Mollywood",
       "bio": "Prithviraj Sukumaran style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Classic",
         "Ethnic",
@@ -759,8 +643,6 @@
       "name": "Dulquer Salmaan",
       "industry": "Mollywood",
       "bio": "Dulquer Salmaan style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-7.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Classic",
         "Ethnic",
@@ -772,8 +654,6 @@
       "name": "Zendaya",
       "industry": "Hollywood",
       "bio": "Zendaya style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -785,8 +665,6 @@
       "name": "Emma Stone",
       "industry": "Hollywood",
       "bio": "Emma Stone style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -798,8 +676,6 @@
       "name": "Margot Robbie",
       "industry": "Hollywood",
       "bio": "Margot Robbie style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -811,8 +687,6 @@
       "name": "Anne Hathaway",
       "industry": "Hollywood",
       "bio": "Anne Hathaway style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -824,8 +698,6 @@
       "name": "Keanu Reeves",
       "industry": "Hollywood",
       "bio": "Keanu Reeves style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -837,8 +709,6 @@
       "name": "Brad Pitt",
       "industry": "Hollywood",
       "bio": "Brad Pitt style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -850,8 +720,6 @@
       "name": "Meryl Streep",
       "industry": "Hollywood",
       "bio": "Meryl Streep style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -863,8 +731,6 @@
       "name": "Cate Blanchett",
       "industry": "Hollywood",
       "bio": "Cate Blanchett style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/female/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -876,8 +742,6 @@
       "name": "Joaquin Phoenix",
       "industry": "Hollywood",
       "bio": "Joaquin Phoenix style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -889,8 +753,6 @@
       "name": "Pedro Pascal",
       "industry": "Hollywood",
       "bio": "Pedro Pascal style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Red Carpet",
         "Street",
@@ -902,8 +764,6 @@
       "name": "Darshan Thoogudeepa",
       "industry": "Sandalwood",
       "bio": "Darshan Thoogudeepa, known as 'Challenging Star', is one of the biggest action stars of Sandalwood. Known for mass entertainers like Kurukshetra and Robert.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Red Carpet",
         "Traditional",
@@ -915,8 +775,6 @@
       "name": "Yash",
       "industry": "Sandalwood",
       "bio": "Yash, the 'Rocking Star', rose to global fame with the KGF franchise. His rugged yet stylish looks have set major fashion trends across India.",
-      "profileImage": "/assets/celebrities/male/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Action Hero",
         "Mass Look",
@@ -928,8 +786,6 @@
       "name": "Kiccha Sudeep",
       "industry": "Sandalwood",
       "bio": "Kiccha Sudeep is a pan-India star known for Vikrant Rona and Eega. His versatile fashion blends traditional Kannada roots with modern contemporary style.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Red Carpet",
         "Action",
@@ -941,8 +797,6 @@
       "name": "Puneeth Rajkumar",
       "industry": "Sandalwood",
       "bio": "Puneeth Rajkumar, fondly called 'Appu', was the power star of Sandalwood. A legend known for his energy, charm, and iconic style in films like Yuvarathnaa.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Power Star",
         "Action",
@@ -954,8 +808,6 @@
       "name": "Upendra",
       "industry": "Sandalwood",
       "bio": "Upendra is a celebrated actor-director known for his avant-garde film style and iconic roles. His edgy fashion sense is as unique as his filmmaking.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Director",
         "Edgy",
@@ -967,8 +819,6 @@
       "name": "Shivarajkumar",
       "industry": "Sandalwood",
       "bio": "Shivarajkumar is a legendary Sandalwood actor from the iconic Rajkumar family. Known for Bhajarangi and Rustum, his regal style commands respect.",
-      "profileImage": "/assets/celebrities/male/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Traditional",
         "Action Hero",
@@ -980,8 +830,6 @@
       "name": "Ramesh Aravind",
       "industry": "Sandalwood",
       "bio": "Ramesh Aravind is a veteran Sandalwood actor and director known for his suave, urbane style. Famous for Shanti Shanti Shanti and numerous Telugu films.",
-      "profileImage": "/assets/celebrities/male/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Classic",
         "Urbane",
@@ -993,8 +841,6 @@
       "name": "Dhananjaya",
       "industry": "Sandalwood",
       "bio": "Dhananjaya is one of Sandalwood's finest character actors, known for Tagaru and Kantara. His intense screen presence is matched by his effortlessly cool street style.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Street Style",
         "Action",
@@ -1006,8 +852,6 @@
       "name": "Rishab Shetty",
       "industry": "Sandalwood",
       "bio": "Rishab Shetty is the acclaimed director-actor behind the blockbuster Kantara. His earthy, culturally rooted aesthetic has sparked a new wave of Kannada fashion.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Traditional",
         "Coastal Karnataka",
@@ -1019,8 +863,6 @@
       "name": "Golden Star Ganesh",
       "industry": "Sandalwood",
       "bio": "Golden Star Ganesh is Sandalwood's beloved comedy-drama hero. Known for Gultoo and Shivajinagara, his bright, fun fashion reflects his on-screen personality.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Comedy",
         "Casual",
@@ -1032,8 +874,6 @@
       "name": "Vijay Raghavendra",
       "industry": "Sandalwood",
       "bio": "Vijay Raghavendra is known for action entertainers in Sandalwood. His polished red-carpet looks and traditional ensembles make him a style icon.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Action",
         "Traditional",
@@ -1045,8 +885,6 @@
       "name": "Srinagar Kitty",
       "industry": "Sandalwood",
       "bio": "Srinagar Kitty is a popular Sandalwood character and lead actor known for his comedic timing and casual-chic fashion sense.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Casual",
         "Comedy",
@@ -1058,8 +896,6 @@
       "name": "Diganth",
       "industry": "Sandalwood",
       "bio": "Diganth is a youth icon of Sandalwood known for Mungaru Male and Pancharangi. His youthful, trendy fashion appeals to the younger generation.",
-      "profileImage": "/assets/celebrities/male/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-6.svg",
       "styleTags": [
         "Youth",
         "Trendy",
@@ -1071,8 +907,6 @@
       "name": "Rakshit Shetty",
       "industry": "Sandalwood",
       "bio": "Rakshit Shetty is a National Award-winning actor-director behind 777 Charlie and Kirik Party. His minimalist, earthy style complements his artistic persona.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Minimalist",
         "Earthy",
@@ -1084,8 +918,6 @@
       "name": "Nirup Bhandari",
       "industry": "Sandalwood",
       "bio": "Nirup Bhandari is a rising star of Sandalwood known for Tagaru and Rathnaveera. His sharp contemporary fashion is gaining recognition across South India.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Contemporary",
         "Action",
@@ -1097,8 +929,6 @@
       "name": "Pramod Shetty",
       "industry": "Sandalwood",
       "bio": "Pramod Shetty is a popular Sandalwood actor known for his comic roles and vibrant fashion presence at film events.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Casual",
         "Comedy",
@@ -1110,8 +940,6 @@
       "name": "Chiranjeevi Sarja",
       "industry": "Sandalwood",
       "bio": "Chiranjeevi Sarja was a prominent Sandalwood action star known for Aadhi and Odeya. His bold, stylish avatar left a lasting impression on Kannada cinema.",
-      "profileImage": "/assets/celebrities/male/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-1.svg",
       "styleTags": [
         "Action",
         "Bold",
@@ -1123,8 +951,6 @@
       "name": "Aditya Narayan",
       "industry": "Sandalwood",
       "bio": "Aditya Narayan is a young, energetic Sandalwood actor known for his sporty looks and streetwear fashion in youth-oriented films.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Youth",
         "Sporty",
@@ -1136,8 +962,6 @@
       "name": "Chetan Achara",
       "industry": "Sandalwood",
       "bio": "Chetan Achara is a Sandalwood comedian and character actor celebrated for his lively personality and vibrant event appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-7.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Comedy",
         "Festive",
@@ -1149,8 +973,6 @@
       "name": "Arjun Janya",
       "industry": "Sandalwood",
       "bio": "Arjun Janya is a leading music composer of Sandalwood known for Yajamana and KGF. His suave, polished appearance at award ceremonies has made him a fashion favorite.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Formal",
         "Award Season",
@@ -1162,8 +984,6 @@
       "name": "Rachita Ram",
       "industry": "Sandalwood",
       "bio": "Rachita Ram is the most popular actress of Sandalwood, known for her elegant sarees and glamorous film looks. She has starred in films like Raajakumara and Yajamana.",
-      "profileImage": "/assets/celebrities/female/portrait-6.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Saree",
         "Glamour",
@@ -1175,8 +995,6 @@
       "name": "Ragini Dwivedi",
       "industry": "Sandalwood",
       "bio": "Ragini Dwivedi is a popular Sandalwood actress known for Veera Madakari and Ravichandran films. Her bold, modern style fuses ethnic roots with contemporary fashion.",
-      "profileImage": "/assets/celebrities/male/portrait-2.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-2.svg",
       "styleTags": [
         "Bold",
         "Contemporary",
@@ -1188,8 +1006,6 @@
       "name": "Aindrita Ray",
       "industry": "Sandalwood",
       "bio": "Aindrita Ray is one of Sandalwood's leading actresses, known for her fashion-forward choices and stunning ethnic ensembles at Filmfare and SIIMA events.",
-      "profileImage": "/assets/celebrities/male/portrait-8.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-8.svg",
       "styleTags": [
         "Ethnic",
         "Glamour",
@@ -1201,8 +1017,6 @@
       "name": "Haripriya",
       "industry": "Sandalwood",
       "bio": "Haripriya is a versatile Sandalwood actress known for Killing Veerappan and Kempe Gowda. Her vibrant, colour-forward wardrobe is a signature of her public persona.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Vibrant",
         "Festive",
@@ -1214,8 +1028,6 @@
       "name": "Srinidhi Shetty",
       "industry": "Sandalwood",
       "bio": "Srinidhi Shetty, the former Miss Supranational India and KGF actress, is a pan-India style icon known for high glamour and luxurious fashion choices.",
-      "profileImage": "/assets/celebrities/female/portrait-1.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "High Glamour",
         "Luxury",
@@ -1227,8 +1039,6 @@
       "name": "Parul Yadav",
       "industry": "Sandalwood",
       "bio": "Parul Yadav is a bilingual actress known for Googly and Mr. & Mrs. Ramachari. Her chic modern wardrobe mixes Indo-Western fusion with bold ethnic looks.",
-      "profileImage": "/assets/celebrities/male/portrait-5.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-5.svg",
       "styleTags": [
         "Indo-Western",
         "Contemporary",
@@ -1240,8 +1050,6 @@
       "name": "Deepa Sannidhi",
       "industry": "Sandalwood",
       "bio": "Deepa Sannidhi is a Sandalwood actress and activist known for her roles in Ugramm and Mr. & Mrs. Ramachari, as well as her clean, classic fashion aesthetic.",
-      "profileImage": "/assets/celebrities/male/portrait-3.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-3.svg",
       "styleTags": [
         "Classic",
         "Ethnic",
@@ -1253,8 +1061,6 @@
       "name": "Amulya",
       "industry": "Sandalwood",
       "bio": "Amulya is a beloved Sandalwood actress who started young and matured into a versatile star. Known for Kempe Gowda and Ambari, her style ranges from playful to traditional.",
-      "profileImage": "/assets/celebrities/male/portrait-7.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Traditional",
         "Youthful",
@@ -1266,8 +1072,6 @@
       "name": "Anu Prabhakar",
       "industry": "Sandalwood",
       "bio": "Anu Prabhakar is a Sandalwood actress and talk show host known for her bold fashion choices and strong screen presence in films like Thayige Thakka Maga.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Bold",
         "Modern",
@@ -1279,8 +1083,6 @@
       "name": "Rukmini Vasanth",
       "industry": "Sandalwood",
       "bio": "Rukmini Vasanth is a rising Sandalwood actress and daughter of director Rajendra Singh Babu. Known for Birugaali and Avane Srimannarayana, her style is fresh and contemporary.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Contemporary",
         "Youth",
@@ -1292,8 +1094,6 @@
       "name": "Khesari Lal Yadav",
       "industry": "Bhojpuri",
       "bio": "Khesari Lal Yadav style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-4.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-4.svg",
       "styleTags": [
         "Traditional",
         "Ethnic",
@@ -1305,8 +1105,6 @@
       "name": "Anubhav Mohanty",
       "industry": "Ollywood",
       "bio": "Anubhav Mohanty style archive featuring curated replica looks from films, events, and public appearances.",
-      "profileImage": "/assets/celebrities/male/portrait-7.svg",
-      "bannerImage": "/assets/celebrities/banners/banner-7.svg",
       "styleTags": [
         "Traditional",
         "Ethnic",

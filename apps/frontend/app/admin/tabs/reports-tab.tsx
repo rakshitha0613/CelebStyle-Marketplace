@@ -92,7 +92,7 @@ export function ReportsTab() {
       ) : reportType === "settlements" && settlements ? (
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Total Settlements" value={settlements.totalSettlements.toString()} />
+            <StatCard label="Total Settlements" value={String(settlements?.totalSettlements ?? 0)} />
             <StatCard label="Gross Revenue" value={fmt(settlements.totalGross)} />
             <StatCard label="Platform Fee (10%)" value={fmt(settlements.totalPlatformFee)} />
             <StatCard label="Celebrity Comm." value={fmt(settlements.totalCelebCommission)} />

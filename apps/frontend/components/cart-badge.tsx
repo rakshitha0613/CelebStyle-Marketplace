@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const CART_KEY = "celebstyle-cart";
 
-type CartItem = { outfitId: string };
+type CartItem = { outfitId: string; quantity?: number };
 
 function readCart(): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -20,7 +20,7 @@ export function CartBadge() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const sync = () => setCount(readCart().length);
+    const sync = () => setCount(readCart().reduce((sum, item) => sum + (item.quantity ?? 1), 0));
     sync();
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);

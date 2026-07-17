@@ -38,6 +38,11 @@ export default async function BlogPage() {
                   </div>
                 )}
                 <div className="flex flex-col flex-1 p-5">
+                  {post.category && (
+                    <p className="mb-2 text-xs font-medium uppercase tracking-[0.24em] text-primary/60">
+                      {post.category}
+                    </p>
+                  )}
                   {post.tags.length > 0 && (
                     <div className="mb-3 flex flex-wrap gap-1.5">
                       {post.tags.slice(0, 3).map((t) => (

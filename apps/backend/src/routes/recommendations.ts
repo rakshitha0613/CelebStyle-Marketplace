@@ -21,6 +21,7 @@
 
 import { Router, type Request, type Response } from "express";
 import { requireAuth, optionalAuth } from "../auth/auth.middleware.js";
+import { prisma } from "../lib/prisma.js";
 import {
   getTrendingRecommendations,
   getNewArrivalsRecommendations,
@@ -31,6 +32,7 @@ import {
   getContinueShoppingProducts,
   getCartRecommendations,
 } from "../services/recommendation.service.js";
+import type { RecommendationItem } from "../services/recommendation.service.js";
 
 export const recommendationsRouter = Router();
 
@@ -41,13 +43,36 @@ function parseLimit(query: unknown, defaultVal: number, max = 40): number {
   return isNaN(n) || n < 1 ? defaultVal : Math.min(n, max);
 }
 
+/**
+ * The public "Outfit" contract exposes the Product's slug as `id` everywhere
+ * (see product.repository.ts toApi()), but recommendation items carry the
+ * raw Product cuid internally (used for scoring/caching). Frontend pages
+ * build a slug-keyed map from /api/outfits and look up items by `productId`,
+ * so cuids must be resolved to slugs before leaving this boundary — otherwise
+ * every recommendation section silently renders empty.
+ */
+async function resolveItemSlugs<T extends RecommendationItem>(items: T[]): Promise<T[]> {
+  if (items.length === 0) return items;
+  const products = await prisma.product.findMany({
+    where: { id: { in: items.map((i) => i.productId) } },
+    select: { id: true, slug: true },
+  });
+  const slugById = new Map(products.map((p) => [p.id, p.slug]));
+  return items
+    .map((item) => {
+      const slug = slugById.get(item.productId);
+      return slug ? { ...item, productId: slug } : null;
+    })
+    .filter((item): item is T => item !== null);
+}
+
 // ── Public: trending ──────────────────────────────────────────────────────────
 
 recommendationsRouter.get(
   "/trending",
   async (req: Request, res: Response): Promise<void> => {
     const limit = parseLimit(req.query["limit"], 20);
-    const items = await getTrendingRecommendations(limit);
+    const items = await resolveItemSlugs(await getTrendingRecommendations(limit));
     res.json({ data: { section: "TRENDING", title: "Trending", items } });
   }
 );
@@ -58,7 +83,7 @@ recommendationsRouter.get(
   "/new-arrivals",
   async (req: Request, res: Response): Promise<void> => {
     const limit = parseLimit(req.query["limit"], 20);
-    const items = await getNewArrivalsRecommendations(limit);
+    const items = await resolveItemSlugs(await getNewArrivalsRecommendations(limit));
     res.json({ data: { section: "NEW_ARRIVALS", title: "New Arrivals", items } });
   }
 );
@@ -101,7 +126,7 @@ recommendationsRouter.get(
       return;
     }
 
-    res.json({ data: { section: "CELEBRITY", title: "Celebrity Picks", items: result } });
+    res.json({ data: { section: "CELEBRITY", title: "Celebrity Picks", items: await resolveItemSlugs(result) } });
   }
 );
 

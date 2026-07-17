@@ -16,6 +16,7 @@ type CartItem = {
   imageUrl: string;
   category: string;
   size: string;
+  quantity?: number;
   manufacturerIds: string[];
 };
 
@@ -162,7 +163,7 @@ export default function CheckoutPage() {
     });
   }, [router]);
 
-  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price, 0), [items]);
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0), [items]);
   const discount = couponResult?.valid ? couponResult.discountRupees : 0;
   const shipping = (subtotal - discount) >= 25000 ? 0 : 499;
   const total = subtotal - discount + shipping;
@@ -188,7 +189,15 @@ export default function CheckoutPage() {
     setError("");
     setLoading(true);
     try {
-      const order = await createOrder({ customerName, customerEmail, address, paymentMethod: "Razorpay", items });
+      // Backend order items are one unit each — expand quantity>1 lines into
+      // repeated entries rather than changing the order API's item shape.
+      const expandedItems = items.flatMap((item) =>
+        Array.from({ length: item.quantity ?? 1 }, () => {
+          const { quantity: _quantity, ...rest } = item;
+          return rest;
+        })
+      );
+      const order = await createOrder({ customerName, customerEmail, address, paymentMethod: "Razorpay", items: expandedItems });
       setPendingOrderId(order.id);
       setShowModal(true);
     } catch (err) {
@@ -309,8 +318,8 @@ export default function CheckoutPage() {
                     <img src={item.imageUrl} alt="" className="h-12 w-10 rounded-lg object-cover flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-primary truncate">{item.outfitName}</p>
-                      <p className="text-xs text-text/60">{item.celebrityName} · Size {item.size}</p>
-                      <p className="text-xs font-medium text-primary">₹{item.price.toLocaleString("en-IN")}</p>
+                      <p className="text-xs text-text/60">{item.celebrityName} · Size {item.size} · Qty {item.quantity ?? 1}</p>
+                      <p className="text-xs font-medium text-primary">₹{(item.price * (item.quantity ?? 1)).toLocaleString("en-IN")}</p>
                     </div>
                   </div>
                 ))}

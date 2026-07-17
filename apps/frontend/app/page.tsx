@@ -1,12 +1,14 @@
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { Hero } from "@/components/hero";
 import { CelebrityCard } from "@/components/celebrity-card";
 import { OutfitCard } from "@/components/outfit-card";
 import { RecommendationCarousel } from "@/components/recommendation-carousel";
 import { OccasionSuggestions } from "@/components/occasion-suggestions";
-import { getCelebrities, getOutfits, getTrending, getNewArrivals, getBlogPosts } from "@/lib/api";
+import { getCelebrities, getOutfits, getTrending, getNewArrivals, getBlogPosts, getCollections } from "@/lib/api";
 import type { Outfit } from "@/lib/api";
 import Link from "next/link";
+import { LocalImage } from "@/components/local-image";
 
 // Static showcase reviews to complement live review data
 const SHOWCASE_REVIEWS = [
@@ -37,12 +39,13 @@ const SHOWCASE_REVIEWS = [
 ];
 
 export default async function HomePage() {
-  const [celebrities, outfits, trending, newArrivals, blogResult] = await Promise.all([
+  const [celebrities, outfits, trending, newArrivals, blogResult, collections] = await Promise.all([
     getCelebrities(),
     getOutfits(),
     getTrending(10),
     getNewArrivals(10),
     getBlogPosts({ limit: 3 }).catch(() => ({ posts: [], total: 0 })),
+    getCollections(),
   ]);
 
   const featured = celebrities.slice(0, 6);
@@ -50,9 +53,6 @@ export default async function HomePage() {
 
   // Best sellers — top priced outfits (highest investment pieces)
   const bestSellers = [...outfits].sort((a, b) => b.price - a.price).slice(0, 6);
-
-  // Luxury collection — outfits ≥ ₹28,000
-  const luxuryOutfits = outfits.filter((o) => o.price >= 28000).slice(0, 6);
 
   const outfitMap = new Map(outfits.map((o) => [o.id, o]));
   const trendingOutfits = trending.items
@@ -121,21 +121,37 @@ export default async function HomePage() {
         viewAllHref="/search"
       />
 
-      {/* Luxury Collection */}
-      {luxuryOutfits.length > 0 && (
+      {/* Shop by Collection */}
+      {collections.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between gap-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.36em] text-accent">Luxury Collection</p>
-              <h2 className="mt-3 font-serif text-4xl text-primary">Statement pieces for grand occasions</h2>
+              <p className="text-xs uppercase tracking-[0.36em] text-accent">Curated Edits</p>
+              <h2 className="mt-3 font-serif text-4xl text-primary">Shop by Collection</h2>
             </div>
-            <Link href="/search?sortBy=price_desc" className="hidden shrink-0 text-sm font-medium text-accent underline-offset-4 hover:underline md:block">
-              View luxury looks →
+            <Link href="/collections" className="hidden shrink-0 text-sm font-medium text-accent underline-offset-4 hover:underline md:block">
+              View all collections →
             </Link>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {luxuryOutfits.map((outfit) => (
-              <OutfitCard key={outfit.id} outfit={outfit} />
+            {collections.map((collection) => (
+              <Link
+                key={collection.id}
+                href={`/collections/${collection.id}`}
+                className="group overflow-hidden rounded-[28px] border border-black/6 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-luxe"
+              >
+                <div className="aspect-[4/3] overflow-hidden bg-secondary/20">
+                  <LocalImage
+                    src={collection.coverImageUrl}
+                    alt={collection.name}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="font-serif text-2xl text-primary">{collection.name}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm text-text/70">{collection.description}</p>
+                </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -238,6 +254,7 @@ export default async function HomePage() {
       )}
 
       <OccasionSuggestions />
+      <Footer />
     </main>
   );
 }

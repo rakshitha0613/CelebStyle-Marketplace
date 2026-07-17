@@ -16,6 +16,13 @@ const BLOG_INCLUDE = {
   author: { select: { name: true as const, profile: { select: { avatarUrl: true as const } } } },
 };
 
+// The BlogPost table has no dedicated category column — by convention the
+// first tag doubles as the display category (see admin-demo-seed.ts, which
+// always seeds it as tags[0]).
+function deriveCategory(tags: string[]): string | null {
+  return tags[0] ?? null;
+}
+
 // GET /api/blog
 blogRouter.get("/",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -69,7 +76,8 @@ blogRouter.get("/",
         return res.status(200).json({ data: { posts: shaped, total, offset, limit } });
       }
 
-      return res.status(200).json({ data: { posts, total, offset, limit } });
+      const shapedPosts = (posts as Array<{ tags: string[] }>).map((p) => ({ ...p, category: deriveCategory(p.tags) }));
+      return res.status(200).json({ data: { posts: shapedPosts, total, offset, limit } });
     } catch (err) { next(err); }
   }
 );
@@ -79,14 +87,30 @@ blogRouter.get("/:slug",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const slug = req.params.slug as string;
-      const post = await prisma.blogPost.findFirst({
-        where: { OR: [{ slug }, { id: slug }], isPublished: true },
-        include: BLOG_INCLUDE,
-      });
-      if (!post) return res.status(404).json({ error: "Post not found" });
 
-      await prisma.blogPost.update({ where: { id: post.id }, data: { viewCount: { increment: 1 } } });
-      return res.status(200).json({ data: { ...post, viewCount: post.viewCount + 1 } });
+      try {
+        const post = await prisma.blogPost.findFirst({
+          where: { OR: [{ slug }, { id: slug }], isPublished: true },
+          include: BLOG_INCLUDE,
+        });
+        if (post) {
+          await prisma.blogPost.update({ where: { id: post.id }, data: { viewCount: { increment: 1 } } });
+          return res.status(200).json({ data: { ...post, viewCount: post.viewCount + 1, category: deriveCategory(post.tags) } });
+        }
+      } catch { /* DB unavailable — fall through to demo data */ }
+
+      // Fallback to demo data — the DB may be empty (no seeded blog posts),
+      // in which case /api/blog lists demo posts but this lookup used to 404
+      // on every one of them, breaking every "read more" link on the blog page.
+      const demoPost = DEMO_BLOG_POSTS.find((p) => p.slug === slug || p.id === slug);
+      if (!demoPost) return res.status(404).json({ error: "Post not found" });
+      return res.status(200).json({
+        data: {
+          ...demoPost,
+          viewCount: demoPost.viewCount + 1,
+          author: { name: demoPost.authorName, profile: { avatarUrl: demoPost.authorAvatar } },
+        },
+      });
     } catch (err) { next(err); }
   }
 );

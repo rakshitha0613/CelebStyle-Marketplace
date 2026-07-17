@@ -8,6 +8,7 @@
 import { PrismaClient } from "@prisma/client";
 import type { Industry, Occasion } from "@prisma/client";
 import { celebrityRecords, outfitRecords } from "../data/catalogue.js";
+import { COLLECTION_DEFINITIONS, outfitIdsForCollection } from "../data/collections.js";
 import { hashPassword } from "../auth/password.service.js";
 
 // ── Enum mapping ───────────────────────────────────────────────────────────────
@@ -335,6 +336,50 @@ export async function seedStorefronts(
   }
 }
 
+export async function seedCollections(
+  client: PrismaClient,
+  productMap: Map<string, string>
+): Promise<void> {
+  for (let i = 0; i < COLLECTION_DEFINITIONS.length; i++) {
+    const def = COLLECTION_DEFINITIONS[i];
+    const outfitIds = outfitIdsForCollection(def);
+
+    const collection = await client.collection.upsert({
+      where: { slug: def.slug },
+      update: {
+        name: def.name,
+        description: def.description,
+        coverImageUrl: def.coverImageUrl,
+        isPublished: true,
+        sortOrder: i,
+      },
+      create: {
+        slug: def.slug,
+        name: def.name,
+        description: def.description,
+        coverImageUrl: def.coverImageUrl,
+        isPublished: true,
+        sortOrder: i,
+      },
+    });
+
+    // Membership: delete then recreate — order matters, idempotency guaranteed
+    await client.collectionProduct.deleteMany({ where: { collectionId: collection.id } });
+    const productIds = outfitIds
+      .map((id) => productMap.get(id))
+      .filter((id): id is string => Boolean(id));
+    if (productIds.length > 0) {
+      await client.collectionProduct.createMany({
+        data: productIds.map((productId, idx) => ({
+          collectionId: collection.id,
+          productId,
+          sortOrder: idx,
+        })),
+      });
+    }
+  }
+}
+
 // ── Admin user seed ────────────────────────────────────────────────────────────
 
 export async function seedAdminUser(client: PrismaClient): Promise<void> {
@@ -368,5 +413,6 @@ export async function runSeed(client: PrismaClient): Promise<void> {
   const celebMap = await seedCelebrities(client);
   const productMap = await seedProducts(client, celebMap, mfrMap);
   await seedStorefronts(client, celebMap, productMap);
+  await seedCollections(client, productMap);
   await seedAdminUser(client);
 }

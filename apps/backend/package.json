@@ -19,6 +19,7 @@
     "test:product": "tsx src/__tests__/product.repository.test.ts",
     "test:order": "tsx src/__tests__/order.repository.test.ts",
     "test:storefront": "tsx src/__tests__/storefront.repository.test.ts",
+    "test:collection": "tsx src/__tests__/collection.repository.test.ts",
     "test:registration": "tsx --env-file=.env src/__tests__/auth.registration.test.ts",
     "test:login": "tsx --env-file=.env src/__tests__/auth.login.test.ts",
     "test:email-verification": "tsx --env-file=.env src/__tests__/auth.email.verification.test.ts",

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AddToCartButton } from "@/components/add-to-cart-button";
-import { getStoredToken, addToWishlist } from "@/lib/api";
+import { getStoredToken, addToWishlist, isUnauthorizedError } from "@/lib/api";
 import { LocalImage } from "@/components/local-image";
 
 // ── Recently-Viewed tracking ──────────────────────────────────────────────────
@@ -96,7 +96,14 @@ function WishlistButton({ outfitId }: { outfitId: string }) {
     try {
       await addToWishlist(outfitId);
       setState("saved");
-    } catch {
+    } catch (err) {
+      // A stale/expired session (e.g. after a server-side reset) surfaces as
+      // 401 — retrying with the same bad token would never succeed, so send
+      // the user to log in again instead of showing a dead-end "Try again".
+      if (isUnauthorizedError(err)) {
+        router.push(`/login?redirect=/outfits/${outfitId}`);
+        return;
+      }
       setState("error");
       setTimeout(() => setState("idle"), 2000);
     }

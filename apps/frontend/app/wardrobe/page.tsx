@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
-import { getWishlist, getStoredToken } from "@/lib/api";
+import { getWishlist, getStoredToken, removeFromWishlist, isUnauthorizedError } from "@/lib/api";
 import type { WishlistItem } from "@/lib/api";
 import { LocalImage } from "@/components/local-image";
 
@@ -172,6 +172,7 @@ export default function WardrobePage() {
   const [tryOnHistory, setTryOnHistory] = useState<TryOnHistoryItem[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [removingWishlistId, setRemovingWishlistId] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -194,7 +195,12 @@ export default function WardrobePage() {
       setWishlistLoading(true);
       getWishlist()
         .then(setWishlist)
-        .catch(() => {})
+        .catch((err) => {
+          // A stale/expired session (e.g. after a server-side reset) should
+          // fall back to the existing "sign in to see your wishlist" state
+          // rather than silently rendering as an empty wishlist.
+          if (isUnauthorizedError(err)) setIsLoggedIn(false);
+        })
         .finally(() => setWishlistLoading(false));
     }
   }, []);
@@ -208,6 +214,19 @@ export default function WardrobePage() {
   const clearRecentlyViewed = () => {
     setRecentlyViewed([]);
     try { localStorage.removeItem(RV_KEY); } catch {}
+  };
+
+  const handleRemoveWishlistItem = async (itemId: string) => {
+    setRemovingWishlistId(itemId);
+    try {
+      await removeFromWishlist(itemId);
+      setWishlist((prev) => prev.filter((i) => i.id !== itemId));
+    } catch (err) {
+      if (isUnauthorizedError(err)) setIsLoggedIn(false);
+      /* otherwise leave item in place on failure */
+    } finally {
+      setRemovingWishlistId(null);
+    }
   };
 
   return (
@@ -253,7 +272,7 @@ export default function WardrobePage() {
           <div>
             {recentlyViewed.length === 0 ? (
               <EmptyState
-                icon="👗"
+                image="/assets/banners/home-hero.webp"
                 title="No recently viewed outfits"
                 message="Browse outfits and they will automatically appear here."
                 cta={{ label: "Browse Looks", href: "/search" }}
@@ -281,7 +300,7 @@ export default function WardrobePage() {
           <div>
             {!isLoggedIn ? (
               <EmptyState
-                icon="♥"
+                image="/assets/banners/red-carpet-banner.webp"
                 title="Sign in to see your wishlist"
                 message="Save outfits while browsing and find them here."
                 cta={{ label: "Sign In", href: "/login?redirect=/wardrobe" }}
@@ -292,7 +311,7 @@ export default function WardrobePage() {
               </div>
             ) : wishlist.length === 0 ? (
               <EmptyState
-                icon="♡"
+                image="/assets/banners/red-carpet-banner.webp"
                 title="Your wishlist is empty"
                 message='Press "Save to Wishlist" on any outfit to add it here.'
                 cta={{ label: "Discover Outfits", href: "/search" }}
@@ -329,6 +348,13 @@ export default function WardrobePage() {
                           Try On
                         </Link>
                       </div>
+                      <button
+                        onClick={() => handleRemoveWishlistItem(item.id)}
+                        disabled={removingWishlistId === item.id}
+                        className="mt-2 w-full rounded-full border border-black/10 py-1.5 text-xs font-medium text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {removingWishlistId === item.id ? "Removing…" : "Remove"}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -342,7 +368,7 @@ export default function WardrobePage() {
           <div>
             {tryOnHistory.length === 0 ? (
               <EmptyState
-                icon="◎"
+                image="/assets/banners/luxury-banner.webp"
                 title="No try-on history yet"
                 message="When you try on outfits, your results will be saved here automatically."
                 cta={{ label: "Try On Now", href: "/try-on" }}
@@ -367,10 +393,22 @@ export default function WardrobePage() {
   );
 }
 
-function EmptyState({ icon, title, message, cta }: { icon: string; title: string; message: string; cta: { label: string; href: string } }) {
+function EmptyState({
+  image,
+  title,
+  message,
+  cta,
+}: {
+  image: string;
+  title: string;
+  message: string;
+  cta: { label: string; href: string };
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <p className="text-5xl mb-4">{icon}</p>
+      <div className="mb-6 h-40 w-40 overflow-hidden rounded-[24px]">
+        <LocalImage src={image} alt="" className="h-full w-full object-cover" />
+      </div>
       <p className="font-serif text-2xl text-primary">{title}</p>
       <p className="mt-2 max-w-xs text-sm text-text/50">{message}</p>
       <Link

@@ -184,7 +184,7 @@ function PostCard({
           onClick={handleShare}
           className="flex items-center gap-1.5 text-sm text-text/60 hover:text-primary transition"
         >
-          ↗ Share
+          ↗ Share{post.shares ? ` · ${post.shares}` : ""}
         </button>
         {currentUserId && !reported && (
           <button
@@ -264,8 +264,22 @@ export default function CommunityPage() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
 
-  const user = getCurrentUser();
-  const isLoggedIn = !!getStoredToken();
+  // Auth state must not be read directly in the render body: getCurrentUser()/
+  // getStoredToken() return null/false during SSR (no localStorage on the
+  // server) but can return a real user on the client's very first render,
+  // which is a hydration mismatch for every isLoggedIn-gated element below
+  // (the "+ Share Look" button, "Log in to post" link, and the post-card
+  // Delete button). Deferring to useEffect — same pattern as components/nav-auth.tsx —
+  // keeps the server render and the client's first render identical; the
+  // real auth UI appears in a normal post-mount update instead.
+  const [auth, setAuth] = useState<{ user: ReturnType<typeof getCurrentUser>; isLoggedIn: boolean } | "loading">("loading");
+
+  useEffect(() => {
+    setAuth({ user: getCurrentUser(), isLoggedIn: !!getStoredToken() });
+  }, []);
+
+  const user = auth === "loading" ? null : auth.user;
+  const isLoggedIn = auth !== "loading" && auth.isLoggedIn;
 
   const loadPosts = useCallback(async (reset = false) => {
     setLoading(true);

@@ -1162,7 +1162,7 @@ model CouponUsage {
 
 model Wishlist {
   id        String         @id @default(cuid())
-  userId    String
+  userId    String         @unique
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String         @default("My Wishlist")
   isDefault Boolean        @default(true)

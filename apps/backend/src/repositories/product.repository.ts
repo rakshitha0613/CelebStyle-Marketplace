@@ -128,9 +128,12 @@ export const productRepository = {
     return rows.map(toApi);
   },
 
-  async findBySlug(slug: string): Promise<OutfitEntry | null> {
+  // Accepts either the human-readable slug (used throughout the frontend,
+  // e.g. "look-shah-rukh-khan-red-carpet") or the internal Prisma cuid
+  // (e.g. returned by CommunityPost.outfitId) — callers may have either.
+  async findBySlug(idOrSlug: string): Promise<OutfitEntry | null> {
     const row = await prisma.product.findFirst({
-      where:   { slug, ...ACTIVE },
+      where:   { OR: [{ slug: idOrSlug }, { id: idOrSlug }], ...ACTIVE },
       include: INCLUDE,
     });
     return row ? toApi(row) : null;

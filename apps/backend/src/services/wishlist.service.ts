@@ -79,13 +79,25 @@ const ITEM_SELECT = {
 };
 
 async function getOrCreateWishlist(userId: string): Promise<{ id: string }> {
-  // findFirst — userId has @unique in schema but is not in WhereUniqueInput until prisma generate re-runs
-  const existing = await prisma.wishlist.findFirst({
-    where: { userId },
-    select: { id: true },
-  });
-  if (existing) return existing;
-  return prisma.wishlist.create({ data: { userId }, select: { id: true } });
+  // Atomic upsert on the unique userId — avoids the find-then-create race
+  // that used to let two concurrent "add to wishlist" requests create two
+  // Wishlist rows for the same user (see migration 20260716120000).
+  try {
+    return await prisma.wishlist.upsert({
+      where: { userId },
+      create: { userId },
+      update: {},
+      select: { id: true },
+    });
+  } catch {
+    // Falls back to the pre-fix lookup on environments where migration
+    // 20260716120000 (adds the unique index) hasn't been applied to the
+    // running database yet — upsert's ON CONFLICT target requires the
+    // constraint to exist. Safe to remove once every environment is migrated.
+    const existing = await prisma.wishlist.findFirst({ where: { userId }, select: { id: true } });
+    if (existing) return existing;
+    return prisma.wishlist.create({ data: { userId }, select: { id: true } });
+  }
 }
 
 export const wishlistService = {

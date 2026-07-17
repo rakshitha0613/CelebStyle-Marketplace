@@ -25,38 +25,71 @@ export type OutfitRecord = {
 };
 
 import celebritySeed from "./celebs-seed.json" with { type: "json" };
+import { existsSync } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 type SeedCelebrity = {
   id: string;
   name: string;
   industry: string;
   bio: string;
-  profileImage: string;
-  bannerImage: string;
   styleTags: string[];
 };
 
-// All images are locally stored under /public/assets/.
-// Run `npm run generate-assets` (with internet) to download AI photos,
-// or `npm run generate-placeholders` for instant local gradients.
-const imgs = (id: string) => ({
-  imageUrl: `/assets/outfits/${id}/hero.png`,
-  images: [
-    `/assets/outfits/${id}/hero.png`,
-    `/assets/outfits/${id}/detail1.jpg`,
-    `/assets/outfits/${id}/detail2.jpg`,
-    `/assets/outfits/${id}/fabric.jpg`,
-    `/assets/outfits/${id}/thumb.jpg`,
-  ],
-});
+// ── Image-pipeline repair (Phase 1 → Phase 2) ───────────────────────────────────
+// Originally `imgs()` hardcoded every path to .webp, produced by
+// scripts/asset-manager.mjs. That assumption didn't hold: the conversion
+// pipeline only ever ran for a subset of outfits — the rest only have the
+// original .png/.jpg exports. Phase 1 fixed this for the first 10 pilot
+// outfits; Phase 2 extends the exact same resolver to the full catalog.
+//
+// `resolveExt` checks the real folder on disk (backend and frontend/public
+// share one filesystem in this monorepo) and picks the first format that
+// actually exists, preferring webp > png > jpg. If none exist, it falls back
+// to the legacy .webp path so `LocalImage` degrades to its existing
+// "Coming Soon" placeholder instead of a broken image.
+const OUTFITS_ASSET_DIR = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../frontend/public/assets/outfits"
+);
+
+const EXT_PRIORITY = ["webp", "png", "jpg"] as const;
+
+function resolveExt(id: string, base: string): string {
+  for (const ext of EXT_PRIORITY) {
+    if (existsSync(path.join(OUTFITS_ASSET_DIR, id, `${base}.${ext}`))) {
+      return ext;
+    }
+  }
+  return "webp"; // nothing found — keep legacy path, LocalImage will show a placeholder
+}
+
+const imgsResolved = (id: string) => {
+  const hero    = resolveExt(id, "hero");
+  const detail1 = resolveExt(id, "detail1");
+  const detail2 = resolveExt(id, "detail2");
+  const fabric  = resolveExt(id, "fabric");
+  const thumb   = resolveExt(id, "thumb");
+  return {
+    imageUrl: `/assets/outfits/${id}/hero.${hero}`,
+    images: [
+      `/assets/outfits/${id}/hero.${hero}`,
+      `/assets/outfits/${id}/detail1.${detail1}`,
+      `/assets/outfits/${id}/detail2.${detail2}`,
+      `/assets/outfits/${id}/fabric.${fabric}`,
+      `/assets/outfits/${id}/thumb.${thumb}`,
+    ],
+  };
+};
 
 export const celebrityRecords: CelebrityRecord[] = (celebritySeed.records as SeedCelebrity[]).map((entry) => ({
   id: entry.id,
   name: entry.name,
   industry: entry.industry,
   bio: entry.bio,
-  profileImage: `/assets/celebrities/${entry.id}/portrait.jpg`,
-  bannerImage: `/assets/celebrities/${entry.id}/banner.jpg`,
+  profileImage: `/assets/celebrities/${entry.id}/portrait.webp`,
+  bannerImage: `/assets/celebrities/${entry.id}/banner.webp`,
   styleTags: entry.styleTags,
 }));
 
@@ -67,7 +100,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-shah-rukh-khan-red-carpet",
-    ...imgs("look-shah-rukh-khan-red-carpet"),
+    ...imgsResolved("look-shah-rukh-khan-red-carpet"),
     celebrityId: "shah-rukh-khan",
     movieName: "Pathaan",
     occasion: "Party",
@@ -81,7 +114,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-shah-rukh-khan-jawan",
-    ...imgs("look-shah-rukh-khan-jawan"),
+    ...imgsResolved("look-shah-rukh-khan-jawan"),
     celebrityId: "shah-rukh-khan",
     movieName: "Jawan",
     occasion: "Festival",
@@ -95,7 +128,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-ranveer-singh-gully-boy",
-    ...imgs("look-ranveer-singh-gully-boy"),
+    ...imgsResolved("look-ranveer-singh-gully-boy"),
     celebrityId: "ranveer-singh",
     movieName: "Gully Boy",
     occasion: "Festival",
@@ -109,7 +142,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-hrithik-roshan-war",
-    ...imgs("look-hrithik-roshan-war"),
+    ...imgsResolved("look-hrithik-roshan-war"),
     celebrityId: "hrithik-roshan",
     movieName: "War",
     occasion: "Party",
@@ -123,7 +156,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-akshay-kumar-kesari",
-    ...imgs("look-akshay-kumar-kesari"),
+    ...imgsResolved("look-akshay-kumar-kesari"),
     celebrityId: "akshay-kumar",
     movieName: "Kesari",
     occasion: "Festival",
@@ -137,7 +170,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-salman-khan-bajrangi",
-    ...imgs("look-salman-khan-bajrangi"),
+    ...imgsResolved("look-salman-khan-bajrangi"),
     celebrityId: "salman-khan",
     movieName: "Bajrangi Bhaijaan",
     occasion: "Festival",
@@ -151,7 +184,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-ranbir-kapoor-animal",
-    ...imgs("look-ranbir-kapoor-animal"),
+    ...imgsResolved("look-ranbir-kapoor-animal"),
     celebrityId: "ranbir-kapoor",
     movieName: "Animal",
     occasion: "Party",
@@ -165,7 +198,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-vicky-kaushal-uri",
-    ...imgs("look-vicky-kaushal-uri"),
+    ...imgsResolved("look-vicky-kaushal-uri"),
     celebrityId: "vicky-kaushal",
     movieName: "Uri: The Surgical Strike",
     occasion: "Festival",
@@ -179,7 +212,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-amitabh-bachchan-pink",
-    ...imgs("look-amitabh-bachchan-pink"),
+    ...imgsResolved("look-amitabh-bachchan-pink"),
     celebrityId: "amitabh-bachchan",
     movieName: "Pink",
     occasion: "Party",
@@ -197,7 +230,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-deepika-padukone-wedding",
-    ...imgs("look-deepika-padukone-wedding"),
+    ...imgsResolved("look-deepika-padukone-wedding"),
     celebrityId: "deepika-padukone",
     movieName: "Gehraiyaan Press Tour",
     occasion: "Wedding",
@@ -211,7 +244,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-deepika-padukone-pathaan",
-    ...imgs("look-deepika-padukone-pathaan"),
+    ...imgsResolved("look-deepika-padukone-pathaan"),
     celebrityId: "deepika-padukone",
     movieName: "Pathaan",
     occasion: "Party",
@@ -225,7 +258,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-priyanka-chopra-party",
-    ...imgs("look-priyanka-chopra-party"),
+    ...imgsResolved("look-priyanka-chopra-party"),
     celebrityId: "priyanka-chopra",
     movieName: "Met Gala",
     occasion: "Party",
@@ -239,7 +272,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-alia-bhatt-gangubai",
-    ...imgs("look-alia-bhatt-gangubai"),
+    ...imgsResolved("look-alia-bhatt-gangubai"),
     celebrityId: "alia-bhatt",
     movieName: "Gangubai Kathiawadi",
     occasion: "Festival",
@@ -253,7 +286,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-katrina-kaif-tiger",
-    ...imgs("look-katrina-kaif-tiger"),
+    ...imgsResolved("look-katrina-kaif-tiger"),
     celebrityId: "katrina-kaif",
     movieName: "Tiger 3",
     occasion: "Party",
@@ -267,7 +300,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-kareena-kapoor-k3g",
-    ...imgs("look-kareena-kapoor-k3g"),
+    ...imgsResolved("look-kareena-kapoor-k3g"),
     celebrityId: "kareena-kapoor",
     movieName: "Kabhi Khushi Kabhie Gham",
     occasion: "Party",
@@ -281,7 +314,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-aishwarya-rai-devdas",
-    ...imgs("look-aishwarya-rai-devdas"),
+    ...imgsResolved("look-aishwarya-rai-devdas"),
     celebrityId: "aishwarya-rai",
     movieName: "Devdas",
     occasion: "Wedding",
@@ -295,7 +328,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-anushka-sharma-nh10",
-    ...imgs("look-anushka-sharma-nh10"),
+    ...imgsResolved("look-anushka-sharma-nh10"),
     celebrityId: "anushka-sharma",
     movieName: "NH10",
     occasion: "Festival",
@@ -309,7 +342,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-kriti-sanon-mimi",
-    ...imgs("look-kriti-sanon-mimi"),
+    ...imgsResolved("look-kriti-sanon-mimi"),
     celebrityId: "kriti-sanon",
     movieName: "Mimi",
     occasion: "Festival",
@@ -323,7 +356,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-kiara-advani-shershaah",
-    ...imgs("look-kiara-advani-shershaah"),
+    ...imgsResolved("look-kiara-advani-shershaah"),
     celebrityId: "kiara-advani",
     movieName: "Shershaah",
     occasion: "Party",
@@ -337,7 +370,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-taapsee-pannu-thappad",
-    ...imgs("look-taapsee-pannu-thappad"),
+    ...imgsResolved("look-taapsee-pannu-thappad"),
     celebrityId: "taapsee-pannu",
     movieName: "Thappad",
     occasion: "Festival",
@@ -351,7 +384,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-madhuri-dixit-devdas",
-    ...imgs("look-madhuri-dixit-devdas"),
+    ...imgsResolved("look-madhuri-dixit-devdas"),
     celebrityId: "madhuri-dixit",
     movieName: "Devdas",
     occasion: "Wedding",
@@ -365,7 +398,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-kajol-ddlj",
-    ...imgs("look-kajol-ddlj"),
+    ...imgsResolved("look-kajol-ddlj"),
     celebrityId: "kajol",
     movieName: "Dilwale Dulhania Le Jayenge",
     occasion: "Festival",
@@ -379,7 +412,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-sonam-kapoor-neerja",
-    ...imgs("look-sonam-kapoor-neerja"),
+    ...imgsResolved("look-sonam-kapoor-neerja"),
     celebrityId: "sonam-kapoor",
     movieName: "Neerja",
     occasion: "Party",
@@ -393,7 +426,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-kangana-ranaut-queen",
-    ...imgs("look-kangana-ranaut-queen"),
+    ...imgsResolved("look-kangana-ranaut-queen"),
     celebrityId: "kangana-ranaut",
     movieName: "Queen",
     occasion: "Festival",
@@ -411,7 +444,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-allu-arjun-pushpa",
-    ...imgs("look-allu-arjun-pushpa"),
+    ...imgsResolved("look-allu-arjun-pushpa"),
     celebrityId: "allu-arjun",
     movieName: "Pushpa: The Rise",
     occasion: "Festival",
@@ -425,7 +458,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-allu-arjun-pushpa2",
-    ...imgs("look-allu-arjun-pushpa2"),
+    ...imgsResolved("look-allu-arjun-pushpa2"),
     celebrityId: "allu-arjun",
     movieName: "Pushpa 2: The Rule",
     occasion: "Party",
@@ -439,7 +472,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-prabhas-bahubali",
-    ...imgs("look-prabhas-bahubali"),
+    ...imgsResolved("look-prabhas-bahubali"),
     celebrityId: "prabhas",
     movieName: "Baahubali",
     occasion: "Festival",
@@ -453,7 +486,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-rashmika-pushpa",
-    ...imgs("look-rashmika-pushpa"),
+    ...imgsResolved("look-rashmika-pushpa"),
     celebrityId: "rashmika-mandanna",
     movieName: "Pushpa: The Rise",
     occasion: "Festival",
@@ -467,7 +500,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-vijay-deverakonda-arjun",
-    ...imgs("look-vijay-deverakonda-arjun"),
+    ...imgsResolved("look-vijay-deverakonda-arjun"),
     celebrityId: "vijay-deverakonda",
     movieName: "Arjun Reddy",
     occasion: "Party",
@@ -481,7 +514,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-samantha-mahanati",
-    ...imgs("look-samantha-mahanati"),
+    ...imgsResolved("look-samantha-mahanati"),
     celebrityId: "samantha",
     movieName: "Mahanati",
     occasion: "Wedding",
@@ -495,7 +528,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-kajal-aggarwal-magadheera",
-    ...imgs("look-kajal-aggarwal-magadheera"),
+    ...imgsResolved("look-kajal-aggarwal-magadheera"),
     celebrityId: "kajal-aggarwal",
     movieName: "Magadheera",
     occasion: "Party",
@@ -509,7 +542,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-tamannaah-baahubali",
-    ...imgs("look-tamannaah-baahubali"),
+    ...imgsResolved("look-tamannaah-baahubali"),
     celebrityId: "tamannaah-bhatia",
     movieName: "Baahubali: The Beginning",
     occasion: "Festival",
@@ -523,7 +556,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-anushka-shetty-baahubali",
-    ...imgs("look-anushka-shetty-baahubali"),
+    ...imgsResolved("look-anushka-shetty-baahubali"),
     celebrityId: "anushka-shetty",
     movieName: "Baahubali 2: The Conclusion",
     occasion: "Festival",
@@ -541,7 +574,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-rajinikanth-classic",
-    ...imgs("look-rajinikanth-classic"),
+    ...imgsResolved("look-rajinikanth-classic"),
     celebrityId: "rajinikanth",
     movieName: "Kabali",
     occasion: "Festival",
@@ -555,7 +588,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-vikram-enthiran",
-    ...imgs("look-vikram-enthiran"),
+    ...imgsResolved("look-vikram-enthiran"),
     celebrityId: "vikram",
     movieName: "I (Iruvar)",
     occasion: "Party",
@@ -569,7 +602,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-nayanthara-mersal",
-    ...imgs("look-nayanthara-mersal"),
+    ...imgsResolved("look-nayanthara-mersal"),
     celebrityId: "nayanthara",
     movieName: "Mersal",
     occasion: "Wedding",
@@ -583,7 +616,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-vijay-sethupathi-96",
-    ...imgs("look-vijay-sethupathi-96"),
+    ...imgsResolved("look-vijay-sethupathi-96"),
     celebrityId: "vijay-sethupathi",
     movieName: "96",
     occasion: "Festival",
@@ -601,7 +634,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-dulquer-salmaan-formal",
-    ...imgs("look-dulquer-salmaan-formal"),
+    ...imgsResolved("look-dulquer-salmaan-formal"),
     celebrityId: "dulquer-salmaan",
     movieName: "Maniyarayile Ashokan",
     occasion: "Party",
@@ -615,7 +648,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-fahadh-malik",
-    ...imgs("look-fahadh-malik"),
+    ...imgsResolved("look-fahadh-malik"),
     celebrityId: "fahadh-faasil",
     movieName: "Malik",
     occasion: "Festival",
@@ -629,7 +662,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-mammootty-bramayugam",
-    ...imgs("look-mammootty-bramayugam"),
+    ...imgsResolved("look-mammootty-bramayugam"),
     celebrityId: "mammootty",
     movieName: "Bramayugam",
     occasion: "Festival",
@@ -643,7 +676,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-mohanlal-drishyam",
-    ...imgs("look-mohanlal-drishyam"),
+    ...imgsResolved("look-mohanlal-drishyam"),
     celebrityId: "mohanlal",
     movieName: "Drishyam 2",
     occasion: "Festival",
@@ -661,7 +694,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-zendaya-red-carpet",
-    ...imgs("look-zendaya-red-carpet"),
+    ...imgsResolved("look-zendaya-red-carpet"),
     celebrityId: "zendaya",
     movieName: "Dune: Part Two Premiere",
     occasion: "Party",
@@ -675,7 +708,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-margot-robbie-barbie",
-    ...imgs("look-margot-robbie-barbie"),
+    ...imgsResolved("look-margot-robbie-barbie"),
     celebrityId: "margot-robbie",
     movieName: "Barbie",
     occasion: "Party",
@@ -689,7 +722,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-pedro-pascal-last-of-us",
-    ...imgs("look-pedro-pascal-last-of-us"),
+    ...imgsResolved("look-pedro-pascal-last-of-us"),
     celebrityId: "pedro-pascal",
     movieName: "The Last of Us",
     occasion: "Festival",
@@ -703,7 +736,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-emma-stone-la-la-land",
-    ...imgs("look-emma-stone-la-la-land"),
+    ...imgsResolved("look-emma-stone-la-la-land"),
     celebrityId: "emma-stone",
     movieName: "La La Land",
     occasion: "Party",
@@ -717,7 +750,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-anne-hathaway-prada",
-    ...imgs("look-anne-hathaway-prada"),
+    ...imgsResolved("look-anne-hathaway-prada"),
     celebrityId: "anne-hathaway",
     movieName: "The Devil Wears Prada",
     occasion: "Party",
@@ -731,7 +764,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-cate-blanchett-tar",
-    ...imgs("look-cate-blanchett-tar"),
+    ...imgsResolved("look-cate-blanchett-tar"),
     celebrityId: "cate-blanchett",
     movieName: "Tár",
     occasion: "Party",
@@ -749,7 +782,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-yash-kgf",
-    ...imgs("look-yash-kgf"),
+    ...imgsResolved("look-yash-kgf"),
     celebrityId: "yash-kannada",
     movieName: "KGF: Chapter 2",
     occasion: "Festival",
@@ -763,7 +796,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-yash-kgf-formal",
-    ...imgs("look-yash-kgf-formal"),
+    ...imgsResolved("look-yash-kgf-formal"),
     celebrityId: "yash-kannada",
     movieName: "KGF: Chapter 2",
     occasion: "Party",
@@ -777,7 +810,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-sudeep-vikrant-rona",
-    ...imgs("look-sudeep-vikrant-rona"),
+    ...imgsResolved("look-sudeep-vikrant-rona"),
     celebrityId: "sudeep-sandalwood",
     movieName: "Vikrant Rona",
     occasion: "Festival",
@@ -791,7 +824,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-rishab-shetty-kantara",
-    ...imgs("look-rishab-shetty-kantara"),
+    ...imgsResolved("look-rishab-shetty-kantara"),
     celebrityId: "rishab-shetty",
     movieName: "Kantara",
     occasion: "Festival",
@@ -805,7 +838,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-darshan-yajamana",
-    ...imgs("look-darshan-yajamana"),
+    ...imgsResolved("look-darshan-yajamana"),
     celebrityId: "darshan-thoogudeepa",
     movieName: "Yajamana",
     occasion: "Wedding",
@@ -819,7 +852,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-srinidhi-kgf",
-    ...imgs("look-srinidhi-kgf"),
+    ...imgsResolved("look-srinidhi-kgf"),
     celebrityId: "srinidhi-shetty",
     movieName: "KGF: Chapter 1",
     occasion: "Party",
@@ -833,7 +866,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-rachita-ram-raajakumara",
-    ...imgs("look-rachita-ram-raajakumara"),
+    ...imgsResolved("look-rachita-ram-raajakumara"),
     celebrityId: "rachita-ram",
     movieName: "Raajakumara",
     occasion: "Wedding",
@@ -847,7 +880,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-puneeth-yuvarathnaa",
-    ...imgs("look-puneeth-yuvarathnaa"),
+    ...imgsResolved("look-puneeth-yuvarathnaa"),
     celebrityId: "puneeth-rajkumar",
     movieName: "Yuvarathnaa",
     occasion: "Festival",
@@ -861,7 +894,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-rakshit-777-charlie",
-    ...imgs("look-rakshit-777-charlie"),
+    ...imgsResolved("look-rakshit-777-charlie"),
     celebrityId: "rakshit-shetty",
     movieName: "777 Charlie",
     occasion: "Festival",
@@ -875,7 +908,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-rukmini-vasanth-kantara",
-    ...imgs("look-rukmini-vasanth-kantara"),
+    ...imgsResolved("look-rukmini-vasanth-kantara"),
     celebrityId: "rukmini-vasanth",
     movieName: "Kantara",
     occasion: "Wedding",
@@ -889,7 +922,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-ragini-dwivedi-event",
-    ...imgs("look-ragini-dwivedi-event"),
+    ...imgsResolved("look-ragini-dwivedi-event"),
     celebrityId: "ragini-dwivedi",
     movieName: "Sandalwood Gala",
     occasion: "Wedding",
@@ -907,7 +940,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-khesari-lal-yadav-wedding",
-    ...imgs("look-khesari-lal-yadav-wedding"),
+    ...imgsResolved("look-khesari-lal-yadav-wedding"),
     celebrityId: "khesari-lal-yadav",
     movieName: "Dulhan Wahi Jo Piya Man Bhaaye",
     occasion: "Wedding",
@@ -920,7 +953,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-anubhav-mohanty-festival",
-    ...imgs("look-anubhav-mohanty-festival"),
+    ...imgsResolved("look-anubhav-mohanty-festival"),
     celebrityId: "anubhav-mohanty",
     movieName: "Love Station",
     occasion: "Festival",
@@ -937,7 +970,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-festive-diwali-gold-kurta",
-    ...imgs("look-festive-diwali-gold-kurta"),
+    ...imgsResolved("look-festive-diwali-gold-kurta"),
     celebrityId: "ranveer-singh",
     movieName: "Diwali Celebrations",
     occasion: "Festival",
@@ -951,7 +984,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-navratri-chaniya",
-    ...imgs("look-festive-navratri-chaniya"),
+    ...imgsResolved("look-festive-navratri-chaniya"),
     celebrityId: "deepika-padukone",
     movieName: "Navratri Celebrations",
     occasion: "Festival",
@@ -965,7 +998,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-wedding-sherwani",
-    ...imgs("look-festive-wedding-sherwani"),
+    ...imgsResolved("look-festive-wedding-sherwani"),
     celebrityId: "hrithik-roshan",
     movieName: "Wedding Season",
     occasion: "Wedding",
@@ -979,7 +1012,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-eid-pathani",
-    ...imgs("look-festive-eid-pathani"),
+    ...imgsResolved("look-festive-eid-pathani"),
     celebrityId: "salman-khan",
     movieName: "Eid Celebrations",
     occasion: "Festival",
@@ -993,7 +1026,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-ganesh-dhoti",
-    ...imgs("look-festive-ganesh-dhoti"),
+    ...imgsResolved("look-festive-ganesh-dhoti"),
     celebrityId: "akshay-kumar",
     movieName: "Ganesh Chaturthi",
     occasion: "Festival",
@@ -1007,7 +1040,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-onam-saree",
-    ...imgs("look-festive-onam-saree"),
+    ...imgsResolved("look-festive-onam-saree"),
     celebrityId: "nayanthara",
     movieName: "Onam Celebrations",
     occasion: "Festival",
@@ -1021,7 +1054,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-pongal-veshti",
-    ...imgs("look-festive-pongal-veshti"),
+    ...imgsResolved("look-festive-pongal-veshti"),
     celebrityId: "rajinikanth",
     movieName: "Pongal Celebrations",
     occasion: "Festival",
@@ -1035,7 +1068,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-durga-puja-saree",
-    ...imgs("look-festive-durga-puja-saree"),
+    ...imgsResolved("look-festive-durga-puja-saree"),
     celebrityId: "rani-mukerji",
     movieName: "Durga Puja Celebrations",
     occasion: "Festival",
@@ -1049,7 +1082,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-holi-anarkali",
-    ...imgs("look-festive-holi-anarkali"),
+    ...imgsResolved("look-festive-holi-anarkali"),
     celebrityId: "alia-bhatt",
     movieName: "Holi Celebrations",
     occasion: "Festival",
@@ -1063,7 +1096,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-new-year-gown",
-    ...imgs("look-festive-new-year-gown"),
+    ...imgsResolved("look-festive-new-year-gown"),
     celebrityId: "priyanka-chopra",
     movieName: "New Year Eve",
     occasion: "Party",
@@ -1077,7 +1110,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-karva-chauth-saree",
-    ...imgs("look-festive-karva-chauth-saree"),
+    ...imgsResolved("look-festive-karva-chauth-saree"),
     celebrityId: "kareena-kapoor",
     movieName: "Karva Chauth",
     occasion: "Wedding",
@@ -1091,7 +1124,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-bhai-dooj-kurta",
-    ...imgs("look-festive-bhai-dooj-kurta"),
+    ...imgsResolved("look-festive-bhai-dooj-kurta"),
     celebrityId: "ranbir-kapoor",
     movieName: "Bhai Dooj Celebrations",
     occasion: "Festival",
@@ -1105,7 +1138,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-ugadi-silk",
-    ...imgs("look-festive-ugadi-silk"),
+    ...imgsResolved("look-festive-ugadi-silk"),
     celebrityId: "allu-arjun",
     movieName: "Ugadi Celebrations",
     occasion: "Festival",
@@ -1119,7 +1152,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-bihu-mekhela",
-    ...imgs("look-festive-bihu-mekhela"),
+    ...imgsResolved("look-festive-bihu-mekhela"),
     celebrityId: "priyanka-chopra",
     movieName: "Bihu Celebrations",
     occasion: "Festival",
@@ -1133,7 +1166,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-navaratri-ghagra",
-    ...imgs("look-festive-navaratri-ghagra"),
+    ...imgsResolved("look-festive-navaratri-ghagra"),
     celebrityId: "rashmika-mandanna",
     movieName: "Navaratri Garba",
     occasion: "Festival",
@@ -1147,7 +1180,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-dussehra-kurta",
-    ...imgs("look-festive-dussehra-kurta"),
+    ...imgsResolved("look-festive-dussehra-kurta"),
     celebrityId: "prabhas",
     movieName: "Dussehra Celebrations",
     occasion: "Festival",
@@ -1161,7 +1194,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-republic-day-kurta",
-    ...imgs("look-festive-republic-day-kurta"),
+    ...imgsResolved("look-festive-republic-day-kurta"),
     celebrityId: "vicky-kaushal",
     movieName: "Republic Day Parade",
     occasion: "Festival",
@@ -1175,7 +1208,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-reception-gown",
-    ...imgs("look-festive-reception-gown"),
+    ...imgsResolved("look-festive-reception-gown"),
     celebrityId: "deepika-padukone",
     movieName: "Wedding Reception",
     occasion: "Wedding",
@@ -1189,7 +1222,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-sangeet-lehenga",
-    ...imgs("look-festive-sangeet-lehenga"),
+    ...imgsResolved("look-festive-sangeet-lehenga"),
     celebrityId: "kiara-advani",
     movieName: "Sangeet Night",
     occasion: "Festival",
@@ -1203,7 +1236,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-festive-eid-anarkali",
-    ...imgs("look-festive-eid-anarkali"),
+    ...imgsResolved("look-festive-eid-anarkali"),
     celebrityId: "katrina-kaif",
     movieName: "Eid Celebrations",
     occasion: "Festival",
@@ -1221,7 +1254,7 @@ export const outfitRecords: OutfitRecord[] = [
   // ════════════════════════════════════════════════════
   {
     id: "look-luxury-organza-saree",
-    ...imgs("look-luxury-organza-saree"),
+    ...imgsResolved("look-luxury-organza-saree"),
     celebrityId: "aishwarya-rai",
     movieName: "Cannes Film Festival",
     occasion: "Wedding",
@@ -1235,7 +1268,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-indo-western",
-    ...imgs("look-luxury-indo-western"),
+    ...imgsResolved("look-luxury-indo-western"),
     celebrityId: "ranveer-singh",
     movieName: "Designer Week",
     occasion: "Party",
@@ -1249,7 +1282,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-black-tie-tux",
-    ...imgs("look-luxury-black-tie-tux"),
+    ...imgsResolved("look-luxury-black-tie-tux"),
     celebrityId: "hrithik-roshan",
     movieName: "International Premiere",
     occasion: "Party",
@@ -1263,7 +1296,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-gold-sequin-dress",
-    ...imgs("look-luxury-gold-sequin-dress"),
+    ...imgsResolved("look-luxury-gold-sequin-dress"),
     celebrityId: "sonam-kapoor",
     movieName: "Luxury Fashion Week",
     occasion: "Party",
@@ -1277,7 +1310,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-ball-gown",
-    ...imgs("look-luxury-ball-gown"),
+    ...imgsResolved("look-luxury-ball-gown"),
     celebrityId: "priyanka-chopra",
     movieName: "State Dinner",
     occasion: "Party",
@@ -1291,7 +1324,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-italian-suit",
-    ...imgs("look-luxury-italian-suit"),
+    ...imgsResolved("look-luxury-italian-suit"),
     celebrityId: "dulquer-salmaan",
     movieName: "Film Festival Gala",
     occasion: "Party",
@@ -1305,7 +1338,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-pashmina-set",
-    ...imgs("look-luxury-pashmina-set"),
+    ...imgsResolved("look-luxury-pashmina-set"),
     celebrityId: "kangana-ranaut",
     movieName: "Luxury Fashion Gala",
     occasion: "Party",
@@ -1319,7 +1352,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-crystal-lehenga",
-    ...imgs("look-luxury-crystal-lehenga"),
+    ...imgsResolved("look-luxury-crystal-lehenga"),
     celebrityId: "deepika-padukone",
     movieName: "Met Gala After-Party",
     occasion: "Wedding",
@@ -1333,7 +1366,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-zardosi-sherwani",
-    ...imgs("look-luxury-zardosi-sherwani"),
+    ...imgsResolved("look-luxury-zardosi-sherwani"),
     celebrityId: "ranveer-singh",
     movieName: "Wedding Season",
     occasion: "Wedding",
@@ -1347,7 +1380,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-silk-brocade-cape",
-    ...imgs("look-luxury-silk-brocade-cape"),
+    ...imgsResolved("look-luxury-silk-brocade-cape"),
     celebrityId: "katrina-kaif",
     movieName: "Designer Showcase",
     occasion: "Party",
@@ -1361,7 +1394,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-velvet-blazer",
-    ...imgs("look-luxury-velvet-blazer"),
+    ...imgsResolved("look-luxury-velvet-blazer"),
     celebrityId: "ranbir-kapoor",
     movieName: "Award Season",
     occasion: "Party",
@@ -1375,7 +1408,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-anarkali",
-    ...imgs("look-luxury-anarkali"),
+    ...imgsResolved("look-luxury-anarkali"),
     celebrityId: "madhuri-dixit",
     movieName: "Classical Gala",
     occasion: "Festival",
@@ -1389,7 +1422,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-cashmere-coat",
-    ...imgs("look-luxury-cashmere-coat"),
+    ...imgsResolved("look-luxury-cashmere-coat"),
     celebrityId: "amitabh-bachchan",
     movieName: "Winter Gala",
     occasion: "Party",
@@ -1403,7 +1436,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-beaded-saree",
-    ...imgs("look-luxury-beaded-saree"),
+    ...imgsResolved("look-luxury-beaded-saree"),
     celebrityId: "taapsee-pannu",
     movieName: "International Fashion Week",
     occasion: "Wedding",
@@ -1417,7 +1450,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-linen-suit",
-    ...imgs("look-luxury-linen-suit"),
+    ...imgsResolved("look-luxury-linen-suit"),
     celebrityId: "vijay-sethupathi",
     movieName: "Producer's Guild Event",
     occasion: "Party",
@@ -1431,7 +1464,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-mirror-work-ghagra",
-    ...imgs("look-luxury-mirror-work-ghagra"),
+    ...imgsResolved("look-luxury-mirror-work-ghagra"),
     celebrityId: "anushka-shetty",
     movieName: "South Fashion Awards",
     occasion: "Festival",
@@ -1445,7 +1478,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-bandhgala",
-    ...imgs("look-luxury-bandhgala"),
+    ...imgsResolved("look-luxury-bandhgala"),
     celebrityId: "shah-rukh-khan",
     movieName: "Luxury Brand Event",
     occasion: "Party",
@@ -1459,7 +1492,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-cape-lehenga",
-    ...imgs("look-luxury-cape-lehenga"),
+    ...imgsResolved("look-luxury-cape-lehenga"),
     celebrityId: "alia-bhatt",
     movieName: "Bridal Couture Week",
     occasion: "Wedding",
@@ -1473,7 +1506,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-french-gown",
-    ...imgs("look-luxury-french-gown"),
+    ...imgsResolved("look-luxury-french-gown"),
     celebrityId: "zendaya",
     movieName: "Cannes Film Festival",
     occasion: "Party",
@@ -1487,7 +1520,7 @@ export const outfitRecords: OutfitRecord[] = [
   },
   {
     id: "look-luxury-brocade-kurta",
-    ...imgs("look-luxury-brocade-kurta"),
+    ...imgsResolved("look-luxury-brocade-kurta"),
     celebrityId: "prabhas",
     movieName: "Kalki 2898 AD Premiere",
     occasion: "Festival",

@@ -198,9 +198,16 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`API ${path} → ${res.status}: ${body}`);
+    const err = new Error(`API ${path} → ${res.status}: ${body}`) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
   return res.json();
+}
+
+/** True when a caught error came from an apiFetch call that got a 401. */
+export function isUnauthorizedError(err: unknown): boolean {
+  return err instanceof Error && (err as Error & { status?: number }).status === 401;
 }
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
@@ -315,7 +322,10 @@ export async function getWishlist(): Promise<WishlistItem[]> {
   try {
     const res = await apiFetch<{ data: WishlistItem[] }>("/api/wishlist");
     return res.data;
-  } catch {
+  } catch (err) {
+    // A stale/expired session should surface to the caller (so pages can
+    // redirect to login) rather than silently rendering as an empty wishlist.
+    if (isUnauthorizedError(err)) throw err;
     return [];
   }
 }
@@ -434,6 +444,14 @@ export type CommissionSummary = {
   celebrityCommission: number;
   manufacturerShare: number;
   paid: number;
+};
+
+export type Collection = {
+  id: string; // slug
+  name: string;
+  description: string;
+  coverImageUrl: string;
+  outfitIds: string[];
 };
 
 // ─── Celebrities ──────────────────────────────────────────────────────────────
@@ -633,6 +651,102 @@ export async function getStorefront(celebrityId: string): Promise<Storefront | n
   } catch {
     return null;
   }
+}
+
+// ─── Collections ─────────────────────────────────────────────────────────────
+
+export async function getCollections(): Promise<Collection[]> {
+  try {
+    const res = await apiFetch<{ data: Collection[] }>("/api/collections");
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function getCollection(slug: string): Promise<Collection | null> {
+  try {
+    const res = await apiFetch<{ data: Collection }>(`/api/collections/${slug}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Admin Asset Manager ─────────────────────────────────────────────────────
+
+export type AdminAssetFilter =
+  | "missing" | "failed" | "needsPaidUpgrade" | "pollinations" | "premium" | "brokenPaths" | "duplicates";
+
+export type AdminAsset = {
+  path: string;
+  kind: string | null;
+  tier: string | null;
+  prompt: string | null;
+  backend: "pollinations" | "replicate" | "manual-upload" | null;
+  model: string | null;
+  seed: number | null;
+  generatedAt: string | null;
+  width: number | null;
+  height: number | null;
+  status: "generated" | "failed" | "never-attempted" | "broken";
+  needsPaidUpgrade: boolean;
+  qualityFlag: string | null;
+  lastVerified: string | null;
+  error: string | null;
+  attempts: number;
+  existsOnDisk: boolean;
+  fileSizeBytes: number | null;
+};
+
+export type AdminAssetSummary = {
+  total: number;
+  missing: number;
+  failed: number;
+  needsPaidUpgrade: number;
+  pollinations: number;
+  premium: number;
+  brokenPaths: number;
+  duplicates: number;
+};
+
+export async function getAdminAssets(filter?: AdminAssetFilter): Promise<{ items: AdminAsset[]; summary: AdminAssetSummary | null }> {
+  try {
+    const qs = filter ? `?filter=${filter}` : "";
+    const res = await apiFetch<{ data: AdminAsset[]; summary: AdminAssetSummary }>(`/api/admin/assets${qs}`);
+    return { items: res.data, summary: res.summary };
+  } catch {
+    return { items: [], summary: null };
+  }
+}
+
+export async function regenerateAdminAssets(paths: string[]): Promise<AdminAsset[]> {
+  const res = await apiFetch<{ data: AdminAsset[] }>("/api/admin/assets/regenerate", {
+    method: "POST",
+    body: JSON.stringify({ paths }),
+  });
+  return res.data;
+}
+
+export async function uploadAdminAsset(path: string, base64: string): Promise<AdminAsset> {
+  const res = await apiFetch<{ data: AdminAsset }>("/api/admin/assets/upload", {
+    method: "POST",
+    body: JSON.stringify({ path, base64 }),
+  });
+  return res.data;
+}
+
+export type VerifyAllReport = {
+  generated: number;
+  failed: number;
+  pending: number;
+  needsPaidUpgrade: number;
+  brokenReferences: number;
+};
+
+export async function verifyAllAdminAssets(): Promise<VerifyAllReport> {
+  const res = await apiFetch<{ data: VerifyAllReport }>("/api/admin/assets/verify-all", { method: "POST" });
+  return res.data;
 }
 
 export async function saveStorefront(body: Storefront): Promise<Storefront> {
@@ -872,7 +986,13 @@ export async function addComment(postId: string, body: string): Promise<Communit
 
 export async function shareCommunityPost(postId: string): Promise<void> {
   try {
-    await apiFetch(`/api/community/posts/${postId}/share`, { method: "POST" });
+    // No dedicated /share route exists on a CommunityPost — shares are recorded
+    // via the generic analytics event pipeline (AnalyticsEventType.SHARE),
+    // consistent with how the rest of the app already tracks engagement.
+    await apiFetch("/api/events", {
+      method: "POST",
+      body: JSON.stringify({ type: "SHARE", properties: { postId, entity: "community_post" } }),
+    });
   } catch { /* fire-and-forget */ }
 }
 
@@ -1266,6 +1386,8 @@ type BlogPostRaw = {
   summary: string;
   body: string;
   coverImage: string | null;
+  images?: string[];
+  category?: string;
   tags: string[];
   outfitIds?: string[];
   productIds?: string[];
@@ -1288,6 +1410,8 @@ export type BlogPost = {
   summary: string;
   body: string;
   coverImage: string | null;
+  images: string[];
+  category: string | null;
   tags: string[];
   outfitIds: string[];
   published: boolean;
@@ -1300,6 +1424,8 @@ function normalizeBlogPost(raw: BlogPostRaw): BlogPost {
   return {
     ...raw,
     authorName: raw.author?.name ?? "",
+    images: raw.images ?? [],
+    category: raw.category ?? null,
     outfitIds: raw.outfitIds ?? raw.productIds ?? [],
     published: raw.isPublished ?? raw.published ?? false,
     views: raw.viewCount ?? raw.views ?? 0,
@@ -1602,21 +1728,72 @@ export type CommissionReport = {
   byCelebrity: { celebrityId: string; gross: number; commission: number }[];
 };
 
+// Raw shape actually returned by GET /api/settlements/report
+// (settlementService.report() — see apps/backend/src/services/settlement.service.ts).
+// Kept distinct from SettlementReport because the two don't share field names
+// or a byStatus shape (array here vs. the Record<> the UI consumes).
+type SettlementReportRaw = {
+  totals: {
+    count: number;
+    platformFee: number;
+    celebrityCommission: number;
+    manufacturerShare: number;
+    taxDeducted: number;
+    netCelebrityAmount: number;
+    netManufacturerAmount: number;
+  };
+  byStatus: { status: string; count: number; platformFee: number }[];
+};
+
 export async function getSettlementReport(params?: { from?: string; to?: string }): Promise<SettlementReport | null> {
   try {
     const qs = params ? "?" + new URLSearchParams(Object.entries(params).filter(([, v]) => v) as string[][]).toString() : "";
-    const res = await apiFetch<{ data: SettlementReport }>(`/api/settlements/report${qs}`);
-    return res.data;
+    const res = await apiFetch<{ data: SettlementReportRaw }>(`/api/settlements/report${qs}`);
+    const raw = res.data;
+    return {
+      totalSettlements:       raw.totals.count,
+      totalPlatformFee:       raw.totals.platformFee,
+      totalCelebCommission:   raw.totals.celebrityCommission,
+      totalManufacturerShare: raw.totals.manufacturerShare,
+      // Not returned by the backend directly — the platform/celebrity/manufacturer
+      // split is exhaustive (10% / 5% / 85%), so gross is exactly their sum.
+      totalGross: raw.totals.platformFee + raw.totals.celebrityCommission + raw.totals.manufacturerShare,
+      byStatus: Object.fromEntries(
+        raw.byStatus.map((s) => [s.status, { count: s.count, amount: s.platformFee }])
+      ),
+    };
   } catch {
     return null;
   }
 }
 
+// Raw shape actually returned by GET /api/commissions/report
+// (commissionService.report() — see apps/backend/src/services/commission.service.ts).
+type CommissionReportRaw = {
+  count: number;
+  platformRevenue: number;
+  celebrityRevenue: number;
+  manufacturerRevenue: number;
+  settled: number;
+  unsettled: number;
+};
+
 export async function getCommissionReport(params?: { from?: string; to?: string }): Promise<CommissionReport | null> {
   try {
     const qs = params ? "?" + new URLSearchParams(Object.entries(params).filter(([, v]) => v) as string[][]).toString() : "";
-    const res = await apiFetch<{ data: CommissionReport }>(`/api/commissions/report${qs}`);
-    return res.data;
+    const res = await apiFetch<{ data: CommissionReportRaw }>(`/api/commissions/report${qs}`);
+    const raw = res.data;
+    return {
+      totalGross:             raw.platformRevenue + raw.celebrityRevenue + raw.manufacturerRevenue,
+      totalPlatformFee:       raw.platformRevenue,
+      totalCelebCommission:   raw.celebrityRevenue,
+      totalManufacturerShare: raw.manufacturerRevenue,
+      // Per-celebrity breakdown isn't computed by the backend's report() —
+      // no data source to map here. The UI already guards this with
+      // `commissions.byCelebrity?.length > 0`, so an empty array renders
+      // correctly (the section just doesn't show) rather than crashing.
+      byCelebrity: [],
+    };
   } catch {
     return null;
   }

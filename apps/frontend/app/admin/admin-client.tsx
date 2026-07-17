@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Celebrity, Outfit, Manufacturer, Coupon } from "@/lib/api";
 import { adminLogout, getStoredToken, getCurrentUser, getCoupons } from "@/lib/api";
 
@@ -208,6 +209,14 @@ export function AdminClient({ initialCelebrities, initialOutfits, initialManufac
                     {item.label}
                   </button>
                 ))}
+                {section.label === "System" && (
+                  <Link
+                    href="/admin/assets"
+                    className="block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-text/70 transition hover:bg-secondary hover:text-primary"
+                  >
+                    Asset Manager
+                  </Link>
+                )}
               </div>
             ))}
           </nav>
